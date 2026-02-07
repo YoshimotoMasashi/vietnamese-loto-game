@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đi Lô Tô - Solo Gamble</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Roboto Mono', monospace; background-color: #fef2f2; }
+        .cell { transition: all 0.2s; }
+        .marked { background-color: #ef4444; color: white; transform: scale(0.95); }
+        .win-row { border: 3px solid #fbbf24; animation: flash 1s infinite; }
+        @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
+    <div id="app" class="min-h-screen flex flex-col items-center p-4 max-w-md mx-auto relative">
+        
+        <header class="w-full flex justify-between items-center mb-6 bg-white p-4 rounded-xl shadow-md border-2 border-red-500">
+            <div>
+                <h1 class="text-xl font-bold text-red-600">LÔ TÔ</h1>
+                <p class="text-xs text-gray-500">SOLO GAMBLE</p>
+            </div>
+            <div class="text-right">
+                <p class="text-xs text-gray-500">Cash on hand</p>
+                <p class="text-2xl font-bold" :class="wallet < 0 ? 'text-red-600' : 'text-green-600'">
+                    ${{ formatMoney(wallet) }}
+                </p>
+            </div>
+        </header>
+
+        <div v-if="gameState === 'IDLE'" class="w-full bg-white p-6 rounded-xl shadow-lg space-y-4">
+            <h2 class="text-lg font-bold text-center mb-4">Settings</h2>
+            
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">Bet</label>
+                <input type="number" v-model.number="betAmount" class="w-full p-3 border-2 border-gray-300 rounded-lg text-xl text-center focus:border-red-500 outline-none">
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">Game Speed</label>
+                <input type="range" v-model.number="gameSpeed" min="1000" max="4000" step="500" class="w-full accent-red-500">
+                <p class="text-xs text-center text-gray-500">{{ gameSpeed / 1000 }}sec / time</p>
+            </div>
+
+            <button @click="startGame" class="w-full bg-red-600 text-white py-4 rounded-lg font-bold text-xl shadow-md active:transform active:scale-95 transition">
+                Chơi ngay! (START)
+            </button>
+            <p class="text-xs text-center text-gray-400 mt-2">The entry fee will be deducted as a wager.<br>Win and get four times your bet!</p>
+        </div>
+
+        <div v-else class="w-full flex flex-col items-center">
+            
+            <div class="mb-6 relative">
+                <div class="w-32 h-32 bg-yellow-400 rounded-full flex items-center justify-center border-4 border-red-600 shadow-xl animate-bounce-short">
+                    <span class="text-6xl font-bold text-red-800">{{ currentNumber || '?' }}</span>
+                </div>
+                <div class="absolute -top-2 -right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                    Remaining: {{ 90 - drawnHistory.length }}
+                </div>
+            </div>
+
+            <div class="mb-4 text-center h-8">
+                <p v-if="gameState === 'PLAYING'" class="text-red-600 font-bold animate-pulse">
+                    Drawing in progress... (OPPONENT: {{ botStatus }})
+                </p>
+                <p v-if="gameState === 'WON'" class="text-green-600 font-bold text-xl">
+                    KINH! (You win!)(+${{ betAmount * 4 }})
+                </p>
+                <p v-if="gameState === 'LOST'" class="text-gray-600 font-bold text-xl">
+                    Too bad... Someone else won.
+                </p>
+            </div>
+
+            <div class="bg-white p-2 rounded-lg shadow-xl border border-gray-200 w-full mb-6">
+                <div v-for="(row, rIndex) in playerCard" :key="rIndex" 
+                     class="grid grid-cols-9 gap-1 mb-1 p-1 rounded transition"
+                     :class="{'win-row': isRowComplete(row)}">
+                    <div v-for="(num, cIndex) in row" :key="cIndex" 
+                         class="aspect-square flex items-center justify-center text-sm font-bold border rounded cursor-pointer select-none cell"
+                         :class="getCellClass(num)"
+                         @click="handleCellClick(num)">
+                        {{ num !== 0 ? num : '' }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-2 w-full">
+                <button v-if="gameState === 'PLAYING'" @click="callKinh" 
+                        class="flex-1 bg-yellow-500 hover:bg-yellow-400 text-red-900 py-3 rounded-lg font-bold shadow border-b-4 border-yellow-700 active:border-b-0 active:mt-1">
+                    KINH! (You win!)
+                </button>
+                <button v-if="gameState === 'WON' || gameState === 'LOST'" @click="resetGame" 
+                        class="flex-1 bg-gray-800 text-white py-3 rounded-lg font-bold shadow">
+                    Play again
+                </button>
+            </div>
+
+            <div class="mt-6 w-full overflow-x-auto whitespace-nowrap pb-2">
+                <span v-for="n in drawnHistory.slice().reverse()" :key="n" class="inline-block bg-gray-200 text-gray-700 px-2 py-1 rounded mr-1 text-xs font-bold">
+                    {{ n }}
+                </span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const { createApp, ref, computed } = Vue;
+
+        createApp({
+            setup() {
+                // 状態管理
+                const wallet = ref(10000); // 初期所持金
+                const betAmount = ref(100);
+                const gameState = ref('IDLE'); // IDLE, PLAYING, WON, LOST
+                const gameSpeed = ref(2500);
+                
+                const currentNumber = ref(null);
+                const drawnHistory = ref([]);
+                const playerCard = ref([]);
+                const timerId = ref(null);
+                const botStatus = ref("It's still okay.");
+
+                // 音声合成の準備
+                const synth = window.speechSynthesis;
+
+                // 金額フォーマット
+                const formatMoney = (val) => val.toLocaleString();
+
+                // ■ ロートーのカード生成ロジック (9列3行)
+                const generateCard = () => {
+                    // 1. 全ての列の候補数字を準備
+                    // col0: 1-9, col1: 10-19, ..., col8: 80-90
+                    let columns = [];
+                    columns.push(Array.from({length: 9}, (_, i) => i + 1)); // 1-9
+                    for(let i=1; i<8; i++) {
+                        columns.push(Array.from({length: 10}, (_, j) => i*10 + j));
+                    }
+                    columns.push(Array.from({length: 11}, (_, i) => 80 + i)); // 80-90
+
+                    // 2. カードの枠組み（3行9列、初期値0）を作成
+                    let card = [
+                        Array(9).fill(0),
+                        Array(9).fill(0),
+                        Array(9).fill(0)
+                    ];
+
+                    // 3. 各行に必ず5つの数字が入るように配置場所を決める
+                    // シンプル化のため、ランダムに5つのインデックスを選ぶ
+                    for(let r=0; r<3; r++) {
+                        let availableCols = [0,1,2,3,4,5,6,7,8].sort(() => 0.5 - Math.random());
+                        let selectedCols = availableCols.slice(0, 5).sort((a,b)=>a-b);
+                        
+                        selectedCols.forEach(colIdx => {
+                            // その列の候補からランダムに1つ選んで抽出
+                            const pool = columns[colIdx];
+                            if(pool.length > 0) {
+                                const randIdx = Math.floor(Math.random() * pool.length);
+                                const val = pool.splice(randIdx, 1)[0];
+                                card[r][colIdx] = val;
+                            }
+                        });
+                    }
+                    
+                    // ※本来のロートーは列ごとのソートが必要だが、
+                    // 簡易実装として行ごとの生成を行っているため、
+                    // 厳密なルール（列内昇順）はこの簡易ロジックでは省略されることがあるがゲームとしては成立する。
+                    return card;
+                };
+
+                // ゲーム開始
+                const startGame = () => {
+                    if(wallet.value < betAmount.value) {
+                        alert("Check your cash on hand!");
+                        return;
+                    }
+                    
+                    wallet.value -= betAmount.value;
+                    gameState.value = 'PLAYING';
+                    drawnHistory.value = [];
+                    currentNumber.value = null;
+                    botStatus.value = "It's silent...";
+                    
+                    playerCard.value = generateCard();
+                    
+                    // 抽選ループ開始
+                    gameLoop();
+                };
+
+                // メインループ（数字を引く）
+                const gameLoop = () => {
+                    timerId.value = setTimeout(() => {
+                        if(gameState.value !== 'PLAYING') return;
+
+                        // 1. 数字を引く (1-90)
+                        let nextNum;
+                        do {
+                            nextNum = Math.floor(Math.random() * 90) + 1;
+                        } while (drawnHistory.value.includes(nextNum));
+
+                        currentNumber.value = nextNum;
+                        drawnHistory.value.push(nextNum);
+
+                        // 音声読み上げ
+                        speakNumber(nextNum);
+
+                        // 2. 自動マーキング（簡単のため、出た数字は自動でマーク判定に使用）
+                        // ※UI上の色は自動で変わるが、ルール上の「チェック」は自動
+
+                        // 3. ボット（敵）の判定
+                        // 時間が経つほど敵がアガる確率が上がる簡易シミュレーション
+                        checkBotWin();
+
+                        if(gameState.value === 'PLAYING') {
+                            gameLoop();
+                        }
+
+                    }, gameSpeed.value);
+                };
+
+                // ボットの勝利判定（運ゲー要素）
+                const checkBotWin = () => {
+                    const turn = drawnHistory.value.length;
+                    // 20ターン目以降から敵がアガる可能性が出てくる
+                    if(turn > 20) {
+                        const risk = (turn - 20) * 0.5; // ターンごとに確率上昇
+                        if(Math.random() * 100 < risk) {
+                            endGame(false); // 負け
+                        } else if (risk > 10) {
+                            botStatus.value = "リーチかも!?";
+                        }
+                    }
+                };
+
+                // セルのスタイル判定
+                const getCellClass = (num) => {
+                    if (num === 0) return 'bg-gray-100 border-gray-200'; // 空白
+                    if (drawnHistory.value.includes(num)) return 'marked border-red-500 font-bold shadow-inner'; // ヒット
+                    return 'bg-white border-gray-300 text-gray-800'; // 通常
+                };
+
+                // 行が揃っているかチェック
+                const isRowComplete = (row) => {
+                    const numbers = row.filter(n => n !== 0);
+                    if(numbers.length === 0) return false;
+                    return numbers.every(n => drawnHistory.value.includes(n));
+                };
+
+                // プレイヤーのクリック（Kinh宣言）
+                const callKinh = () => {
+                    // 全行チェック
+                    const hasWin = playerCard.value.some(row => isRowComplete(row));
+                    if(hasWin) {
+                        endGame(true);
+                    } else {
+                        // お手つき（ペナルティなしだが警告）
+                        alert("Chưa kinh! (The numbers aren't all in yet!)");
+                    }
+                };
+
+                // ゲーム終了処理
+                const endGame = (isWin) => {
+                    clearTimeout(timerId.value);
+                    if(isWin) {
+                        gameState.value = 'WON';
+                        wallet.value += betAmount.value * 4; // 4倍配当
+                        speakText("Kinh! Great!");
+                    } else {
+                        gameState.value = 'LOST';
+                        speakText("Too bad, someone else won.");
+                    }
+                };
+
+                const resetGame = () => {
+                    gameState.value = 'IDLE';
+                };
+
+                // 読み上げ関数
+                const speakNumber = (num) => {
+                    if(!synth) return;
+                    const utterance = new SpeechSynthesisUtterance(num.toString());
+                    // ベトナム語があれば設定、なければ英語か日本語
+                    const voices = synth.getVoices();
+                    const viVoice = voices.find(v => v.lang.includes('vi'));
+                    if(viVoice) utterance.voice = viVoice;
+                    utterance.rate = 1.2;
+                    synth.speak(utterance);
+                };
+                
+                const speakText = (text) => {
+                    if(!synth) return;
+                    const u = new SpeechSynthesisUtterance(text);
+                    u.lang = 'ja-JP';
+                    synth.speak(u);
+                };
+
+                // クリック時の挙動（手動確認用）
+                const handleCellClick = (num) => {
+                    if(num === 0) return;
+                    // ここに「自分の指で確認マークをつける」ロジックを入れても良いが
+                    // 今回は自動判定システムなので視覚効果のみでもOK
+                };
+
+                return {
+                    wallet, betAmount, gameState, gameSpeed, currentNumber,
+                    drawnHistory, playerCard, botStatus,
+                    formatMoney, startGame, getCellClass, isRowComplete,
+                    callKinh, resetGame, handleCellClick
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
