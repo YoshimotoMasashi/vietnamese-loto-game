@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lô Tô Global - Final Edition</title>
+    <title>Lô Tô Global - Enhanced UI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -22,20 +22,29 @@
 <body class="bg-slate-100 font-sans">
     <div id="app" v-cloak class="min-h-screen max-w-md mx-auto flex flex-col bg-white shadow-2xl relative overflow-hidden">
         
-        <div class="fixed top-4 left-0 right-0 z-[60] px-6 pointer-events-none">
+        <div class="fixed top-20 left-0 right-0 z-[60] px-6 pointer-events-none">
             <div v-for="log in logs" :key="log.id" class="bg-black/80 text-white text-xs py-2.5 px-5 rounded-full shadow-xl mb-2 text-center animate-pop">
                 {{ log.message }}
             </div>
         </div>
 
-        <header class="p-3 bg-white border-b flex justify-between items-center sticky top-0 z-40">
-            <select v-model="currentLang" @change="updateCurrencyByLang" class="text-xs font-bold bg-slate-50 border rounded-lg px-2 py-1.5 outline-none">
+        <header class="p-3 bg-white border-b flex justify-between items-center sticky top-0 z-40 h-16">
+            <button v-if="gameState !== 'HOME'" @click="confirmQuit" class="flex items-center justify-center w-10 h-10 bg-slate-100 text-slate-600 rounded-full hover:bg-red-500 hover:text-white transition-colors">
+                <i class="fas fa-home"></i>
+            </button>
+            <div v-else class="w-10"></div>
+
+            <select v-if="gameState === 'HOME'" v-model="currentLang" @change="updateCurrencyByLang" class="text-xs font-bold bg-slate-50 border rounded-lg px-2 py-1.5 outline-none">
                 <option v-for="(l, code) in i18n" :key="code" :value="code">{{ l.name }}</option>
             </select>
+            <div v-else class="text-xs font-black text-slate-300 uppercase italic">Lô Tô Global</div>
             
-            <button @click="openWalletModal" class="flex flex-col items-end">
-                <span class="text-[9px] text-gray-400 font-black italic">WALLET <i class="fas fa-edit"></i></span>
-                <span class="font-black text-green-600 text-lg leading-tight">{{ wallet.currency }}{{ wallet.amount.toLocaleString() }}</span>
+            <button @click="openWalletModal" class="flex items-center bg-green-50 px-3 py-1.5 rounded-xl border border-green-100 active:scale-95 transition-transform">
+                <div class="flex flex-col items-end mr-2">
+                    <span class="text-[10px] text-green-700 font-black leading-none uppercase tracking-tighter">Wallet Balance</span>
+                    <span class="font-black text-green-600 text-xl leading-tight">{{ wallet.currency }}{{ wallet.amount.toLocaleString() }}</span>
+                </div>
+                <i class="fas fa-pen-to-square text-green-400 text-sm"></i>
             </button>
         </header>
 
@@ -76,7 +85,6 @@
                     <button @click="startGame" class="w-full bg-red-600 text-white py-6 rounded-3xl font-black text-2xl shadow-2xl active:translate-y-1 transition">
                         {{ t.startBtn }}
                     </button>
-                    <button @click="gameState = 'HOME'" class="w-full text-slate-400 font-bold py-2 uppercase tracking-widest text-xs">{{ t.cancel }}</button>
                 </div>
             </div>
 
@@ -91,15 +99,15 @@
                             <p class="text-2xl font-black">{{ drawnHistory.length }} <span class="text-xs opacity-30">/ 90</span></p>
                         </div>
                     </div>
-                    <div class="flex flex-col items-end gap-2">
-                        <button v-if="mode === 'MULTI'" @click="showShareModal = true" class="bg-red-600 text-[10px] px-4 py-2.5 rounded-xl font-black shadow-lg flex items-center">
+                    <div class="flex flex-col items-end gap-1">
+                        <button v-if="mode === 'MULTI'" @click="showShareModal = true" class="bg-red-600 text-[10px] px-3 py-2 rounded-xl font-black shadow-lg flex items-center">
                             <i class="fas fa-qrcode mr-2"></i> {{ t.inviteBtn }}
                         </button>
-                        <span v-if="roomId" class="text-[8px] font-mono text-slate-500">ROOM: {{ roomId }}</span>
+                        <span v-if="roomId" class="text-[11px] font-black text-white bg-slate-700 px-2 py-1 rounded">#ROOM: {{ roomId }}</span>
                     </div>
                 </div>
 
-                <div class="flex-grow overflow-y-auto p-4 space-y-5 no-scrollbar bg-slate-50 pb-32">
+                <div class="flex-grow overflow-y-auto p-4 space-y-5 no-scrollbar bg-slate-50">
                     <div v-for="(card, cIdx) in myCards" :key="cIdx" class="bg-white p-2.5 rounded-2xl shadow-sm border border-slate-200">
                         <p class="text-[8px] font-black text-slate-300 mb-1.5 uppercase tracking-tighter">{{ t.ticket }} #{{ cIdx + 1 }}</p>
                         <div v-for="(row, rIdx) in card" :key="rIdx" class="grid grid-cols-9 gap-1 mb-1">
@@ -108,15 +116,13 @@
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="absolute bottom-0 left-0 right-0 p-5 bg-white/90 backdrop-blur-xl border-t flex space-x-3">
-                    <button @click="confirmQuit" class="w-16 h-16 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center shadow-inner active:bg-slate-200 transition">
-                        <i class="fas fa-home text-xl"></i>
-                    </button>
-                    <button @click="checkKinh" class="flex-grow bg-red-600 text-white h-16 rounded-2xl font-black text-3xl italic tracking-tighter shadow-xl active:scale-95 transition">
-                        KINH!
-                    </button>
+                    <div class="pt-4 pb-12">
+                        <button @click="checkKinh" class="w-full bg-red-600 text-white py-8 rounded-[2rem] font-black text-4xl italic tracking-tighter shadow-2xl active:scale-95 transition-all">
+                            KINH!
+                        </button>
+                        <p class="text-center text-[10px] text-slate-400 mt-4 font-bold uppercase tracking-widest opacity-50">Lô Tô Global Game Engine</p>
+                    </div>
                 </div>
             </div>
         </main>
@@ -176,7 +182,7 @@
             vi: { name: "Tiếng Việt", cur: "₫", welcome: "Chào mừng", solo: "Chơi một mình", soloSub: "Luyện tập với CPU", multi: "Chơi nhiều người", multiSub: "Chia sẻ mã phòng", setupTitle: "Thiết lập", ticketCount: "Số lượng vé", betAmount: "Mức cược", startBtn: "BẮT ĐẦU", drawn: "Số đã bốc", quitMsg: "Bạn có chắc muốn thoát?", shareSuccess: "Đã sao chép!", inviteBtn: "MỜI BẠN", inviteTitle: "Mời Tham Gia", inviteSub: "Quét mã để cùng chơi", copyBtn: "Sao chép", closeBtn: "Đóng", cancel: "Hủy", ticket: "Vé", walletTitle: "Ví Tiền", curLabel: "Đơn vị", balLabel: "Số dư", saveBtn: "Lưu" },
             en: { name: "English", cur: "$", welcome: "Welcome", solo: "Solo Mode", soloSub: "Versus CPU", multi: "Multiplayer", multiSub: "Share room link", setupTitle: "Setup Game", ticketCount: "Tickets", betAmount: "Bet Amount", startBtn: "START", drawn: "Balls", quitMsg: "Return to Home?", shareSuccess: "Copied!", inviteBtn: "INVITE", inviteTitle: "Invitation", inviteSub: "Scan to join room", copyBtn: "Copy", closeBtn: "Close", cancel: "Cancel", ticket: "Ticket", walletTitle: "Wallet", curLabel: "Currency", balLabel: "Balance", saveBtn: "Save" },
             ja: { name: "日本語", cur: "¥", welcome: "ようこそ", solo: "ソロプレイ", soloSub: "CPUと対戦", multi: "マルチプレイ", multiSub: "ルーム共有", setupTitle: "ゲーム設定", ticketCount: "枚数", betAmount: "賭け金", startBtn: "開始", drawn: "出た数字", quitMsg: "トップに戻りますか？", shareSuccess: "コピー完了！", inviteBtn: "友達を招待", inviteTitle: "ルーム招待", inviteSub: "スキャンして参加", copyBtn: "コピー", closeBtn: "閉じる", cancel: "キャンセル", ticket: "チケット", walletTitle: "ウォレット", curLabel: "通貨単位", balLabel: "残高", saveBtn: "保存" },
-            lo: { name: "ລາວ", cur: "₭", welcome: "ຍິນດີຕ້ອນຮັບ", solo: "ຫຼິ້ນຄົນດຽວ", soloSub: "ຝຶກກັບ CPU", multi: "ຫຼິ້ນຫຼາຍຄົນ", multiSub: "ແບ່ງປັນລະຫັດ", setupTitle: "ຕັ້ງຄ່າ", ticketCount: "ຈຳນວນໃບ", betAmount: "ເດີມພັນ", startBtn: "ເລີ່ມ", drawn: "ອອກແລ້ວ", quitMsg: "ອອກຈາກເກມ?", shareSuccess: "ສຳເລັດ!", inviteBtn: "ເຊີນໝູ່", inviteTitle: "ການເຊື້ອເຊີນ", inviteSub: "ສະແກນເພື່ອເຂົ້າຮ່ວມ", copyBtn: "ກັອບປີ້", closeBtn: "ປິດ", cancel: "ຍົກເລີກ", ticket: "ໃບ", walletTitle: "ກະເປົາເງິນ", curLabel: "ສະກຸນເງິນ", balLabel: "ຍອດເງິນ", saveBtn: "ບັນທຶກ" },
+            lo: { name: "ລາວ", cur: "₭", welcome: "ຍິນດີຕ້ອນຮັບ", solo: "ຫຼິ້ນຄົນດຽວ", soloSub: "ຝຶກກັບ CPU", multi: "ຫຼິ້ນຫຼາຍຄົນ", multiSub: "ແບ່ງປັນລະຫັດ", setupTitle: "ຕັ້ງຄ່າ", ticketCount: "ຈຳນວນໃບ", betAmount: "ເດີມພັນ", startBtn: "ເລີ່ມ", drawn: "ອອກແລ້ວ", quitMsg: "ອອກຈາກເກມ?", shareSuccess: "ສຳເລັດ!", inviteBtn: "ເຊີນໝູ່", inviteTitle: "ການເຊື້ອເຊີນ", inviteSub: "ສະແກນເພື່ອເຂົ້າຮ່ວມ", copyBtn: "ກັອບປີ້", closeBtn: "ປິດ", cancel: "ຍົកເລີກ", ticket: "ໃບ", walletTitle: "ກະເປົາເງິນ", curLabel: "ສະກຸນເງິນ", balLabel: "ຍອດເງິນ", saveBtn: "ບັນທຶກ" },
             th: { name: "ไทย", cur: "฿", welcome: "ยินดีต้อนรับ", solo: "เล่นคนเดียว", soloSub: "ฝึกกับ CPU", multi: "เล่นหลายคน", multiSub: "แชร์ห้อง", setupTitle: "ตั้งค่าเกม", ticketCount: "จำนวนใบ", betAmount: "เดิมพัน", startBtn: "เริ่ม", drawn: "ออกแล้ว", quitMsg: "ออกจากเกม?", shareSuccess: "คัดลอกแล้ว!", inviteBtn: "เชิญเพื่อน", inviteTitle: "คำเชิญเข้าห้อง", inviteSub: "สแกนเพื่อเข้าร่วม", copyBtn: "คัดลอก", closeBtn: "ปิด", cancel: "ยกเลิก", ticket: "ใบ", walletTitle: "กระเป๋าเงิน", curLabel: "สกุลเงิน", balLabel: "ยอดเงิน", saveBtn: "บันทึก" },
             km: { name: "ខ្មែរ", cur: "៛", welcome: "សូមស្វាគមន៍", solo: "លេងម្នាក់ឯង", soloSub: "ហាត់ជាមួយ CPU", multi: "លេងច្រើននាក់", multiSub: "ចែករំលែកបន្ទប់", setupTitle: "ការរៀបចំ", ticketCount: "ចំនួនសន្លឹក", betAmount: "ភ្នាល់", startBtn: "ចាប់ផ្ដើម", drawn: "ចេញហើយ", quitMsg: "ចាកចេញ?", shareSuccess: "ចម្លងរួច!", inviteBtn: "អញ្ជើញមិត្ត", inviteTitle: "ការអញ្ជើញ", inviteSub: "ស្កេនដើម្បីចូលរួម", copyBtn: "ចម្លង", closeBtn: "បិទ", cancel: "បោះបង់", ticket: "សន្លឹក", walletTitle: "កាបូបប្រាក់", curLabel: "រូបិយប័ណ្ណ", balLabel: "សមតុល្យ", saveBtn: "រក្សាទុក" },
             zh: { name: "简体中文", cur: "¥", welcome: "欢迎", solo: "单人模式", soloSub: "与CPU练习", multi: "多人模式", multiSub: "分享房间", setupTitle: "设置", ticketCount: "票数", betAmount: "赌注", startBtn: "开始", drawn: "已抽数字", quitMsg: "确定退出吗？", shareSuccess: "已复制！", inviteBtn: "邀请好友", inviteTitle: "房间邀请", inviteSub: "扫码加入房间", copyBtn: "复制链接", closeBtn: "关闭", cancel: "取消", ticket: "票", walletTitle: "钱包设置", curLabel: "货币", balLabel: "余额", saveBtn: "保存" },
@@ -236,7 +242,6 @@
 
                 let gameInterval = null;
                 const startGame = () => {
-                    // 全リセット処理
                     clearInterval(gameInterval);
                     drawnHistory.value = [];
                     currentNumber.value = null;
@@ -321,7 +326,6 @@
                     updateCurrencyByLang();
                     if(roomId.value) {
                         initGame('MULTI');
-                        addLog("Room Detected: " + roomId.value);
                     }
                 });
 
