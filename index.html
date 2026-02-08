@@ -3,132 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lô Tô Global</title>
+    <title>Lô Tô Global - Classic UI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         [v-cloak] { display: none; }
         .cell { aspect-ratio: 1/1; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; font-size: 0.85rem; background: white; }
-        .marked { background-color: #ef4444 !important; color: white !important; border-radius: 50%; transform: scale(0.9); box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); }
+        .marked { background-color: #ef4444 !important; color: white !important; border-radius: 50%; transform: scale(0.85); box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        .animate-pop { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
-<body class="bg-slate-100">
+<body class="bg-slate-100 font-sans">
     <div id="app" v-cloak class="min-h-screen max-w-md mx-auto flex flex-col bg-white shadow-2xl relative overflow-hidden">
         
-        <div class="fixed top-2 left-0 right-0 z-50 px-4 pointer-events-none">
-            <div v-for="log in logs" :key="log.id" class="bg-black/80 text-white text-[10px] py-2 px-4 rounded-full shadow-lg mb-2 text-center">
+        <div class="fixed top-4 left-0 right-0 z-[60] px-6 pointer-events-none">
+            <div v-for="log in logs" :key="log.id" class="bg-black/80 text-white text-xs py-2.5 px-5 rounded-full shadow-xl mb-2 text-center animate-pop">
                 {{ log.message }}
             </div>
         </div>
 
         <header class="p-3 bg-white border-b flex justify-between items-center sticky top-0 z-40">
-            <select v-model="currentLang" @change="updateCurrencyByLang" class="text-xs font-bold bg-slate-100 border-none rounded-lg px-2 py-1.5 outline-none">
+            <select v-model="currentLang" @change="updateCurrencyByLang" class="text-xs font-bold bg-slate-50 border rounded-lg px-2 py-1.5 outline-none">
                 <option v-for="(l, code) in i18n" :key="code" :value="code">{{ l.name }}</option>
             </select>
             
             <button @click="openWalletModal" class="flex flex-col items-end">
-                <span class="text-[9px] text-gray-400 font-black italic leading-none">WALLET <i class="fas fa-pen text-[7px]"></i></span>
+                <span class="text-[9px] text-gray-400 font-black italic">WALLET <i class="fas fa-edit"></i></span>
                 <span class="font-black text-green-600 text-lg leading-tight">{{ wallet.currency }}{{ wallet.amount.toLocaleString() }}</span>
             </button>
         </header>
 
         <main class="flex-grow flex flex-col overflow-hidden">
-            <div v-if="gameState === 'HOME'" class="flex-grow p-6 flex flex-col justify-center space-y-6">
-                <div class="text-center">
-                    <h1 class="text-5xl font-black text-red-600 italic tracking-tighter">LÔ TÔ</h1>
-                    <p class="text-[10px] text-slate-400 font-black tracking-widest uppercase">{{ t.welcome }}</p>
+            <div v-if="gameState === 'HOME'" class="flex-grow p-8 flex flex-col justify-center space-y-6">
+                <div class="text-center space-y-2">
+                    <h1 class="text-6xl font-black text-red-600 italic tracking-tighter drop-shadow-sm">LÔ TÔ</h1>
+                    <p class="text-[10px] text-slate-400 font-black tracking-[0.4em] uppercase">{{ t.welcome }}</p>
                 </div>
-                <button @click="initGame('SOLO')" class="w-full bg-slate-900 text-white p-5 rounded-3xl flex items-center shadow-lg active:scale-95 transition">
-                    <i class="fas fa-user-circle text-2xl mr-4"></i>
-                    <div class="text-left"><p class="font-black">{{ t.solo }}</p><p class="text-[10px] opacity-50">{{ t.soloSub }}</p></div>
-                </button>
-                <button @click="initGame('MULTI')" class="w-full bg-red-600 text-white p-5 rounded-3xl flex items-center shadow-lg active:scale-95 transition">
-                    <i class="fas fa-users text-2xl mr-4"></i>
-                    <div class="text-left"><p class="font-black">{{ t.multi }}</p><p class="text-[10px] opacity-70">{{ t.multiSub }}</p></div>
-                </button>
+                <div class="space-y-4 pt-4">
+                    <button @click="initGame('SOLO')" class="w-full bg-slate-900 text-white p-6 rounded-[2rem] flex items-center shadow-xl active:scale-95 transition">
+                        <i class="fas fa-play text-2xl mr-5"></i>
+                        <div class="text-left"><p class="font-black text-lg leading-none">{{ t.solo }}</p><p class="text-[10px] opacity-40 mt-1 italic">{{ t.soloSub }}</p></div>
+                    </button>
+                    <button @click="initGame('MULTI')" class="w-full bg-red-600 text-white p-6 rounded-[2rem] flex items-center shadow-xl active:scale-95 transition">
+                        <i class="fas fa-users text-2xl mr-5"></i>
+                        <div class="text-left"><p class="font-black text-lg leading-none">{{ t.multi }}</p><p class="text-[10px] opacity-70 mt-1 italic">{{ t.multiSub }}</p></div>
+                    </button>
+                </div>
             </div>
 
-            <div v-else-if="gameState === 'SETUP'" class="flex-grow p-8 space-y-8">
-                <div>
-                    <label class="text-xs font-black text-slate-400 uppercase">{{ t.ticketCount }}</label>
-                    <div class="grid grid-cols-4 gap-2 mt-2">
-                        <button v-for="n in 4" :key="n" @click="ticketCount = n" :class="ticketCount === n ? 'bg-red-600 text-white' : 'bg-slate-100 text-slate-400'" class="py-4 rounded-xl font-black">{{ n }}</button>
+            <div v-else-if="gameState === 'SETUP'" class="flex-grow p-8 space-y-10">
+                <h2 class="text-center font-black text-2xl text-slate-800 italic uppercase underline decoration-red-500 decoration-4 underline-offset-8">{{ t.setupTitle }}</h2>
+                <div class="space-y-4">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ t.ticketCount }}</label>
+                    <div class="grid grid-cols-4 gap-3">
+                        <button v-for="n in 4" :key="n" @click="ticketCount = n" :class="ticketCount === n ? 'bg-red-600 text-white scale-105 shadow-lg' : 'bg-slate-100 text-slate-400'" class="py-5 rounded-2xl font-black transition-all">{{ n }}</button>
                     </div>
                 </div>
-                <div>
-                    <label class="text-xs font-black text-slate-400 uppercase">{{ t.betAmount }}</label>
-                    <div class="flex items-center bg-slate-50 p-4 rounded-xl mt-2 border">
-                        <span class="font-black text-slate-400 mr-2">{{ wallet.currency }}</span>
-                        <input type="number" v-model.number="betAmount" class="bg-transparent text-2xl font-black w-full outline-none">
+                <div class="space-y-4">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ t.betAmount }}</label>
+                    <div class="flex items-center bg-slate-50 p-5 rounded-3xl border-2 border-slate-100 focus-within:border-red-500 transition">
+                        <span class="font-black text-slate-400 text-xl mr-3">{{ wallet.currency }}</span>
+                        <input type="number" v-model.number="betAmount" class="bg-transparent text-3xl font-black w-full outline-none">
                     </div>
                 </div>
-                <button @click="startGame" class="w-full bg-red-600 text-white py-5 rounded-2xl font-black text-xl shadow-xl">
-                    {{ t.startBtn }}
-                </button>
-                <button @click="gameState = 'HOME'" class="w-full text-slate-400 text-sm font-bold">CANCEL</button>
+                <div class="pt-6 space-y-3">
+                    <button @click="startGame" class="w-full bg-red-600 text-white py-6 rounded-3xl font-black text-2xl shadow-2xl active:translate-y-1 transition">
+                        {{ t.startBtn }}
+                    </button>
+                    <button @click="gameState = 'HOME'" class="w-full text-slate-400 font-bold py-2">CANCEL</button>
+                </div>
             </div>
 
             <div v-else class="flex-grow flex flex-col h-full overflow-hidden">
-                <div class="bg-slate-900 text-white p-4 flex justify-between items-center shadow-lg">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-14 h-14 bg-white rounded-xl flex items-center justify-center text-slate-900 text-3xl font-black border-b-4 border-red-500">
+                <div class="bg-slate-900 text-white p-4 flex justify-between items-center shadow-inner">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-slate-900 text-4xl font-black border-b-8 border-red-600 animate-pop" :key="currentNumber">
                             {{ currentNumber || '--' }}
                         </div>
                         <div>
-                            <p class="text-[10px] text-red-500 font-black">{{ t.drawn }}</p>
-                            <p class="text-xl font-black">{{ drawnHistory.length }} / 90</p>
+                            <p class="text-[10px] text-red-500 font-black italic uppercase tracking-widest">{{ t.drawn }}</p>
+                            <p class="text-2xl font-black">{{ drawnHistory.length }} <span class="text-xs opacity-30">/ 90</span></p>
                         </div>
                     </div>
-                    <button v-if="mode === 'MULTI'" @click="showShareModal = true" class="bg-red-600 text-[10px] px-3 py-2 rounded-lg font-black"><i class="fas fa-qrcode mr-1"></i> SHARE</button>
+                    <div class="flex flex-col items-end gap-2">
+                        <button v-if="mode === 'MULTI'" @click="showShareModal = true" class="bg-red-600 text-[10px] px-4 py-2.5 rounded-xl font-black shadow-lg flex items-center">
+                            <i class="fas fa-qrcode mr-2"></i> INVITE FRIENDS
+                        </button>
+                        <span v-if="roomId" class="text-[8px] font-mono text-slate-500">ROOM: {{ roomId }}</span>
+                    </div>
                 </div>
 
-                <div class="flex-grow overflow-y-auto p-4 space-y-4 no-scrollbar bg-slate-50 pb-28">
-                    <div v-for="(card, cIdx) in myCards" :key="cIdx" class="bg-white p-2 rounded-xl shadow-sm border">
-                        <p class="text-[8px] font-black text-slate-300 mb-1 tracking-tighter uppercase">Ticket #{{ cIdx + 1 }}</p>
-                        <div v-for="(row, rIdx) in card" :key="rIdx" class="grid grid-cols-9 gap-0.5 mb-0.5">
-                            <div v-for="(num, nIdx) in row" :key="nIdx" class="cell" :class="[num === 0 ? 'bg-slate-50 border-none' : '', drawnHistory.includes(num) ? 'marked' : '']">
+                <div class="flex-grow overflow-y-auto p-4 space-y-5 no-scrollbar bg-slate-50 pb-32">
+                    <div v-for="(card, cIdx) in myCards" :key="cIdx" class="bg-white p-2.5 rounded-2xl shadow-sm border border-slate-200">
+                        <p class="text-[8px] font-black text-slate-300 mb-1.5 uppercase tracking-tighter">Ticket #{{ cIdx + 1 }}</p>
+                        <div v-for="(row, rIdx) in card" :key="rIdx" class="grid grid-cols-9 gap-1 mb-1">
+                            <div v-for="(num, nIdx) in row" :key="nIdx" class="cell" :class="[num === 0 ? 'bg-slate-50/50 border-none' : '', drawnHistory.includes(num) ? 'marked' : '']">
                                 {{ num !== 0 ? num : '' }}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="absolute bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-md border-t flex space-x-2">
-                    <button @click="confirmQuit" class="p-4 bg-slate-200 text-slate-500 rounded-xl"><i class="fas fa-home text-xl"></i></button>
-                    <button @click="checkKinh" class="flex-grow bg-red-600 text-white rounded-xl font-black text-2xl italic tracking-tighter">KINH!</button>
+                <div class="absolute bottom-0 left-0 right-0 p-5 bg-white/90 backdrop-blur-xl border-t flex space-x-3">
+                    <button @click="confirmQuit" class="w-16 h-16 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center shadow-inner active:bg-slate-200 transition">
+                        <i class="fas fa-home text-xl"></i>
+                    </button>
+                    <button @click="checkKinh" class="flex-grow bg-red-600 text-white h-16 rounded-2xl font-black text-3xl italic tracking-tighter shadow-xl active:scale-95 transition">
+                        KINH!
+                    </button>
                 </div>
             </div>
         </main>
 
-        <div v-if="showShareModal || showWalletModal" class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
-            <div class="bg-white rounded-3xl w-full p-8 text-center animate-pop">
-                <div v-if="showShareModal" class="space-y-6">
-                    <h3 class="font-black text-xl italic">ROOM QR</h3>
-                    <div id="qrcode" class="flex justify-center mx-auto"></div>
-                    <button @click="copyLink" class="w-full bg-slate-800 text-white py-3 rounded-xl font-bold text-sm">COPY LINK</button>
-                    <button @click="showShareModal = false" class="text-slate-400 font-bold">CLOSE</button>
+        <div v-if="showShareModal" class="fixed inset-0 z-50 flex items-center justify-center p-8 bg-black/80 backdrop-blur-md animate-pop">
+            <div class="bg-white rounded-[2.5rem] w-full p-8 text-center space-y-6 shadow-2xl border-t-8 border-red-600">
+                <div class="space-y-1">
+                    <h3 class="font-black text-2xl italic text-red-600 uppercase tracking-tighter">Room Invitation</h3>
+                    <p class="text-[10px] text-slate-400 font-bold">Ask friends to scan this QR code to join</p>
                 </div>
-                <div v-if="showWalletModal" class="space-y-4 text-left">
-                    <h3 class="font-black text-xl italic">EDIT WALLET</h3>
-                    <input type="text" v-model="tempWallet.currency" class="w-full p-3 bg-slate-100 rounded-xl font-bold">
-                    <input type="number" v-model.number="tempWallet.amount" class="w-full p-3 bg-slate-100 rounded-xl font-black text-2xl">
-                    <div class="flex gap-2">
-                        <button @click="showWalletModal = false" class="flex-1 py-3 text-slate-400 font-bold">CANCEL</button>
-                        <button @click="saveWallet" class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold">SAVE</button>
-                    </div>
+                <div id="qrcode" class="flex justify-center p-4 bg-white rounded-3xl border shadow-inner"></div>
+                <div class="bg-slate-50 p-3 rounded-xl break-all text-[9px] font-mono text-slate-400 border select-all">
+                    {{ shareUrl }}
+                </div>
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button @click="copyLink" class="bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg">Copy Link</button>
+                    <button @click="showShareModal = false" class="bg-slate-100 text-slate-400 py-4 rounded-2xl font-black text-xs uppercase tracking-widest">Close</button>
                 </div>
             </div>
         </div>
+
+        <div v-if="showWalletModal" class="fixed inset-0 z-50 flex items-center justify-center p-8 bg-black/80 backdrop-blur-md animate-pop">
+            <div class="bg-white rounded-[2.5rem] w-full p-8 space-y-6 shadow-2xl border-t-8 border-green-500">
+                <h3 class="font-black text-2xl italic uppercase tracking-tighter text-green-600"><i class="fas fa-wallet mr-2"></i>Edit Wallet</h3>
+                <div class="space-y-4">
+                    <div class="bg-slate-50 p-4 rounded-2xl border">
+                        <label class="text-[10px] font-black text-slate-400 uppercase">Currency</label>
+                        <input type="text" v-model="tempWallet.currency" class="w-full bg-transparent font-black text-xl outline-none">
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-2xl border">
+                        <label class="text-[10px] font-black text-slate-400 uppercase">Balance</label>
+                        <input type="number" v-model.number="tempWallet.amount" class="w-full bg-transparent font-black text-3xl outline-none">
+                    </div>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button @click="showWalletModal = false" class="flex-1 py-4 text-slate-400 font-bold uppercase tracking-widest">Cancel</button>
+                    <button @click="saveWallet" class="flex-1 bg-green-600 text-white py-4 rounded-2xl font-black shadow-lg uppercase tracking-widest">Save</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
-        // --- Firebase Config ---
         const firebaseConfig = {
             apiKey: "AIzaSyAqKCaLzCoGY6e87gHmeRAAawN5yrVeFcg",
             authDomain: "loto-vn.firebaseapp.com",
@@ -143,14 +175,12 @@
         const db = firebase.database();
 
         const i18n = {
-            vi: { name: "Tiếng Việt", cur: "₫", welcome: "Chào mừng", solo: "Chơi một mình", soloSub: "Luyện tập với CPU", multi: "Chơi nhiều người", multiSub: "Chia sẻ mã phòng", ticketCount: "Số lượng vé", betAmount: "Mức cược", startBtn: "BẮT ĐẦU", drawn: "Số đã bốc", quitMsg: "Bạn có chắc muốn thoát?", shareSuccess: "Đã sao chép!" },
-            en: { name: "English", cur: "$", welcome: "Welcome", solo: "Solo Mode", soloSub: "Practice with CPU", multi: "Multiplayer", multiSub: "Share room link", ticketCount: "Tickets", betAmount: "Bet Amount", startBtn: "START GAME", drawn: "Drawn Balls", quitMsg: "Quit current game?", shareSuccess: "Link copied!" },
-            ja: { name: "日本語", cur: "¥", welcome: "ようこそ", solo: "ひとりで遊ぶ", soloSub: "CPUと対戦", multi: "みんなで遊ぶ", multiSub: "ルーム共有", ticketCount: "枚数", betAmount: "賭け金", startBtn: "ゲーム開始", drawn: "抽選済み", quitMsg: "終了しますか？", shareSuccess: "コピーしました！" },
-            fr: { name: "Français", cur: "€", welcome: "Bienvenue", solo: "Mode Solo", soloSub: "S'entraîner", multi: "Multijoueur", multiSub: "Partager salle", setupTitle: "Configuration", ticketCount: "Tickets", betAmount: "Mise", startBtn: "JOUER", drawn: "Tirés", quitMsg: "Quitter le jeu?", shareSuccess: "Lien copié!" },
-            zh: { name: "简体中文", cur: "¥", welcome: "欢迎", solo: "单人模式", soloSub: "与CPU练习", multi: "多人模式", multiSub: "分享房间", setupTitle: "游戏设置", ticketCount: "票数", betAmount: "赌注", startBtn: "开始游戏", drawn: "已抽", quitMsg: "退出当前游戏吗？", shareSuccess: "链接已复制！" },
-            lo: { name: "ລາວ", cur: "₭", welcome: "ຍິນດີຕ້ອນຮັບ", solo: "ຫຼິ້ນຄົນດຽວ", soloSub: "ຝຶກກັບ CPU", multi: "ຫຼິ້ນນຳກัน", multiSub: "ແບ່ງປັນລະຫັດ", setupTitle: "ຕັ້ງຄ່າ", ticketCount: "ຈຳນວນໃບ", betAmount: "ເງິນເດີມພັນ", startBtn: "ເລີ່ມເກມ", drawn: "ອອກແລ້ວ", quitMsg: "ອອກຈາກເກມ?", shareSuccess: "ກັອບປີ້ແລ້ວ!" },
-            th: { name: "ไทย", cur: "฿", welcome: "ยินดีต้อนรับ", solo: "เล่นคนเดียว", soloSub: "ฝึกซ้อมกับ CPU", multi: "เล่นหลายคน", multiSub: "แชร์รหัสห้อง", setupTitle: "ตั้งค่าเกม", ticketCount: "จำนวนใบ", betAmount: "เงินเดิมพัน", startBtn: "เริ่มเกม", drawn: "ออกแล้ว", quitMsg: "ออกจากเกมหรือไม่?", shareSuccess: "คัดลอกลิงก์แล้ว!" },
-            km: { name: "ខ្មែរ", cur: "៛", welcome: "សូមស្វាគមន៍", solo: "លេងម្នាក់ឯង", soloSub: "ហាត់ជាមួយ CPU", multi: "លេងជាមួយគ្នា", multiSub: "ចែករំលែកបន្ទប់", setupTitle: "ការរៀបចំ", ticketCount: "ចំនួនសន្លឹក", betAmount: "ចំនួនភ្នាល់", startBtn: "ចាប់ផ្ដើម", drawn: "ចេញហើយ", quitMsg: "ចាកចេញពីហ្គេម?", shareSuccess: "ចម្លងរួចរាល់!" }
+            vi: { name: "Tiếng Việt", cur: "₫", welcome: "Chào mừng", solo: "Chơi một mình", soloSub: "Luyện tập với CPU", multi: "Chơi nhiều người", multiSub: "Chia sẻ mã phòng", setupTitle: "Thiết lập", ticketCount: "Số lượng vé", betAmount: "Mức cược", startBtn: "BẮT ĐẦU", drawn: "Số đã bốc", quitMsg: "Bạn có chắc muốn thoát?", shareSuccess: "Đã sao chép!" },
+            en: { name: "English", cur: "$", welcome: "Welcome", solo: "Solo Mode", soloSub: "Versus CPU", multi: "Multiplayer", multiSub: "Share room link", setupTitle: "Setup Game", ticketCount: "Tickets", betAmount: "Bet Amount", startBtn: "START GAME", drawn: "Balls", quitMsg: "Return to Home?", shareSuccess: "Link copied!" },
+            ja: { name: "日本語", cur: "¥", welcome: "ようこそ", solo: "ひとりで遊ぶ", soloSub: "CPUと練習", multi: "みんなで遊ぶ", multiSub: "ルーム共有", setupTitle: "ゲーム設定", ticketCount: "枚数", betAmount: "賭け金", startBtn: "ゲーム開始", drawn: "出た数字", quitMsg: "トップに戻りますか？", shareSuccess: "コピーしました！" },
+            lo: { name: "ລາວ", cur: "₭", welcome: "ຍິນດີຕ້ອນຮັບ", solo: "ຫຼິ້ນຄົນດຽວ", soloSub: "ຝຶກກັບ CPU", multi: "ຫຼິ້ນຫຼາຍຄົນ", multiSub: "ແບ່ງປັນລະຫັດ", setupTitle: "ຕັ້ງຄ່າ", ticketCount: "ຈຳນວນໃບ", betAmount: "ເດີມພັນ", startBtn: "ເລີ່ມເກມ", drawn: "ອອກແລ້ວ", quitMsg: "ອອກຈາກເກມ?", shareSuccess: "ສຳເລັດ!" },
+            th: { name: "ไทย", cur: "฿", welcome: "ยินดีต้อนรับ", solo: "เล่นคนเดียว", soloSub: "ฝึกกับ CPU", multi: "เล่นหลายคน", multiSub: "แชร์ห้อง", setupTitle: "ตั้งค่าเกม", ticketCount: "จำนวนใบ", betAmount: "เดิมพัน", startBtn: "เริ่ม", drawn: "ออกแล้ว", quitMsg: "ออกจากเกม?", shareSuccess: "คัดลอกแล้ว!" },
+            km: { name: "ខ្មែរ", cur: "៛", welcome: "សូមស្វាគមន៍", solo: "លេងម្នាក់ឯង", soloSub: "ហាត់ជាមួយ CPU", multi: "លេងច្រើននាក់", multiSub: "ចែករំលែកបន្ទប់", setupTitle: "ការរៀបចំ", ticketCount: "ចំនួនសន្លឹក", betAmount: "ភ្នាល់", startBtn: "ចាប់ផ្ដើម", drawn: "ចេញហើយ", quitMsg: "ចាកចេញ?", shareSuccess: "ចម្លងរួច!" }
         };
 
         const { createApp, ref, reactive, computed, watch, onMounted } = Vue;
@@ -213,7 +243,7 @@
                     drawnHistory.value = [];
                     if(mode.value === 'SOLO') {
                         gameInterval = setInterval(() => {
-                            if(drawnHistory.value.length >= 90) return clearInterval(gameInterval);
+                            if(drawnHistory.value.length >= 90 || gameState.value !== 'PLAYING') return clearInterval(gameInterval);
                             let n; do { n = Math.floor(Math.random()*90)+1; } while(drawnHistory.value.includes(n));
                             currentNumber.value = n; drawnHistory.value.push(n);
                         }, 4000);
@@ -227,7 +257,7 @@
                             }
                         });
                         gameInterval = setInterval(() => {
-                            if(drawnHistory.value.length < 90) {
+                            if(drawnHistory.value.length < 90 && gameState.value === 'PLAYING') {
                                 let n; do { n = Math.floor(Math.random()*90)+1; } while(drawnHistory.value.includes(n));
                                 roomRef.update({ num: n, his: [...drawnHistory.value, n] });
                             }
@@ -273,7 +303,7 @@
                 watch(showShareModal, (val) => {
                     if(val) setTimeout(() => {
                         document.getElementById('qrcode').innerHTML = "";
-                        new QRCode(document.getElementById("qrcode"), { text: window.location.href, width: 150, height: 150 });
+                        new QRCode(document.getElementById("qrcode"), { text: window.location.href, width: 180, height: 180 });
                     }, 100);
                 });
 
@@ -287,6 +317,7 @@
                 return { 
                     currentLang, t, i18n, gameState, mode, wallet, tempWallet, showWalletModal, showShareModal,
                     ticketCount, betAmount, myCards, currentNumber, drawnHistory, roomId, logs,
+                    shareUrl: window.location.href,
                     initGame, startGame, checkKinh, confirmQuit, openWalletModal, saveWallet, copyLink, updateCurrencyByLang
                 };
             }
