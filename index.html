@@ -1,238 +1,457 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lô Tô Pro - Multi-Language & Sync</title>
+    <title>Lô Tô Master - Multiple Cards</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        .cell { transition: all 0.2s; aspect-ratio: 1/1; }
-        .marked { background-color: #ef4444; color: white; transform: scale(0.9); border-radius: 50%; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; }
+        .cell { transition: all 0.2s; aspect-ratio: 1/1; user-select: none; }
+        .marked { background-color: #ef4444; color: white; border-color: #ef4444; transform: scale(0.95); box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
+        .ticket { transition: transform 0.2s; }
+        .ticket:active { transform: scale(0.99); }
+        /* スクロールバー非表示（スマホ用） */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         [v-cloak] { display: none; }
+        .modal-enter-active, .modal-leave-active { transition: opacity 0.3s ease; }
+        .modal-enter-from, .modal-leave-to { opacity: 0; }
     </style>
 </head>
-<body class="bg-slate-50 font-sans">
-    <div id="app" v-cloak class="min-h-screen max-w-md mx-auto p-4 flex flex-col">
+<body>
+    <div id="app" v-cloak class="min-h-screen max-w-md mx-auto flex flex-col relative bg-slate-100 shadow-2xl overflow-hidden">
         
-        <div class="flex justify-between items-center mb-4">
-            <select v-model="currentLang" class="bg-white border rounded px-2 py-1 text-xs">
-                <option value="en">English</option>
-                <option value="vi">Tiếng Việt</option>
-                <option value="fr">Français</option>
-                <option value="zh">简体中文</option>
-            </select>
-            <div class="text-right">
-                <span class="text-[10px] text-gray-500 block">{{ t.wallet }}</span>
-                <span class="font-bold text-green-600">${{ wallet.toLocaleString() }}</span>
+        <div class="fixed top-4 left-0 right-0 z-50 pointer-events-none px-4 space-y-2">
+            <div v-for="log in logs" :key="log.id" class="bg-gray-800 text-white text-xs py-2 px-3 rounded shadow-lg opacity-90 animate-fade-in-down mx-auto max-w-xs text-center">
+                {{ log.message }}
             </div>
         </div>
 
-        <div v-if="roomId" class="bg-blue-50 p-3 rounded-lg border border-blue-200 mb-4 flex justify-between items-center">
-            <div class="text-xs">
-                <p class="font-bold text-blue-800">Room: {{ roomId }}</p>
-                <p class="text-blue-600">{{ syncStatus }}</p>
+        <header class="bg-white p-3 shadow-md z-10 flex justify-between items-center sticky top-0">
+            <div class="flex items-center space-x-2">
+                <span class="font-black text-red-600 text-xl italic tracking-tighter">LÔ TÔ</span>
+                <span v-if="mode === 'MULTI'" class="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full font-bold">ONLINE</span>
+                <span v-else class="bg-gray-100 text-gray-800 text-[10px] px-2 py-0.5 rounded-full font-bold">SOLO</span>
             </div>
-            <button @click="copyShareUrl" class="bg-blue-500 text-white text-xs px-3 py-2 rounded hover:bg-blue-600 active:scale-95 transition">
-                {{ t.shareUrl }}
+
+            <button @click="openWalletModal" class="flex flex-col items-end group active:scale-95 transition">
+                <span class="text-[10px] text-gray-400 font-bold group-hover:text-red-500">WALLET <i class="fas fa-pen ml-1"></i></span>
+                <span class="font-bold text-lg text-green-600 leading-none">
+                    {{ wallet.currency }} {{ wallet.amount.toLocaleString() }}
+                </span>
+            </button>
+        </header>
+
+        <div v-if="gameState === 'SELECT_MODE'" class="flex-grow flex flex-col justify-center p-6 space-y-6 bg-white">
+            <div class="text-center space-y-2">
+                <i class="fas fa-dice text-6xl text-red-500 mb-4 animate-bounce"></i>
+                <h1 class="text-2xl font-bold text-slate-800">ロートーへようこそ</h1>
+                <p class="text-sm text-gray-500">遊び方を選んでください</p>
+            </div>
+
+            <button @click="setupGame('SOLO')" class="w-full bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 p-6 rounded-xl flex items-center space-x-4 transition group">
+                <div class="bg-white p-3 rounded-full shadow-sm group-hover:scale-110 transition"><i class="fas fa-user text-slate-600"></i></div>
+                <div class="text-left">
+                    <p class="font-bold text-slate-800">ひとりで練習</p>
+                    <p class="text-xs text-slate-500">CPUと対戦・ルール確認</p>
+                </div>
+            </button>
+
+            <button @click="setupGame('MULTI')" class="w-full bg-red-50 hover:bg-red-100 border-2 border-red-200 p-6 rounded-xl flex items-center space-x-4 transition group">
+                <div class="bg-white p-3 rounded-full shadow-sm group-hover:scale-110 transition"><i class="fas fa-users text-red-600"></i></div>
+                <div class="text-left">
+                    <p class="font-bold text-red-800">みんなで対戦</p>
+                    <p class="text-xs text-red-600">URLをシェアして同期プレイ</p>
+                </div>
             </button>
         </div>
 
-        <div v-if="gameState === 'IDLE'" class="bg-white rounded-2xl shadow-xl p-6 border-t-4 border-red-500">
-            <h1 class="text-2xl font-black text-center text-red-600 mb-6 italic">LÔ TÔ GLOBAL</h1>
+        <div v-else-if="gameState === 'SETUP'" class="flex-grow p-6 bg-white flex flex-col">
+            <h2 class="text-xl font-bold mb-6 text-center">準備画面</h2>
             
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-bold mb-1">{{ t.betLabel }}</label>
-                    <input type="number" v-model.number="betAmount" class="w-full p-3 bg-slate-100 rounded-lg text-xl font-bold focus:ring-2 focus:ring-red-500 outline-none">
-                </div>
-
-                <div v-if="!roomId">
-                    <button @click="initMultiplayer" class="w-full bg-slate-800 text-white py-3 rounded-lg mb-2 font-bold">
-                        {{ t.createRoom }}
+            <div class="mb-8">
+                <label class="block text-sm font-bold text-gray-700 mb-2">チケット枚数 (セット)</label>
+                <div class="grid grid-cols-4 gap-2">
+                    <button v-for="n in 4" :key="n" @click="ticketCount = n"
+                        :class="ticketCount === n ? 'bg-red-600 text-white border-red-600' : 'bg-white text-gray-600 border-gray-300'"
+                        class="py-3 rounded-lg border-2 font-bold transition">
+                        {{ n }}
                     </button>
                 </div>
+                <p class="text-xs text-gray-400 mt-2 text-center">※枚数が多いほど確率は上がりますが、管理が大変です！</p>
+            </div>
 
-                <button @click="startGame" class="w-full bg-red-600 text-white py-4 rounded-lg text-xl font-bold shadow-lg">
-                    {{ t.playNow }}
+            <div class="mb-auto">
+                <label class="block text-sm font-bold text-gray-700 mb-1">参加費 (Bet)</label>
+                <div class="flex items-center border-2 border-gray-200 rounded-lg bg-gray-50 px-3">
+                    <span class="text-gray-500 font-bold mr-2">{{ wallet.currency }}</span>
+                    <input type="number" v-model.number="betAmount" class="w-full py-3 bg-transparent text-xl font-bold outline-none">
+                </div>
+            </div>
+
+            <div class="space-y-3 mt-4">
+                <button @click="startGame" class="w-full bg-red-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg active:transform active:scale-95 transition">
+                    ゲーム開始
                 </button>
+                <button @click="gameState = 'SELECT_MODE'" class="w-full text-gray-400 text-sm">戻る</button>
             </div>
         </div>
 
-        <div v-else class="flex-grow flex flex-col items-center">
-            <div class="w-32 h-32 bg-white rounded-full border-8 border-red-500 flex items-center justify-center shadow-2xl mb-6 relative">
-                <span class="text-5xl font-black text-slate-800">{{ currentNumber || '--' }}</span>
-                <div class="absolute -bottom-2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded">
-                    {{ drawnHistory.length }} / 90
+        <div v-else-if="gameState === 'PLAYING' || gameState === 'FINISHED'" class="flex-grow flex flex-col h-full overflow-hidden">
+            
+            <div class="bg-white p-2 border-b flex items-center justify-between shadow-sm z-10">
+                <div class="flex items-center space-x-3">
+                    <div class="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-inner border-2 border-red-400">
+                        {{ currentNumber || '?' }}
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-gray-400 uppercase tracking-wide">Last Number</p>
+                        <div class="flex space-x-1 overflow-hidden w-32 h-6 items-center">
+                            <span v-for="n in drawnHistory.slice().reverse().slice(0,5)" :key="n" class="text-xs bg-gray-100 px-1 rounded text-gray-600">{{n}}</span>
+                        </div>
+                    </div>
                 </div>
+                <button v-if="mode === 'MULTI'" @click="copyLink" class="bg-blue-50 text-blue-600 px-3 py-1 rounded text-xs font-bold border border-blue-100">
+                    <i class="fas fa-link mr-1"></i>Invite
+                </button>
             </div>
 
-            <div v-if="errorMsg" class="w-full bg-red-100 text-red-700 p-2 text-xs rounded mb-4 text-center">
-                {{ errorMsg }}
-            </div>
-
-            <div class="bg-white p-2 rounded-xl shadow-inner border w-full mb-6">
-                <div v-for="(row, rIdx) in playerCard" :key="rIdx" class="grid grid-cols-9 gap-1 mb-1">
-                    <div v-for="(num, cIdx) in row" :key="cIdx" 
-                         class="cell flex items-center justify-center text-sm font-bold border rounded-sm"
-                         :class="[num === 0 ? 'bg-slate-50 border-transparent' : 'bg-white border-slate-200', 
-                                  drawnHistory.includes(num) ? 'marked' : '']">
-                        {{ num !== 0 ? num : '' }}
+            <div class="flex-grow overflow-y-auto p-4 space-y-4 no-scrollbar bg-slate-100 pb-24">
+                <div v-for="(card, cardIndex) in myCards" :key="cardIndex" class="ticket bg-white p-1.5 rounded-lg shadow-md border border-gray-200">
+                    <div class="flex justify-between items-center px-1 mb-1">
+                        <span class="text-[10px] text-gray-400 font-bold">TICKET #{{ cardIndex + 1 }}</span>
+                        <span v-if="cardStatus[cardIndex]" class="text-xs font-bold text-red-500 animate-pulse">KINH! (WIN)</span>
+                    </div>
+                    <div v-for="(row, rIndex) in card" :key="rIndex" 
+                         class="grid grid-cols-9 gap-0.5 mb-0.5 p-0.5 rounded transition"
+                         :class="{'bg-yellow-100 ring-2 ring-yellow-400': isRowComplete(row)}">
+                        <div v-for="(num, cIndex) in row" :key="cIndex" 
+                             class="cell flex items-center justify-center text-xs sm:text-sm font-bold border rounded-sm h-8 sm:h-9"
+                             :class="getCellClass(num)"
+                             @click="toggleMark(num)">
+                            {{ num !== 0 ? num : '' }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 p-4 bg-white rounded-lg">
+                    <p class="text-xs text-gray-400 mb-2 font-bold">DRAWN HISTORY</p>
+                    <div class="flex flex-wrap gap-1">
+                        <span v-for="n in drawnHistory.sort((a,b)=>a-b)" :key="n" class="w-6 h-6 flex items-center justify-center bg-gray-200 text-[10px] rounded-full text-gray-600 font-bold">
+                            {{ n }}
+                        </span>
                     </div>
                 </div>
             </div>
 
-            <div class="w-full space-y-3">
-                <button @click="callKinh" class="w-full bg-yellow-400 py-4 rounded-xl font-black text-xl text-yellow-900 shadow-md active:translate-y-1">
-                    KINH!
+            <div class="absolute bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur border-t shadow-lg flex space-x-3">
+                <button @click="checkKinh" class="flex-1 bg-yellow-400 text-yellow-900 py-3 rounded-xl font-black text-xl shadow-lg border-b-4 border-yellow-600 active:border-b-0 active:translate-y-1 transition">
+                    KINH! (あがり)
                 </button>
-                <button @click="resetGame" class="w-full text-slate-400 text-sm py-2">
-                    {{ t.back }}
+                <button v-if="gameState === 'FINISHED'" @click="resetGame" class="bg-gray-800 text-white px-6 rounded-xl font-bold">
+                    再戦
                 </button>
             </div>
         </div>
+
+        <transition name="modal">
+            <div v-if="showWalletModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl transform transition-all">
+                    <h3 class="text-lg font-bold mb-4 flex items-center"><i class="fas fa-wallet mr-2 text-green-600"></i>所持金設定</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">通貨単位</label>
+                            <select v-model="tempWallet.currency" class="w-full bg-gray-100 border rounded p-2 text-sm">
+                                <option value="$">Dollar ($)</option>
+                                <option value="¥">Yen (¥)</option>
+                                <option value="₫">Dong (₫)</option>
+                                <option value="€">Euro (€)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">金額</label>
+                            <input type="number" v-model.number="tempWallet.amount" class="w-full bg-gray-100 border rounded p-3 text-xl font-bold">
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex space-x-3">
+                        <button @click="showWalletModal = false" class="flex-1 py-2 text-gray-500 font-bold">キャンセル</button>
+                        <button @click="confirmWalletUpdate" class="flex-1 bg-green-600 text-white py-2 rounded-lg font-bold shadow-md">
+                            変更を保存
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
     </div>
 
     <script>
-        // --- Firebase 設定 (各自のプロジェクト情報を入れてください) ---
+        // --- 1. Firebase設定 (自分のプロジェクト情報を入力してください) ---
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            databaseURL: "https://YOUR_PROJECT.firebaseio.com",
-            projectId: "YOUR_PROJECT_ID",
+            apiKey: "API_KEY_HERE",
+            authDomain: "PROJECT.firebaseapp.com",
+            databaseURL: "https://PROJECT.firebaseio.com",
+            projectId: "PROJECT_ID",
+            storageBucket: "PROJECT.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
         };
-        firebase.initializeApp(firebaseConfig);
+        // 初期化エラー回避
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- 多言語辞書 ---
-        const i18n = {
-            en: { wallet: "WALLET", betLabel: "BET AMOUNT", playNow: "PLAY NOW", createRoom: "CREATE ROOM", shareUrl: "SHARE URL", back: "Quit Game", win: "YOU WIN!", lose: "LOST!", syncError: "Sync Error. Reconnecting..." },
-            vi: { wallet: "VÍ", betLabel: "MỨC CƯỢC", playNow: "CHƠI NGAY", createRoom: "TẠO PHÒNG", shareUrl: "CHIA SẺ", back: "Thoát", win: "THẮNG!", lose: "THUA!", syncError: "Lỗi đồng bộ. Đang kết nối lại..." },
-            fr: { wallet: "PORTEFEUILLE", betLabel: "MONTANT MISE", playNow: "JOUER", createRoom: "CRÉER SALLE", shareUrl: "PARTAGER", back: "Quitter", win: "GAGNÉ!", lose: "PERDU!", syncError: "Erreur de synchronisation..." },
-            zh: { wallet: "钱包", betLabel: "下注金额", playNow: "开始游戏", createRoom: "创建房间", shareUrl: "分享链接", back: "退出", win: "获胜！", lose: "输了！", syncError: "同步错误，正在重新连接..." }
-        };
-
-        const { createApp, ref, computed, onMounted, watch } = Vue;
+        const { createApp, ref, computed, onMounted, reactive } = Vue;
 
         createApp({
             setup() {
-                const currentLang = ref('en');
-                const t = computed(() => i18n[currentLang.value]);
-                const wallet = ref(10000);
-                const betAmount = ref(100);
-                const gameState = ref('IDLE');
+                // --- 状態管理 ---
+                const mode = ref('SOLO'); // SOLO or MULTI
+                const gameState = ref('SELECT_MODE'); // SELECT_MODE, SETUP, PLAYING, FINISHED
                 const roomId = ref(new URLSearchParams(window.location.search).get('room'));
-                const syncStatus = ref('Stand-alone');
-                const errorMsg = ref('');
                 
+                // ウォレット
+                const wallet = reactive({ amount: 10000, currency: '¥' });
+                const showWalletModal = ref(false);
+                const tempWallet = reactive({ ...wallet });
+
+                // ゲーム設定
+                const ticketCount = ref(1); // 1~4枚
+                const betAmount = ref(100);
+                
+                // ゲームデータ
                 const currentNumber = ref(null);
                 const drawnHistory = ref([]);
-                const playerCard = ref([]);
+                const myCards = ref([]); // 配列の配列（複数枚）
+                const cardStatus = ref([]); // 各カードの勝利状態
+                const logs = ref([]); // 通知ログ
 
-                // --- カード生成ロジック (整合性のためのシード値等は今回は簡易化) ---
-                const generateCard = () => {
+                // --- 1. ゲーム準備・カード生成 ---
+                const setupGame = (selectedMode) => {
+                    mode.value = selectedMode;
+                    if (selectedMode === 'MULTI' && !roomId.value) {
+                        // ルームID生成とURL書き換え
+                        const newId = Math.random().toString(36).substring(2, 6).toUpperCase();
+                        const url = new URL(window.location);
+                        url.searchParams.set('room', newId);
+                        window.history.pushState({}, '', url);
+                        roomId.value = newId;
+                    }
+                    gameState.value = 'SETUP';
+                };
+
+                const generateOneTicket = () => {
+                    // 3行9列のカード生成（ベトナム式：各行5数字、列範囲固定）
                     let card = [Array(9).fill(0), Array(9).fill(0), Array(9).fill(0)];
+                    // 列ごとの範囲定義 (0:1-9, 1:10-19...)
+                    const colRanges = [
+                        [1,9], [10,19], [20,29], [30,39], [40,49], 
+                        [50,59], [60,69], [70,79], [80,90]
+                    ];
+
                     for(let r=0; r<3; r++) {
-                        let cols = [0,1,2,3,4,5,6,7,8].sort(()=>Math.random()-0.5).slice(0,5).sort();
+                        // 各行にランダムに5つの列を選ぶ
+                        let cols = [0,1,2,3,4,5,6,7,8].sort(()=>Math.random()-0.5).slice(0,5).sort((a,b)=>a-b);
                         cols.forEach(c => {
-                            card[r][c] = Math.floor(Math.random() * 10) + (c * 10) + 1;
+                            const [min, max] = colRanges[c];
+                            let num;
+                            // 重複チェック簡易版
+                            do {
+                                num = Math.floor(Math.random() * (max - min + 1)) + min;
+                            } while(card[0][c] === num || card[1][c] === num); // 縦の重複回避
+                            card[r][c] = num;
                         });
+                        // 縦列のソート（本来のルールでは縦も整列する）
                     }
                     return card;
                 };
 
-                // --- マルチプレイヤー同期コア機能 ---
-                const initMultiplayer = () => {
-                    const newId = Math.random().toString(36).substring(2, 7).toUpperCase();
-                    window.location.search = `?room=${newId}`;
-                };
-
-                const syncWithFirebase = () => {
-                    if (!roomId.value) return;
-                    const roomRef = db.ref('rooms/' + roomId.value);
-                    
-                    // 整合性チェック: 接続状態の監視
-                    db.ref('.info/connected').on('value', (snap) => {
-                        if (snap.val() === false) {
-                            syncStatus.value = "🔴 Offline";
-                            errorMsg.value = t.value.syncError;
-                        } else {
-                            syncStatus.value = "🟢 Online";
-                            errorMsg.value = "";
-                        }
-                    });
-
-                    // データのリアルタイム購読
-                    roomRef.on('value', (snapshot) => {
-                        const data = snapshot.val();
-                        if (data) {
-                            // データの整合性を担保（サーバー側の履歴を正とする）
-                            currentNumber.value = data.currentNumber;
-                            drawnHistory.value = data.history || [];
-                            if (data.status === 'WON' && data.winnerId !== 'me') {
-                                gameState.value = 'LOST';
-                            }
-                        }
-                    }, (error) => {
-                        errorMsg.value = "Access Denied / Room Expired";
-                    });
-                };
-
-                // --- アクション ---
                 const startGame = () => {
-                    playerCard.value = generateCard();
+                    if (wallet.amount < betAmount.value) {
+                        alert("所持金が足りません！");
+                        return;
+                    }
+                    
+                    // カード生成
+                    myCards.value = [];
+                    cardStatus.value = [];
+                    for(let i=0; i<ticketCount.value; i++) {
+                        myCards.value.push(generateOneTicket());
+                        cardStatus.value.push(false);
+                    }
+
+                    // ゲーム開始処理
+                    wallet.amount -= betAmount.value;
                     gameState.value = 'PLAYING';
-                    if (!roomId.value) {
-                        // ソロモード：1.5秒ごとに自動抽選
-                        const timer = setInterval(() => {
-                            if (gameState.value !== 'PLAYING' || drawnHistory.value.length >= 90) clearInterval(timer);
-                            let next;
-                            do { next = Math.floor(Math.random()*90)+1; } while(drawnHistory.value.includes(next));
-                            currentNumber.value = next;
-                            drawnHistory.value.push(next);
-                        }, 2000);
+                    currentNumber.value = null;
+                    drawnHistory.value = [];
+
+                    if (mode.value === 'SOLO') {
+                        startSoloLoop();
+                    } else {
+                        connectMultiplayer();
                     }
                 };
 
-                const copyShareUrl = () => {
-                    navigator.clipboard.writeText(window.location.href);
-                    alert("URL Copied!");
+                // --- 2. ソロプレイのループ ---
+                let soloTimer = null;
+                const startSoloLoop = () => {
+                    if (soloTimer) clearInterval(soloTimer);
+                    soloTimer = setInterval(() => {
+                        if (gameState.value !== 'PLAYING') {
+                            clearInterval(soloTimer);
+                            return;
+                        }
+                        if (drawnHistory.value.length >= 90) return;
+
+                        // 抽選
+                        let next;
+                        do { next = Math.floor(Math.random() * 90) + 1; } while(drawnHistory.value.includes(next));
+                        
+                        currentNumber.value = next;
+                        drawnHistory.value.push(next);
+                        
+                    }, 2500); // 2.5秒間隔
                 };
 
-                const callKinh = () => {
-                    // サーバー側の履歴(drawnHistory)と照らし合わせてアガリ判定
-                    const win = playerCard.value.some(row => {
-                        const nums = row.filter(n => n !== 0);
-                        return nums.length > 0 && nums.every(n => drawnHistory.value.includes(n));
+                // --- 3. マルチプレイ同期 ---
+                const connectMultiplayer = () => {
+                    if(!roomId.value) return;
+                    const roomRef = db.ref(`rooms/${roomId.value}`);
+                    const logRef = db.ref(`rooms/${roomId.value}/logs`);
+
+                    // ログ監視
+                    logRef.on('child_added', (snap) => {
+                        addLog(snap.val().message);
                     });
 
-                    if (win) {
-                        gameState.value = 'WON';
-                        wallet.value += betAmount.value * 4;
-                        if (roomId.value) {
-                            db.ref('rooms/' + roomId.value).update({ status: 'WON', winnerId: 'someone' });
+                    // ホストなら抽選ロジック（簡易：今回は全員がリスナーになるため、ホスト機能は省略し、共通DBを参照）
+                    // ※本来はホストのみが書き込むべきだが、簡易化のため割愛
+                    // ここでは「読み取り専用」として実装し、ホスト（最初に部屋を作った人）が書き込む等の制御が必要
+                    
+                    roomRef.on('value', (snap) => {
+                        const val = snap.val();
+                        if(val) {
+                            if(val.currentNumber) currentNumber.value = val.currentNumber;
+                            if(val.history) drawnHistory.value = val.history;
+                            if(val.status === 'FINISHED') gameState.value = 'FINISHED';
                         }
-                        alert(t.value.win);
-                    } else {
-                        alert("Chưa được! (Not yet)");
+                    });
+                };
+
+                // --- 4. ウォレット編集と通知 ---
+                const openWalletModal = () => {
+                    tempWallet.amount = wallet.amount;
+                    tempWallet.currency = wallet.currency;
+                    showWalletModal.value = true;
+                };
+
+                const confirmWalletUpdate = () => {
+                    const oldAmount = wallet.amount;
+                    const newAmount = tempWallet.amount;
+
+                    if (gameState.value === 'PLAYING') {
+                        const confirmed = confirm(
+                            `ゲーム進行中です！\n本当に所持金を変更しますか？\n\n${wallet.currency}${oldAmount} → ${tempWallet.currency}${newAmount}`
+                        );
+                        if (!confirmed) return;
                     }
+
+                    // 更新
+                    wallet.amount = newAmount;
+                    wallet.currency = tempWallet.currency;
+                    showWalletModal.value = false;
+
+                    // 通知送信 (マルチのみ)
+                    if (mode.value === 'MULTI' && roomId.value) {
+                        const msg = `あるプレイヤーが所持金を ${oldAmount} から ${newAmount} に変更しました`;
+                        db.ref(`rooms/${roomId.value}/logs`).push({
+                            message: msg,
+                            timestamp: Date.now()
+                        });
+                    } else {
+                        addLog(`所持金を変更しました: ${newAmount}`);
+                    }
+                };
+
+                // --- 5. 判定ロジック ---
+                const getCellClass = (num) => {
+                    if(num === 0) return 'bg-slate-50 border-transparent';
+                    if(drawnHistory.value.includes(num)) return 'marked font-bold';
+                    return 'bg-white text-gray-800 border-gray-200';
+                };
+
+                const toggleMark = (num) => {
+                    // 自動判定なので手動マークは視覚効果のみ、あるいは自動で十分なら何もしない
+                    // 今回は自動判定のため実装なし
+                };
+
+                const isRowComplete = (row) => {
+                    const nums = row.filter(n => n !== 0);
+                    return nums.length > 0 && nums.every(n => drawnHistory.value.includes(n));
+                };
+
+                const checkKinh = () => {
+                    let winFound = false;
+                    myCards.value.forEach((card, idx) => {
+                        const hasRowWin = card.some(row => isRowComplete(row));
+                        if(hasRowWin) {
+                            cardStatus.value[idx] = true;
+                            winFound = true;
+                        }
+                    });
+
+                    if(winFound) {
+                        gameState.value = 'FINISHED';
+                        if(soloTimer) clearInterval(soloTimer);
+                        wallet.amount += betAmount.value * 4 * ticketCount.value; // 簡易配当
+                        addLog("おめでとうございます！KINHです！");
+                        if(mode.value === 'MULTI') {
+                            db.ref(`rooms/${roomId.value}`).update({ status: 'FINISHED' });
+                        }
+                        alert("KINH! おめでとうございます！");
+                    } else {
+                        alert("まだ揃っていません (Chưa Kinh!)");
+                    }
+                };
+
+                // ユーティリティ
+                const addLog = (msg) => {
+                    const id = Date.now();
+                    logs.value.push({ id, message: msg });
+                    setTimeout(() => {
+                        logs.value = logs.value.filter(l => l.id !== id);
+                    }, 4000);
+                };
+
+                const copyLink = () => {
+                    navigator.clipboard.writeText(window.location.href);
+                    addLog("URLをコピーしました");
                 };
 
                 const resetGame = () => {
-                    gameState.value = 'IDLE';
-                    drawnHistory.value = [];
-                    currentNumber.value = null;
+                    gameState.value = 'SETUP';
+                    // モードは維持
                 };
 
+                // URLパラメータチェック（招待された場合）
                 onMounted(() => {
-                    if (roomId.value) syncWithFirebase();
+                    if(roomId.value) {
+                        setupGame('MULTI');
+                    }
                 });
 
                 return {
-                    currentLang, t, wallet, betAmount, gameState, roomId, syncStatus,
-                    currentNumber, drawnHistory, playerCard, errorMsg,
-                    initMultiplayer, startGame, copyShareUrl, callKinh, resetGame
+                    mode, gameState, wallet, showWalletModal, tempWallet, ticketCount, betAmount,
+                    currentNumber, drawnHistory, myCards, cardStatus, logs,
+                    setupGame, startGame, openWalletModal, confirmWalletUpdate,
+                    getCellClass, toggleMark, isRowComplete, checkKinh, copyLink, resetGame
                 };
             }
         }).mount('#app');
