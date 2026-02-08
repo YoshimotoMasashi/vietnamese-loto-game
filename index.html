@@ -1,314 +1,238 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đi Lô Tô - Solo Gamble</title>
+    <title>Lô Tô Pro - Multi-Language & Sync</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        body { font-family: 'Roboto Mono', monospace; background-color: #fef2f2; }
-        .cell { transition: all 0.2s; }
-        .marked { background-color: #ef4444; color: white; transform: scale(0.95); }
-        .win-row { border: 3px solid #fbbf24; animation: flash 1s infinite; }
-        @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .cell { transition: all 0.2s; aspect-ratio: 1/1; }
+        .marked { background-color: #ef4444; color: white; transform: scale(0.9); border-radius: 50%; }
+        [v-cloak] { display: none; }
     </style>
 </head>
-<body>
-    <div id="app" class="min-h-screen flex flex-col items-center p-4 max-w-md mx-auto relative">
+<body class="bg-slate-50 font-sans">
+    <div id="app" v-cloak class="min-h-screen max-w-md mx-auto p-4 flex flex-col">
         
-        <header class="w-full flex justify-between items-center mb-6 bg-white p-4 rounded-xl shadow-md border-2 border-red-500">
-            <div>
-                <h1 class="text-xl font-bold text-red-600">LÔ TÔ</h1>
-                <p class="text-xs text-gray-500">SOLO GAMBLE</p>
-            </div>
+        <div class="flex justify-between items-center mb-4">
+            <select v-model="currentLang" class="bg-white border rounded px-2 py-1 text-xs">
+                <option value="en">English</option>
+                <option value="vi">Tiếng Việt</option>
+                <option value="fr">Français</option>
+                <option value="zh">简体中文</option>
+            </select>
             <div class="text-right">
-                <p class="text-xs text-gray-500">Cash on hand</p>
-                <p class="text-2xl font-bold" :class="wallet < 0 ? 'text-red-600' : 'text-green-600'">
-                    ${{ formatMoney(wallet) }}
-                </p>
+                <span class="text-[10px] text-gray-500 block">{{ t.wallet }}</span>
+                <span class="font-bold text-green-600">${{ wallet.toLocaleString() }}</span>
             </div>
-        </header>
-
-        <div v-if="gameState === 'IDLE'" class="w-full bg-white p-6 rounded-xl shadow-lg space-y-4">
-            <h2 class="text-lg font-bold text-center mb-4">Settings</h2>
-            
-            <div>
-                <label class="block text-sm font-bold text-gray-700 mb-1">Bet</label>
-                <input type="number" v-model.number="betAmount" class="w-full p-3 border-2 border-gray-300 rounded-lg text-xl text-center focus:border-red-500 outline-none">
-            </div>
-
-            <div>
-                <label class="block text-sm font-bold text-gray-700 mb-1">Game Speed</label>
-                <input type="range" v-model.number="gameSpeed" min="1000" max="4000" step="500" class="w-full accent-red-500">
-                <p class="text-xs text-center text-gray-500">{{ gameSpeed / 1000 }}sec / time</p>
-            </div>
-
-            <button @click="startGame" class="w-full bg-red-600 text-white py-4 rounded-lg font-bold text-xl shadow-md active:transform active:scale-95 transition">
-                Chơi ngay! (START)
-            </button>
-            <p class="text-xs text-center text-gray-400 mt-2">The entry fee will be deducted as a wager.<br>Win and get four times your bet!</p>
         </div>
 
-        <div v-else class="w-full flex flex-col items-center">
+        <div v-if="roomId" class="bg-blue-50 p-3 rounded-lg border border-blue-200 mb-4 flex justify-between items-center">
+            <div class="text-xs">
+                <p class="font-bold text-blue-800">Room: {{ roomId }}</p>
+                <p class="text-blue-600">{{ syncStatus }}</p>
+            </div>
+            <button @click="copyShareUrl" class="bg-blue-500 text-white text-xs px-3 py-2 rounded hover:bg-blue-600 active:scale-95 transition">
+                {{ t.shareUrl }}
+            </button>
+        </div>
+
+        <div v-if="gameState === 'IDLE'" class="bg-white rounded-2xl shadow-xl p-6 border-t-4 border-red-500">
+            <h1 class="text-2xl font-black text-center text-red-600 mb-6 italic">LÔ TÔ GLOBAL</h1>
             
-            <div class="mb-6 relative">
-                <div class="w-32 h-32 bg-yellow-400 rounded-full flex items-center justify-center border-4 border-red-600 shadow-xl animate-bounce-short">
-                    <span class="text-6xl font-bold text-red-800">{{ currentNumber || '?' }}</span>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold mb-1">{{ t.betLabel }}</label>
+                    <input type="number" v-model.number="betAmount" class="w-full p-3 bg-slate-100 rounded-lg text-xl font-bold focus:ring-2 focus:ring-red-500 outline-none">
                 </div>
-                <div class="absolute -top-2 -right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
-                    Remaining: {{ 90 - drawnHistory.length }}
+
+                <div v-if="!roomId">
+                    <button @click="initMultiplayer" class="w-full bg-slate-800 text-white py-3 rounded-lg mb-2 font-bold">
+                        {{ t.createRoom }}
+                    </button>
+                </div>
+
+                <button @click="startGame" class="w-full bg-red-600 text-white py-4 rounded-lg text-xl font-bold shadow-lg">
+                    {{ t.playNow }}
+                </button>
+            </div>
+        </div>
+
+        <div v-else class="flex-grow flex flex-col items-center">
+            <div class="w-32 h-32 bg-white rounded-full border-8 border-red-500 flex items-center justify-center shadow-2xl mb-6 relative">
+                <span class="text-5xl font-black text-slate-800">{{ currentNumber || '--' }}</span>
+                <div class="absolute -bottom-2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded">
+                    {{ drawnHistory.length }} / 90
                 </div>
             </div>
 
-            <div class="mb-4 text-center h-8">
-                <p v-if="gameState === 'PLAYING'" class="text-red-600 font-bold animate-pulse">
-                    Drawing in progress... (OPPONENT: {{ botStatus }})
-                </p>
-                <p v-if="gameState === 'WON'" class="text-green-600 font-bold text-xl">
-                    KINH! (You win!)(+${{ betAmount * 4 }})
-                </p>
-                <p v-if="gameState === 'LOST'" class="text-gray-600 font-bold text-xl">
-                    Too bad... Someone else won.
-                </p>
+            <div v-if="errorMsg" class="w-full bg-red-100 text-red-700 p-2 text-xs rounded mb-4 text-center">
+                {{ errorMsg }}
             </div>
 
-            <div class="bg-white p-2 rounded-lg shadow-xl border border-gray-200 w-full mb-6">
-                <div v-for="(row, rIndex) in playerCard" :key="rIndex" 
-                     class="grid grid-cols-9 gap-1 mb-1 p-1 rounded transition"
-                     :class="{'win-row': isRowComplete(row)}">
-                    <div v-for="(num, cIndex) in row" :key="cIndex" 
-                         class="aspect-square flex items-center justify-center text-sm font-bold border rounded cursor-pointer select-none cell"
-                         :class="getCellClass(num)"
-                         @click="handleCellClick(num)">
+            <div class="bg-white p-2 rounded-xl shadow-inner border w-full mb-6">
+                <div v-for="(row, rIdx) in playerCard" :key="rIdx" class="grid grid-cols-9 gap-1 mb-1">
+                    <div v-for="(num, cIdx) in row" :key="cIdx" 
+                         class="cell flex items-center justify-center text-sm font-bold border rounded-sm"
+                         :class="[num === 0 ? 'bg-slate-50 border-transparent' : 'bg-white border-slate-200', 
+                                  drawnHistory.includes(num) ? 'marked' : '']">
                         {{ num !== 0 ? num : '' }}
                     </div>
                 </div>
             </div>
 
-            <div class="flex gap-2 w-full">
-                <button v-if="gameState === 'PLAYING'" @click="callKinh" 
-                        class="flex-1 bg-yellow-500 hover:bg-yellow-400 text-red-900 py-3 rounded-lg font-bold shadow border-b-4 border-yellow-700 active:border-b-0 active:mt-1">
-                    KINH! (You win!)
+            <div class="w-full space-y-3">
+                <button @click="callKinh" class="w-full bg-yellow-400 py-4 rounded-xl font-black text-xl text-yellow-900 shadow-md active:translate-y-1">
+                    KINH!
                 </button>
-                <button v-if="gameState === 'WON' || gameState === 'LOST'" @click="resetGame" 
-                        class="flex-1 bg-gray-800 text-white py-3 rounded-lg font-bold shadow">
-                    Play again
+                <button @click="resetGame" class="w-full text-slate-400 text-sm py-2">
+                    {{ t.back }}
                 </button>
-            </div>
-
-            <div class="mt-6 w-full overflow-x-auto whitespace-nowrap pb-2">
-                <span v-for="n in drawnHistory.slice().reverse()" :key="n" class="inline-block bg-gray-200 text-gray-700 px-2 py-1 rounded mr-1 text-xs font-bold">
-                    {{ n }}
-                </span>
             </div>
         </div>
-
     </div>
 
     <script>
-        const { createApp, ref, computed } = Vue;
+        // --- Firebase 設定 (各自のプロジェクト情報を入れてください) ---
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // --- 多言語辞書 ---
+        const i18n = {
+            en: { wallet: "WALLET", betLabel: "BET AMOUNT", playNow: "PLAY NOW", createRoom: "CREATE ROOM", shareUrl: "SHARE URL", back: "Quit Game", win: "YOU WIN!", lose: "LOST!", syncError: "Sync Error. Reconnecting..." },
+            vi: { wallet: "VÍ", betLabel: "MỨC CƯỢC", playNow: "CHƠI NGAY", createRoom: "TẠO PHÒNG", shareUrl: "CHIA SẺ", back: "Thoát", win: "THẮNG!", lose: "THUA!", syncError: "Lỗi đồng bộ. Đang kết nối lại..." },
+            fr: { wallet: "PORTEFEUILLE", betLabel: "MONTANT MISE", playNow: "JOUER", createRoom: "CRÉER SALLE", shareUrl: "PARTAGER", back: "Quitter", win: "GAGNÉ!", lose: "PERDU!", syncError: "Erreur de synchronisation..." },
+            zh: { wallet: "钱包", betLabel: "下注金额", playNow: "开始游戏", createRoom: "创建房间", shareUrl: "分享链接", back: "退出", win: "获胜！", lose: "输了！", syncError: "同步错误，正在重新连接..." }
+        };
+
+        const { createApp, ref, computed, onMounted, watch } = Vue;
 
         createApp({
             setup() {
-                // 状態管理
-                const wallet = ref(10000); // 初期所持金
+                const currentLang = ref('en');
+                const t = computed(() => i18n[currentLang.value]);
+                const wallet = ref(10000);
                 const betAmount = ref(100);
-                const gameState = ref('IDLE'); // IDLE, PLAYING, WON, LOST
-                const gameSpeed = ref(2500);
+                const gameState = ref('IDLE');
+                const roomId = ref(new URLSearchParams(window.location.search).get('room'));
+                const syncStatus = ref('Stand-alone');
+                const errorMsg = ref('');
                 
                 const currentNumber = ref(null);
                 const drawnHistory = ref([]);
                 const playerCard = ref([]);
-                const timerId = ref(null);
-                const botStatus = ref("It's still okay.");
 
-                // 音声合成の準備
-                const synth = window.speechSynthesis;
-
-                // 金額フォーマット
-                const formatMoney = (val) => val.toLocaleString();
-
-                // ■ ロートーのカード生成ロジック (9列3行)
+                // --- カード生成ロジック (整合性のためのシード値等は今回は簡易化) ---
                 const generateCard = () => {
-                    // 1. 全ての列の候補数字を準備
-                    // col0: 1-9, col1: 10-19, ..., col8: 80-90
-                    let columns = [];
-                    columns.push(Array.from({length: 9}, (_, i) => i + 1)); // 1-9
-                    for(let i=1; i<8; i++) {
-                        columns.push(Array.from({length: 10}, (_, j) => i*10 + j));
-                    }
-                    columns.push(Array.from({length: 11}, (_, i) => 80 + i)); // 80-90
-
-                    // 2. カードの枠組み（3行9列、初期値0）を作成
-                    let card = [
-                        Array(9).fill(0),
-                        Array(9).fill(0),
-                        Array(9).fill(0)
-                    ];
-
-                    // 3. 各行に必ず5つの数字が入るように配置場所を決める
-                    // シンプル化のため、ランダムに5つのインデックスを選ぶ
+                    let card = [Array(9).fill(0), Array(9).fill(0), Array(9).fill(0)];
                     for(let r=0; r<3; r++) {
-                        let availableCols = [0,1,2,3,4,5,6,7,8].sort(() => 0.5 - Math.random());
-                        let selectedCols = availableCols.slice(0, 5).sort((a,b)=>a-b);
-                        
-                        selectedCols.forEach(colIdx => {
-                            // その列の候補からランダムに1つ選んで抽出
-                            const pool = columns[colIdx];
-                            if(pool.length > 0) {
-                                const randIdx = Math.floor(Math.random() * pool.length);
-                                const val = pool.splice(randIdx, 1)[0];
-                                card[r][colIdx] = val;
-                            }
+                        let cols = [0,1,2,3,4,5,6,7,8].sort(()=>Math.random()-0.5).slice(0,5).sort();
+                        cols.forEach(c => {
+                            card[r][c] = Math.floor(Math.random() * 10) + (c * 10) + 1;
                         });
                     }
-                    
-                    // ※本来のロートーは列ごとのソートが必要だが、
-                    // 簡易実装として行ごとの生成を行っているため、
-                    // 厳密なルール（列内昇順）はこの簡易ロジックでは省略されることがあるがゲームとしては成立する。
                     return card;
                 };
 
-                // ゲーム開始
+                // --- マルチプレイヤー同期コア機能 ---
+                const initMultiplayer = () => {
+                    const newId = Math.random().toString(36).substring(2, 7).toUpperCase();
+                    window.location.search = `?room=${newId}`;
+                };
+
+                const syncWithFirebase = () => {
+                    if (!roomId.value) return;
+                    const roomRef = db.ref('rooms/' + roomId.value);
+                    
+                    // 整合性チェック: 接続状態の監視
+                    db.ref('.info/connected').on('value', (snap) => {
+                        if (snap.val() === false) {
+                            syncStatus.value = "🔴 Offline";
+                            errorMsg.value = t.value.syncError;
+                        } else {
+                            syncStatus.value = "🟢 Online";
+                            errorMsg.value = "";
+                        }
+                    });
+
+                    // データのリアルタイム購読
+                    roomRef.on('value', (snapshot) => {
+                        const data = snapshot.val();
+                        if (data) {
+                            // データの整合性を担保（サーバー側の履歴を正とする）
+                            currentNumber.value = data.currentNumber;
+                            drawnHistory.value = data.history || [];
+                            if (data.status === 'WON' && data.winnerId !== 'me') {
+                                gameState.value = 'LOST';
+                            }
+                        }
+                    }, (error) => {
+                        errorMsg.value = "Access Denied / Room Expired";
+                    });
+                };
+
+                // --- アクション ---
                 const startGame = () => {
-                    if(wallet.value < betAmount.value) {
-                        alert("Check your cash on hand!");
-                        return;
-                    }
-                    
-                    wallet.value -= betAmount.value;
-                    gameState.value = 'PLAYING';
-                    drawnHistory.value = [];
-                    currentNumber.value = null;
-                    botStatus.value = "It's silent...";
-                    
                     playerCard.value = generateCard();
-                    
-                    // 抽選ループ開始
-                    gameLoop();
-                };
-
-                // メインループ（数字を引く）
-                const gameLoop = () => {
-                    timerId.value = setTimeout(() => {
-                        if(gameState.value !== 'PLAYING') return;
-
-                        // 1. 数字を引く (1-90)
-                        let nextNum;
-                        do {
-                            nextNum = Math.floor(Math.random() * 90) + 1;
-                        } while (drawnHistory.value.includes(nextNum));
-
-                        currentNumber.value = nextNum;
-                        drawnHistory.value.push(nextNum);
-
-                        // 音声読み上げ
-                        speakNumber(nextNum);
-
-                        // 2. 自動マーキング（簡単のため、出た数字は自動でマーク判定に使用）
-                        // ※UI上の色は自動で変わるが、ルール上の「チェック」は自動
-
-                        // 3. ボット（敵）の判定
-                        // 時間が経つほど敵がアガる確率が上がる簡易シミュレーション
-                        checkBotWin();
-
-                        if(gameState.value === 'PLAYING') {
-                            gameLoop();
-                        }
-
-                    }, gameSpeed.value);
-                };
-
-                // ボットの勝利判定（運ゲー要素）
-                const checkBotWin = () => {
-                    const turn = drawnHistory.value.length;
-                    // 20ターン目以降から敵がアガる可能性が出てくる
-                    if(turn > 20) {
-                        const risk = (turn - 20) * 0.5; // ターンごとに確率上昇
-                        if(Math.random() * 100 < risk) {
-                            endGame(false); // 負け
-                        } else if (risk > 10) {
-                            botStatus.value = "リーチかも!?";
-                        }
+                    gameState.value = 'PLAYING';
+                    if (!roomId.value) {
+                        // ソロモード：1.5秒ごとに自動抽選
+                        const timer = setInterval(() => {
+                            if (gameState.value !== 'PLAYING' || drawnHistory.value.length >= 90) clearInterval(timer);
+                            let next;
+                            do { next = Math.floor(Math.random()*90)+1; } while(drawnHistory.value.includes(next));
+                            currentNumber.value = next;
+                            drawnHistory.value.push(next);
+                        }, 2000);
                     }
                 };
 
-                // セルのスタイル判定
-                const getCellClass = (num) => {
-                    if (num === 0) return 'bg-gray-100 border-gray-200'; // 空白
-                    if (drawnHistory.value.includes(num)) return 'marked border-red-500 font-bold shadow-inner'; // ヒット
-                    return 'bg-white border-gray-300 text-gray-800'; // 通常
+                const copyShareUrl = () => {
+                    navigator.clipboard.writeText(window.location.href);
+                    alert("URL Copied!");
                 };
 
-                // 行が揃っているかチェック
-                const isRowComplete = (row) => {
-                    const numbers = row.filter(n => n !== 0);
-                    if(numbers.length === 0) return false;
-                    return numbers.every(n => drawnHistory.value.includes(n));
-                };
-
-                // プレイヤーのクリック（Kinh宣言）
                 const callKinh = () => {
-                    // 全行チェック
-                    const hasWin = playerCard.value.some(row => isRowComplete(row));
-                    if(hasWin) {
-                        endGame(true);
-                    } else {
-                        // お手つき（ペナルティなしだが警告）
-                        alert("Chưa kinh! (The numbers aren't all in yet!)");
-                    }
-                };
+                    // サーバー側の履歴(drawnHistory)と照らし合わせてアガリ判定
+                    const win = playerCard.value.some(row => {
+                        const nums = row.filter(n => n !== 0);
+                        return nums.length > 0 && nums.every(n => drawnHistory.value.includes(n));
+                    });
 
-                // ゲーム終了処理
-                const endGame = (isWin) => {
-                    clearTimeout(timerId.value);
-                    if(isWin) {
+                    if (win) {
                         gameState.value = 'WON';
-                        wallet.value += betAmount.value * 4; // 4倍配当
-                        speakText("Kinh! Great!");
+                        wallet.value += betAmount.value * 4;
+                        if (roomId.value) {
+                            db.ref('rooms/' + roomId.value).update({ status: 'WON', winnerId: 'someone' });
+                        }
+                        alert(t.value.win);
                     } else {
-                        gameState.value = 'LOST';
-                        speakText("Too bad, someone else won.");
+                        alert("Chưa được! (Not yet)");
                     }
                 };
 
                 const resetGame = () => {
                     gameState.value = 'IDLE';
+                    drawnHistory.value = [];
+                    currentNumber.value = null;
                 };
 
-                // 読み上げ関数
-                const speakNumber = (num) => {
-                    if(!synth) return;
-                    const utterance = new SpeechSynthesisUtterance(num.toString());
-                    // ベトナム語があれば設定、なければ英語か日本語
-                    const voices = synth.getVoices();
-                    const viVoice = voices.find(v => v.lang.includes('vi'));
-                    if(viVoice) utterance.voice = viVoice;
-                    utterance.rate = 1.2;
-                    synth.speak(utterance);
-                };
-                
-                const speakText = (text) => {
-                    if(!synth) return;
-                    const u = new SpeechSynthesisUtterance(text);
-                    u.lang = 'ja-JP';
-                    synth.speak(u);
-                };
-
-                // クリック時の挙動（手動確認用）
-                const handleCellClick = (num) => {
-                    if(num === 0) return;
-                    // ここに「自分の指で確認マークをつける」ロジックを入れても良いが
-                    // 今回は自動判定システムなので視覚効果のみでもOK
-                };
+                onMounted(() => {
+                    if (roomId.value) syncWithFirebase();
+                });
 
                 return {
-                    wallet, betAmount, gameState, gameSpeed, currentNumber,
-                    drawnHistory, playerCard, botStatus,
-                    formatMoney, startGame, getCellClass, isRowComplete,
-                    callKinh, resetGame, handleCellClick
+                    currentLang, t, wallet, betAmount, gameState, roomId, syncStatus,
+                    currentNumber, drawnHistory, playerCard, errorMsg,
+                    initMultiplayer, startGame, copyShareUrl, callKinh, resetGame
                 };
             }
         }).mount('#app');
