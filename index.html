@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lô Tô Global - Definitive Edition</title>
+    <title>Lô Tô Global - Full Definitive Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -19,29 +19,27 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .animate-pop { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .history-item { width: 36px; height: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #334155; font-weight: 800; font-size: 0.85rem; color: #cbd5e1; border: 1px solid #475569; }
-        .history-latest { background: #ef4444; color: white; border-color: #ef4444; transform: scale(1.1); box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+        
+        .history-item { width: 36px; height: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #334155; font-weight: 800; font-size: 0.85rem; color: #cbd5e1; border: 1px solid #475569; transition: all 0.3s; }
+        .history-latest { background: #ef4444; color: white; border-color: #ef4444; transform: scale(1.1); box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); z-index: 10; }
+        
+        /* マッチした時の履歴演出：黄色く光る */
+        .history-match { background: #fbbf24 !important; color: #78350f !important; border-color: #f59e0b !important; animation: match-glow 1s infinite alternate; transform: scale(1.15); z-index: 11; }
+        @keyframes match-glow { from { box-shadow: 0 0 5px #fbbf24; } to { box-shadow: 0 0 20px #fbbf24; } }
     </style>
 </head>
 <body class="bg-slate-100 font-sans">
     <div id="app" v-cloak class="min-h-screen max-w-md mx-auto flex flex-col bg-white shadow-2xl relative overflow-hidden text-slate-800">
         
-        <div class="fixed top-24 left-0 right-0 z-[60] px-6 pointer-events-none text-center">
-            <div v-for="log in logs" :key="log.id" class="inline-block bg-black/80 text-white text-xs font-bold py-3 px-6 rounded-full shadow-2xl mb-2 animate-pop">
-                {{ log.message }}
-            </div>
-        </div>
-
         <header class="p-3 bg-white border-b flex justify-between items-center sticky top-0 z-40 h-20 shadow-sm">
-            <button @click="confirmQuit" class="flex flex-col items-center justify-center min-w-[60px] text-slate-500 hover:text-red-500 transition">
+            <button v-if="gameState !== 'HOME'" @click="confirmQuit" class="flex flex-col items-center justify-center min-w-[60px] text-slate-500 hover:text-red-500 transition">
                 <i class="fas fa-home text-xl"></i>
                 <span class="text-[10px] font-black uppercase mt-1">{{ t.homeBtn }}</span>
             </button>
-
+            <div v-else class="w-10"></div>
             <select v-model="currentLang" @change="handleLangChange" class="text-sm font-black bg-slate-50 border-2 rounded-xl px-2 py-2 outline-none border-slate-200">
                 <option v-for="(l, code) in i18n" :key="code" :value="code">{{ l.langName }}</option>
             </select>
-            
             <button @click="openWalletModal" class="flex items-center bg-green-50 px-4 py-2 rounded-2xl border-2 border-green-100 active:scale-95 transition">
                 <div class="flex flex-col items-end mr-3">
                     <span class="text-[10px] text-green-700 font-black leading-none uppercase tracking-widest">{{ t.walletLabel }}</span>
@@ -120,29 +118,29 @@
                             <button v-if="mode === 'MULTI'" @click="showShareModal = true" class="bg-red-600 text-[10px] px-4 py-2.5 rounded-2xl font-black shadow-lg flex items-center uppercase active:scale-95 transition">
                                 <i class="fas fa-qrcode mr-2 text-sm"></i> {{ t.inviteBtn }}
                             </button>
-                            <div class="flex gap-3">
-                                <div class="flex flex-col items-center">
-                                    <button v-if="isAuto" @click="togglePause" class="w-14 h-14 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-2xl active:scale-90 transition">
-                                        <i :class="isPaused ? 'fas fa-play ml-1 text-xl' : 'fas fa-pause text-xl'"></i>
-                                    </button>
-                                    <button v-else @click="drawNext" class="w-14 h-14 rounded-full bg-red-600 text-white flex items-center justify-center shadow-2xl active:scale-90 transition">
-                                        <i class="fas fa-forward text-xl"></i>
-                                    </button>
-                                    <span class="text-[9px] font-black mt-2 uppercase opacity-60 tracking-widest">{{ isAuto ? (isPaused ? t.playText : t.pauseText) : t.nextBtn }}</span>
-                                </div>
+                            <div class="flex flex-col items-center">
+                                <button v-if="isAuto" @click="togglePause" class="w-14 h-14 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-2xl active:scale-90 transition">
+                                    <i :class="isPaused ? 'fas fa-play ml-1' : 'fas fa-pause'"></i>
+                                </button>
+                                <button v-else @click="drawNext" class="w-14 h-14 rounded-full bg-red-600 text-white flex items-center justify-center shadow-2xl active:scale-90 transition">
+                                    <i class="fas fa-forward"></i>
+                                </button>
+                                <span class="text-[9px] font-black mt-2 uppercase opacity-60">{{ isAuto ? (isPaused ? t.playText : t.pauseText) : t.nextBtn }}</span>
                             </div>
                         </div>
                     </div>
                     <div class="mt-5 pt-4 border-t border-white/10 overflow-hidden">
                         <div class="flex items-center space-x-3 overflow-x-auto no-scrollbar py-2 px-1">
                             <div v-for="(n, idx) in [...drawnHistory].reverse()" :key="idx" 
-                                 class="history-item transition-all duration-300" :class="idx === 0 ? 'history-latest' : 'opacity-70'">
+                                 class="history-item" 
+                                 :class="[idx === 0 ? 'history-latest' : '', myNumbers.includes(n) ? 'history-match' : '']">
                                 {{ n }}
                             </div>
                             <div v-if="drawnHistory.length === 0" class="text-xs text-white/20 font-black italic uppercase tracking-widest py-2">{{ t.historyEmpty }}</div>
                         </div>
                     </div>
                 </div>
+
                 <div class="flex-grow overflow-y-auto p-4 space-y-6 no-scrollbar">
                     <div v-for="(card, cIdx) in myCards" :key="cIdx" class="bg-white p-3 rounded-3xl shadow-xl border-2 border-slate-200">
                         <div v-for="(row, rIdx) in card" :key="rIdx" class="grid grid-cols-9 gap-1.5 mb-1.5">
@@ -162,7 +160,7 @@
             </div>
 
             <div class="absolute bottom-1 right-2 pointer-events-none text-[8px] text-slate-300 font-mono">
-                Last Update: 2026-02-09 07:22 / Rev: 7
+                Last Update: 2026-02-09 07:42 / Rev: 9
             </div>
         </main>
 
@@ -176,6 +174,7 @@
                 </div>
             </div>
         </div>
+
         <div v-if="showWalletModal" class="fixed inset-0 z-50 flex items-center justify-center p-8 bg-black/90 backdrop-blur-lg animate-pop">
             <div class="bg-white rounded-[3rem] w-full p-10 space-y-8 shadow-2xl border-t-[12px] border-green-500">
                 <h3 class="font-black text-3xl italic text-green-600 uppercase flex items-center justify-center"><i class="fas fa-wallet mr-4"></i>{{ t.walletTitle }}</h3>
@@ -237,12 +236,15 @@
                 const currentNumber = ref(null);
                 const drawnHistory = ref([]);
                 const roomId = ref(new URLSearchParams(window.location.search).get('room'));
-                const logs = ref([]);
-                const lastLogTime = ref(Date.now());
                 const isMaster = ref(false);
                 let timer = null;
 
-                // 状態の保存ロジック
+                const myNumbers = computed(() => {
+                    let nums = [];
+                    myCards.value.forEach(card => card.forEach(row => row.forEach(n => { if(n !== 0) nums.push(n); })));
+                    return nums;
+                });
+
                 const saveState = () => {
                     if (gameState.value === 'PLAYING') {
                         const data = {
@@ -254,7 +256,6 @@
                     }
                 };
 
-                // オートマーク
                 watch(currentNumber, (newVal) => {
                     if (!newVal || !isAuto.value) return;
                     myCards.value.forEach((card, cIdx) => {
@@ -262,16 +263,14 @@
                             row.forEach((num, nIdx) => {
                                 if (num === newVal) {
                                     myMarks.value[cIdx][rIdx][nIdx] = true;
-                                    addLog(`✓ Match: ${newVal}`);
                                 }
                             });
                         });
                     });
                     saveState();
-                }, { deep: true });
+                });
 
-                const addLog = (m) => { const id = Date.now(); logs.value.push({id, message: m}); setTimeout(() => logs.value = logs.value.filter(l => l.id !== id), 3000); };
-                const handleLangChange = () => { localStorage.setItem('loto_lang', currentLang.value); const config = t.value; wallet.currency = config.cur; wallet.amount = config.defWallet; betAmount.value = config.defBet; };
+                const handleLangChange = () => { localStorage.setItem('loto_lang', currentLang.value); };
 
                 const initGame = async (m) => {
                     mode.value = m;
@@ -280,17 +279,15 @@
                     if(m === 'MULTI') {
                         if(!roomId.value) { roomId.value = Math.random().toString(36).substring(2, 7).toUpperCase(); isMaster.value = true; }
                         const url = new URL(window.location.href); url.searchParams.set('room', roomId.value); window.history.pushState({}, '', url);
-                        const roomRef = db.ref(`rooms/${roomId.value}`);
-                        const pRef = roomRef.child('players');
+                        const pRef = db.ref(`rooms/${roomId.value}/players`);
                         const s = await pRef.once('value');
                         if(!isMaster.value && !s.exists()) isMaster.value = true;
                         pRef.child(safeName).set(true);
-                        roomRef.update({ msg: `${safeName} joined!`, msgTime: firebase.database.ServerValue.TIMESTAMP });
                     }
                     gameState.value = 'SETUP';
                 };
 
-                const stopAllProcesses = () => { if(timer) { clearInterval(timer); timer = null; } if(mode.value === 'MULTI' && roomId.value) { db.ref(`rooms/${roomId.value}`).off(); } isPaused.value = false; localStorage.removeItem('loto_session'); };
+                const stopAllProcesses = () => { if(timer) clearInterval(timer); timer = null; if(mode.value === 'MULTI' && roomId.value) db.ref(`rooms/${roomId.value}`).off(); isPaused.value = false; localStorage.removeItem('loto_session'); };
                 
                 const startGame = () => {
                     if(gameState.value !== 'PLAYING') {
@@ -302,21 +299,20 @@
                     }
                     gameState.value = 'PLAYING';
                     saveState();
-
                     if(mode.value === 'MULTI') {
-                        const rRef = db.ref(`rooms/${roomId.value}`); lastLogTime.value = Date.now();
-                        rRef.on('value', s => { const d = s.val(); if(d){ if(d.his) { drawnHistory.value = d.his || []; currentNumber.value = d.his[d.his.length - 1]; } if(d.msg && d.msgTime && d.msgTime > lastLogTime.value){ addLog(d.msg); lastLogTime.value = d.msgTime; } } });
+                        const rRef = db.ref(`rooms/${roomId.value}`);
+                        rRef.on('value', s => { const d = s.val(); if(d && d.his){ drawnHistory.value = d.his; currentNumber.value = d.his[d.his.length - 1]; } });
                     }
-                    if(isAuto.value && (mode.value === 'SOLO' || isMaster.value)) { startTimer(); }
+                    if(isAuto.value && (mode.value === 'SOLO' || isMaster.value)) startTimer();
                 };
 
-                const startTimer = () => { if(timer) clearInterval(timer); timer = setInterval(() => { if(!isPaused.value && drawnHistory.value.length < 90) { drawNext(); } }, drawInterval.value * 1000); };
+                const startTimer = () => { if(timer) clearInterval(timer); timer = setInterval(() => { if(!isPaused.value && drawnHistory.value.length < 90) drawNext(); }, drawInterval.value * 1000); };
                 
                 const drawNext = () => {
-                    if(drawnHistory.value.length >= 90) { stopAllProcesses(); return; }
+                    if(drawnHistory.value.length >= 90) return;
                     let n; do { n = Math.floor(Math.random()*90)+1; } while(drawnHistory.value.includes(n));
-                    if(mode.value === 'SOLO') { drawnHistory.value.push(n); currentNumber.value = n; } 
-                    else if(isMaster.value) { db.ref(`rooms/${roomId.value}`).update({ num: n, his: [...drawnHistory.value, n] }); }
+                    if(mode.value === 'SOLO') { drawnHistory.value.push(n); currentNumber.value = n; }
+                    else if(isMaster.value) { db.ref(`rooms/${roomId.value}`).update({ his: [...drawnHistory.value, n] }); }
                 };
 
                 const checkKinh = () => {
@@ -325,26 +321,21 @@
                         const marks = myCards.value[cIdx][rIdx].filter((n, nIdx) => n !== 0 && row[nIdx]);
                         return nums.length === 5 && marks.length === 5 && marks.every(n => drawnHistory.value.includes(n));
                     }));
-                    if(win) { 
-                        alert(t.value.winMsg); wallet.amount += (betAmount.value * 10); 
-                        if(mode.value === 'MULTI') { db.ref(`rooms/${roomId.value}`).update({ msg: `🎉 ${playerName.value} KINH!`, msgTime: firebase.database.ServerValue.TIMESTAMP }); }
-                        exitToHome(); 
-                    } else alert(t.value.loseMsg);
+                    if(win) { alert(t.value.winMsg); wallet.amount += (betAmount.value * 10); exitToHome(); } else alert(t.value.loseMsg);
                 };
 
                 const exitToHome = async () => {
                     stopAllProcesses();
                     if(mode.value === 'MULTI' && roomId.value) {
-                        const pRef = db.ref(`rooms/${roomId.value}/players/${playerName.value}`);
-                        await pRef.remove();
+                        await db.ref(`rooms/${roomId.value}/players/${playerName.value}`).remove();
                         const s = await db.ref(`rooms/${roomId.value}/players`).once('value');
                         if(!s.exists()) await db.ref(`rooms/${roomId.value}`).remove();
                     }
                     gameState.value = 'HOME';
                 };
 
-                const togglePause = () => { isPaused.value = !isPaused.value; };
-                const confirmQuit = () => { if(confirm(t.value.quitConfirm)) { exitToHome(); } };
+                const togglePause = () => isPaused.value = !isPaused.value;
+                const confirmQuit = () => { if(confirm(t.value.quitConfirm)) exitToHome(); };
                 const toggleMark = (cIdx, rIdx, nIdx) => { if (myCards.value[cIdx][rIdx][nIdx] !== 0) { myMarks.value[cIdx][rIdx][nIdx] = !myMarks.value[cIdx][rIdx][nIdx]; saveState(); } };
                 const isMarked = (cIdx, rIdx, nIdx) => myMarks.value[cIdx]?.[rIdx]?.[nIdx];
                 
@@ -364,31 +355,24 @@
 
                 const openWalletModal = () => { tempWallet.amount = wallet.amount; tempWallet.currency = wallet.currency; showWalletModal.value = true; };
                 const saveWallet = () => { wallet.amount = tempWallet.amount; wallet.currency = tempWallet.currency; showWalletModal.value = false; localStorage.setItem('loto_wallet', JSON.stringify(wallet)); };
-                const copyLink = () => { navigator.clipboard.writeText(window.location.href); addLog(t.value.copyBtn + " OK!"); };
+                const copyLink = () => { navigator.clipboard.writeText(window.location.href); alert("Copied!"); };
 
                 watch(showShareModal, (v) => { if(v) setTimeout(() => { const qrEl = document.getElementById('qrcode'); qrEl.innerHTML = ""; new QRCode(qrEl, { text: window.location.href, width: 200, height: 200 }); }, 100); });
 
                 onMounted(() => {
-                    // セッション復元
                     const saved = localStorage.getItem('loto_session');
                     if (saved) {
                         const d = JSON.parse(saved);
                         gameState.value = d.gs; mode.value = d.m; myCards.value = d.c; myMarks.value = d.mk;
-                        ticketCount.value = d.tc; betAmount.value = d.ba; isAuto.value = d.ia;
-                        drawInterval.value = d.di; roomId.value = d.ri; isMaster.value = d.im;
-                        wallet.amount = d.wal; wallet.currency = d.cur;
+                        ticketCount.value = d.tc; betAmount.value = d.ba; isAuto.value = d.ia; drawInterval.value = d.di;
+                        roomId.value = d.ri; isMaster.value = d.im; wallet.amount = d.wal; wallet.currency = d.cur;
                         if (gameState.value === 'PLAYING') startGame();
-                    } else if (roomId.value) {
-                        initGame('MULTI');
-                    }
-                    
+                    } else if (roomId.value) initGame('MULTI');
                     const savedWal = localStorage.getItem('loto_wallet');
                     if(savedWal) Object.assign(wallet, JSON.parse(savedWal));
-
-                    handleLangChange();
                 });
 
-                return { currentLang, t, i18n, gameState, mode, playerName, wallet, tempWallet, showWalletModal, showShareModal, ticketCount, betAmount, isAuto, drawInterval, isPaused, myCards, currentNumber, drawnHistory, roomId, logs, handleLangChange, initGame, startGame, drawNext, checkKinh, confirmQuit, toggleMark, isMarked, openWalletModal, saveWallet, copyLink, togglePause };
+                return { currentLang, t, i18n, gameState, mode, playerName, wallet, tempWallet, showWalletModal, showShareModal, ticketCount, betAmount, isAuto, drawInterval, isPaused, myCards, currentNumber, drawnHistory, myNumbers, handleLangChange, initGame, startGame, drawNext, checkKinh, confirmQuit, toggleMark, isMarked, openWalletModal, saveWallet, copyLink, togglePause };
             }
         }).mount('#app');
     </script>
