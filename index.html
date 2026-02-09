@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lô Tô Global - Final Rev 10</title>
+    <title>Lô Tô Global - Full Specification Rev 12</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -36,9 +36,11 @@
                 <span class="text-[10px] font-black uppercase mt-1">{{ t.homeBtn }}</span>
             </button>
             <div v-else class="w-10"></div>
+            
             <select v-model="currentLang" @change="handleLangChange" class="text-sm font-black bg-slate-50 border-2 rounded-xl px-2 py-2 outline-none border-slate-200">
                 <option v-for="(l, code) in i18n" :key="code" :value="code">{{ l.langName }}</option>
             </select>
+
             <button @click="openWalletModal" class="flex items-center bg-green-50 px-4 py-2 rounded-2xl border-2 border-green-100 active:scale-95 transition">
                 <div class="flex flex-col items-end mr-3">
                     <span class="text-[10px] text-green-700 font-black leading-none uppercase tracking-widest">{{ t.walletLabel }}</span>
@@ -49,6 +51,7 @@
         </header>
 
         <main class="flex-grow flex flex-col overflow-hidden relative">
+            
             <div v-if="gameState === 'HOME'" class="flex-grow p-8 flex flex-col justify-center space-y-8">
                 <div class="text-center">
                     <h1 class="text-7xl font-black text-red-600 italic tracking-tighter drop-shadow-md">LÔ TÔ</h1>
@@ -59,25 +62,27 @@
                     <input type="text" v-model="playerName" class="w-full bg-transparent text-2xl font-black px-3 outline-none text-slate-700" :placeholder="t.placeholderName">
                 </div>
                 <div class="space-y-4">
-                    <button @click="initGame('SOLO')" class="w-full bg-slate-900 text-white p-6 rounded-[2rem] flex items-center shadow-2xl active:scale-95 transition">
+                    <button @click="initGame('SOLO')" class="w-full bg-slate-900 text-white p-6 rounded-[2rem] flex items-center shadow-2xl active:scale-95 transition font-black text-xl uppercase italic">
                         <i class="fas fa-play text-3xl mr-6"></i>
-                        <span class="font-black text-xl uppercase italic">{{ t.soloMode }}</span>
+                        <span>{{ t.soloMode }}</span>
                     </button>
-                    <button @click="initGame('MULTI')" class="w-full bg-red-600 text-white p-6 rounded-[2rem] flex items-center shadow-2xl active:scale-95 transition">
+                    <button @click="initGame('MULTI')" class="w-full bg-red-600 text-white p-6 rounded-[2rem] flex items-center shadow-2xl active:scale-95 transition font-black text-xl uppercase italic">
                         <i class="fas fa-users text-3xl mr-6"></i>
-                        <span class="font-black text-xl uppercase italic">{{ t.multiMode }}</span>
+                        <span>{{ t.multiMode }}</span>
                     </button>
                 </div>
             </div>
 
             <div v-else-if="gameState === 'SETUP'" class="flex-grow p-8 space-y-6 overflow-y-auto no-scrollbar">
                 <h2 class="text-center font-black text-3xl text-slate-800 italic uppercase border-b-4 border-red-500 inline-block mx-auto pb-1 mb-6 w-full">{{ t.setupTitle }}</h2>
+                
                 <div class="space-y-3">
                     <label class="text-xs font-black text-slate-400 uppercase tracking-widest">{{ t.ticketCount }}</label>
                     <div class="grid grid-cols-4 gap-3">
                         <button v-for="n in 4" :key="n" @click="ticketCount = n" :class="ticketCount === n ? 'bg-red-600 text-white scale-105 shadow-xl' : 'bg-slate-100 text-slate-400'" class="py-4 rounded-2xl font-black text-xl transition">{{ n }}</button>
                     </div>
                 </div>
+
                 <div class="space-y-3">
                     <label class="text-xs font-black text-slate-400 uppercase tracking-widest">{{ t.drawMethod }}</label>
                     <div class="grid grid-cols-2 gap-3">
@@ -85,10 +90,15 @@
                         <button @click="isAuto = false" :class="!isAuto ? 'bg-slate-900 text-white shadow-lg' : 'bg-slate-100 text-slate-400'" class="py-5 rounded-2xl font-black text-lg transition uppercase">Manual</button>
                     </div>
                 </div>
+
                 <div v-if="isAuto" class="space-y-3 bg-slate-50 p-5 rounded-3xl shadow-inner">
-                    <div class="flex justify-between items-center"><label class="text-xs font-black text-slate-400 uppercase">{{ t.speedLabel }}</label><span class="text-xl font-black text-red-600">{{ drawInterval }}s</span></div>
+                    <div class="flex justify-between items-center">
+                        <label class="text-xs font-black text-slate-400 uppercase">{{ t.speedLabel }}</label>
+                        <span class="text-xl font-black text-red-600">{{ drawInterval }}s</span>
+                    </div>
                     <input type="range" v-model="drawInterval" min="2" max="10" step="1" class="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-red-600">
                 </div>
+
                 <div class="space-y-3">
                     <label class="text-xs font-black text-slate-400 uppercase tracking-widest">{{ t.betAmount }}</label>
                     <div class="flex items-center bg-slate-50 p-5 rounded-3xl border-4 border-slate-100 shadow-inner">
@@ -96,6 +106,7 @@
                         <input type="number" v-model.number="betAmount" class="bg-transparent text-3xl font-black w-full outline-none text-slate-800">
                     </div>
                 </div>
+
                 <button @click="startGame" class="w-full bg-red-600 text-white py-6 rounded-[2rem] font-black text-3xl shadow-2xl mt-6 active:translate-y-2 transition uppercase italic">
                     {{ t.startBtn }}
                 </button>
@@ -151,7 +162,7 @@
                         </div>
                     </div>
                     <div class="pt-6 pb-28">
-                        <button @click="checkKinh" class="w-full bg-red-600 text-white py-10 rounded-[3rem] font-black text-5xl italic shadow-2xl active:scale-95 transition border-b-[12px] border-red-800">
+                        <button @click="checkKinh" class="w-full bg-red-600 text-white py-10 rounded-[3rem] font-black text-5xl italic shadow-2xl active:scale-95 transition border-b-[12px] border-red-800 uppercase">
                             {{ t.kinhBtn }}
                         </button>
                     </div>
@@ -159,7 +170,7 @@
             </div>
 
             <div class="absolute bottom-1 right-2 pointer-events-none text-[8px] text-slate-300 font-mono">
-                Last Update: 2026-02-09 07:46 / Rev: 10
+                System: Gemini 3 Flash / Last Update: 2026-02-09 / Rev: 12
             </div>
         </main>
 
@@ -178,18 +189,27 @@
             <div class="bg-white rounded-[3rem] w-full p-10 space-y-8 shadow-2xl border-t-[12px] border-green-500">
                 <h3 class="font-black text-3xl italic text-green-600 uppercase flex items-center justify-center"><i class="fas fa-wallet mr-4"></i>{{ t.walletTitle }}</h3>
                 <div class="space-y-5 text-left">
-                    <div class="bg-slate-50 p-6 rounded-3xl border-2"><label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1 block">{{ t.curLabel }}</label><input type="text" v-model="tempWallet.currency" class="w-full bg-transparent font-black text-2xl outline-none"></div>
-                    <div class="bg-slate-50 p-6 rounded-3xl border-2"><label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1 block">{{ t.balLabel }}</label><input type="number" v-model.number="tempWallet.amount" class="w-full bg-transparent font-black text-4xl outline-none"></div>
+                    <div class="bg-slate-50 p-6 rounded-3xl border-2">
+                        <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1 block">{{ t.curLabel }}</label>
+                        <input type="text" v-model="tempWallet.currency" class="w-full bg-transparent font-black text-2xl outline-none">
+                    </div>
+                    <div class="bg-slate-50 p-6 rounded-3xl border-2">
+                        <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1 block">{{ t.balLabel }}</label>
+                        <input type="number" v-model.number="tempWallet.amount" class="w-full bg-transparent font-black text-4xl outline-none">
+                    </div>
                 </div>
                 <div class="flex gap-4 pt-2">
                     <button @click="showWalletModal = false" class="flex-1 py-5 text-slate-400 font-bold uppercase tracking-widest text-sm">{{ t.cancel }}</button>
-                    <button @click="saveWallet" class="flex-1 bg-green-600 text-white py-5 rounded-2xl font-black shadow-xl uppercase tracking-widest text-sm active:scale-95 transition">{{ t.saveBtn }}</button>
+                    <button @click="saveWallet" class="flex-1 bg-green-600 text-white py-5 rounded-2xl font-black shadow-xl uppercase tracking-widest text-sm active:scale-95 transition">
+                        {{ t.saveBtn }}
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyAqKCaLzCoGY6e87gHmeRAAawN5yrVeFcg",
             authDomain: "loto-vn.firebaseapp.com",
@@ -202,6 +222,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // LANGUAGES
         const i18n = {
             vi: { langName: "Tiếng Việt", cur: "₫", defWallet: 500000, defBet: 10000, welcomeMsg: "Chào mừng", playerNameLabel: "Tên người chơi", placeholderName: "Nhập tên...", soloMode: "Solo", multiMode: "Multiplayer", setupTitle: "Thiết lập", ticketCount: "Số vé", drawMethod: "Cách quay", speedLabel: "Tốc độ", betAmount: "Mức cược", startBtn: "BẮT ĐẦU", drawnLabel: "Số đã bốc", nextBtn: "Tiếp theo", playText: "Chạy", pauseText: "Dừng", homeBtn: "Home", historyEmpty: "Trống", kinhBtn: "KINH!", winMsg: "CHIẾN THẮNG!", loseMsg: "Chưa Kinh!", walletLabel: "Số dư", quitConfirm: "Thoát game?", inviteBtn: "Mời", inviteTitle: "Mời Tham Gia", copyBtn: "Copy", closeBtn: "Đóng", walletTitle: "Ví", curLabel: "Đơn vị", balLabel: "Số dư", cancel: "Hủy", saveBtn: "Lưu", fullMsg: "Phòng đầy" },
             ja: { langName: "日本語", cur: "¥", defWallet: 3000, defBet: 100, welcomeMsg: "ようこそ", playerNameLabel: "プレイヤー名", placeholderName: "名前を入力...", soloMode: "ソロプレイ", multiMode: "マルチプレイ", setupTitle: "ゲーム設定", ticketCount: "チケット枚数", drawMethod: "抽選方法", speedLabel: "自動の間隔", betAmount: "賭け金", startBtn: "開始", drawnLabel: "出た数字", nextBtn: "次を引く", playText: "再開", pauseText: "停止", homeBtn: "ホーム", historyEmpty: "履歴なし", kinhBtn: "上がり！", winMsg: "おめでとう！上がりです！", loseMsg: "まだ上がっていません", walletLabel: "残高", quitConfirm: "ホームに戻りますか？", inviteBtn: "招待", inviteTitle: "ルーム招待", copyBtn: "コピー", closeBtn: "閉じる", walletTitle: "ウォレット", curLabel: "通貨単位", balLabel: "残高設定", cancel: "戻る", saveBtn: "保存", fullMsg: "満員です" },
@@ -216,6 +237,7 @@
         const { createApp, ref, reactive, computed, watch, onMounted } = Vue;
         createApp({
             setup() {
+                // Reactive State
                 const currentLang = ref(localStorage.getItem('loto_lang') || 'ja');
                 const t = computed(() => i18n[currentLang.value] || i18n.ja);
                 const gameState = ref('HOME');
@@ -238,12 +260,14 @@
                 const isMaster = ref(false);
                 let timer = null;
 
+                // Computed
                 const myNumbers = computed(() => {
                     let nums = [];
                     myCards.value.forEach(card => card.forEach(row => row.forEach(n => { if(n !== 0) nums.push(n); })));
                     return nums;
                 });
 
+                // Methods
                 const saveState = () => {
                     if (gameState.value === 'PLAYING') {
                         const data = {
@@ -256,7 +280,7 @@
                     }
                 };
 
-                // オートマーク処理
+                // Watch for auto-mark
                 watch(currentNumber, (newVal) => {
                     if (!newVal || !isAuto.value) return;
                     myCards.value.forEach((card, cIdx) => {
@@ -271,59 +295,144 @@
                     saveState();
                 });
 
-                const handleLangChange = () => { localStorage.setItem('loto_lang', currentLang.value); };
+                const handleLangChange = () => {
+                    localStorage.setItem('loto_lang', currentLang.value);
+                };
 
                 const initGame = async (m) => {
                     mode.value = m;
                     const safeName = playerName.value.trim().replace(/[.#$[\]]/g, "_") || 'Player_' + Math.floor(Math.random()*900+100);
-                    playerName.value = safeName; localStorage.setItem('loto_player_name', safeName);
+                    playerName.value = safeName;
+                    localStorage.setItem('loto_player_name', safeName);
+
                     if(m === 'MULTI') {
-                        if(!roomId.value) { roomId.value = Math.random().toString(36).substring(2, 7).toUpperCase(); isMaster.value = true; }
-                        const url = new URL(window.location.href); url.searchParams.set('room', roomId.value); window.history.pushState({}, '', url);
+                        if(!roomId.value) {
+                            roomId.value = Math.random().toString(36).substring(2, 7).toUpperCase();
+                            isMaster.value = true;
+                        }
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('room', roomId.value);
+                        window.history.pushState({}, '', url);
+
                         const pRef = db.ref(`rooms/${roomId.value}/players`);
-                        const s = await pRef.once('value');
-                        if(!isMaster.value && !s.exists()) isMaster.value = true;
+                        const snapshot = await pRef.once('value');
+                        if(!isMaster.value && !snapshot.exists()) isMaster.value = true;
                         pRef.child(safeName).set(true);
                     }
                     gameState.value = 'SETUP';
                 };
 
-                const stopAllProcesses = () => { if(timer) clearInterval(timer); timer = null; if(mode.value === 'MULTI' && roomId.value) db.ref(`rooms/${roomId.value}`).off(); isPaused.value = false; localStorage.removeItem('loto_session'); };
-                
+                const stopAllProcesses = () => {
+                    if(timer) clearInterval(timer);
+                    timer = null;
+                    if(mode.value === 'MULTI' && roomId.value) {
+                        db.ref(`rooms/${roomId.value}`).off();
+                    }
+                    isPaused.value = false;
+                    localStorage.removeItem('loto_session');
+                };
+
                 const startGame = () => {
                     if(gameState.value !== 'PLAYING') {
-                        if(wallet.amount < (betAmount.value * ticketCount.value)) return alert("Low balance");
-                        wallet.amount -= (betAmount.value * ticketCount.value);
-                        myCards.value = Array.from({length: ticketCount.value}, () => generateCard());
+                        const totalBet = betAmount.value * ticketCount.value;
+                        if(wallet.amount < totalBet) return alert("Insufficient balance");
+                        wallet.amount -= totalBet;
+                        
+                        // 生成：重複なしチケット
+                        myCards.value = generateUniqueCards(ticketCount.value);
                         myMarks.value = myCards.value.map(c => c.map(r => r.map(() => false)));
-                        drawnHistory.value = []; currentNumber.value = null; 
+                        drawnHistory.value = [];
+                        currentNumber.value = null;
                     }
+                    
                     gameState.value = 'PLAYING';
                     saveState();
                     
                     if(mode.value === 'MULTI') {
                         const rRef = db.ref(`rooms/${roomId.value}`);
-                        rRef.on('value', s => { const d = s.val(); if(d && d.his){ drawnHistory.value = d.his; currentNumber.value = d.his[d.his.length - 1]; saveState(); } });
+                        rRef.on('value', s => {
+                            const d = s.val();
+                            if(d && d.his){
+                                drawnHistory.value = d.his;
+                                currentNumber.value = d.his[d.his.length - 1];
+                                saveState();
+                            }
+                        });
                     }
-                    if(isAuto.value && (mode.value === 'SOLO' || isMaster.value)) startTimer();
+
+                    if(isAuto.value && (mode.value === 'SOLO' || isMaster.value)) {
+                        startTimer();
+                    }
                 };
 
-                const startTimer = () => { if(timer) clearInterval(timer); timer = setInterval(() => { if(!isPaused.value && drawnHistory.value.length < 90) drawNext(); }, drawInterval.value * 1000); };
-                
+                const startTimer = () => {
+                    if(timer) clearInterval(timer);
+                    timer = setInterval(() => {
+                        if(!isPaused.value && drawnHistory.value.length < 90) {
+                            drawNext();
+                        }
+                    }, drawInterval.value * 1000);
+                };
+
                 const drawNext = () => {
                     if(drawnHistory.value.length >= 90) return;
-                    let n; do { n = Math.floor(Math.random()*90)+1; } while(drawnHistory.value.includes(n));
-                    if(mode.value === 'SOLO') { drawnHistory.value.push(n); currentNumber.value = n; saveState(); }
-                    else if(isMaster.value) { db.ref(`rooms/${roomId.value}`).update({ his: [...drawnHistory.value, n] }); }
+                    let n;
+                    do {
+                        n = Math.floor(Math.random() * 90) + 1;
+                    } while(drawnHistory.value.includes(n));
+
+                    if(mode.value === 'SOLO') {
+                        drawnHistory.value.push(n);
+                        currentNumber.value = n;
+                        saveState();
+                    } else if(isMaster.value) {
+                        db.ref(`rooms/${roomId.value}`).update({
+                            his: [...drawnHistory.value, n]
+                        });
+                    }
+                };
+
+                const generateUniqueCards = (count) => {
+                    const colBounds = [[1,9],[10,19],[20,29],[30,39],[40,49],[50,59],[60,69],[70,79],[80,90]];
+                    let usedGlobal = new Set();
+                    
+                    return Array.from({length: count}, () => {
+                        let card = [Array(9).fill(0), Array(9).fill(0), Array(9).fill(0)];
+                        for(let r=0; r<3; r++){
+                            let cols = [0,1,2,3,4,5,6,7,8].sort(()=>Math.random()-0.5).slice(0,5).sort();
+                            cols.forEach(c => {
+                                let [min, max] = colBounds[c];
+                                let n;
+                                let attempts = 0;
+                                do {
+                                    n = Math.floor(Math.random() * (max - min + 1)) + min;
+                                    attempts++;
+                                } while((usedGlobal.has(n) || card[0][c]===n || card[1][c]===n || card[2][c]===n) && attempts < 100);
+                                
+                                card[r][c] = n;
+                                usedGlobal.add(n);
+                            });
+                        }
+                        return card;
+                    });
                 };
 
                 const checkKinh = () => {
-                    const win = myMarks.value.some((card, cIdx) => card.some((row, rIdx) => {
-                        const nums = myCards.value[cIdx][rIdx].filter(n => n !== 0);
-                        const marks = myCards.value[cIdx][rIdx].filter((n, nIdx) => n !== 0 && row[nIdx]);
-                        return nums.length === 5 && marks.length === 5 && marks.every(n => drawnHistory.value.includes(n));
-                    }));
-                    if(win) { alert(t.value.winMsg); wallet.amount += (betAmount.value * 10); exitToHome(); } else alert(t.value.loseMsg);
+                    const win = myMarks.value.some((card, cIdx) => {
+                        return card.some((row, rIdx) => {
+                            const numsInRow = myCards.value[cIdx][rIdx].filter(n => n !== 0);
+                            const marksInRow = myCards.value[cIdx][rIdx].filter((n, nIdx) => n !== 0 && row[nIdx]);
+                            return numsInRow.length === 5 && marksInRow.length === 5 && marksInRow.every(n => drawnHistory.value.includes(n));
+                        });
+                    });
+
+                    if(win) {
+                        alert(t.value.winMsg);
+                        wallet.amount += (betAmount.value * 10);
+                        exitToHome();
+                    } else {
+                        alert(t.value.loseMsg);
+                    }
                 };
 
                 const exitToHome = async () => {
@@ -334,69 +443,83 @@
                         if(!s.exists()) await db.ref(`rooms/${roomId.value}`).remove();
                     }
                     gameState.value = 'HOME';
-                    const url = new URL(window.location.href); url.searchParams.delete('room'); window.history.pushState({}, '', url);
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete('room');
+                    window.history.pushState({}, '', url);
                     roomId.value = null;
                 };
 
                 const togglePause = () => isPaused.value = !isPaused.value;
                 const confirmQuit = () => { if(confirm(t.value.quitConfirm)) exitToHome(); };
                 
-                // オートモード時は手動タップを無効化
-                const toggleMark = (cIdx, rIdx, nIdx) => { 
+                // オートモード時は手動操作を無効化
+                const toggleMark = (cIdx, rIdx, nIdx) => {
                     if (isAuto.value) return; 
-                    if (myCards.value[cIdx][rIdx][nIdx] !== 0) { 
-                        myMarks.value[cIdx][rIdx][nIdx] = !myMarks.value[cIdx][rIdx][nIdx]; 
-                        saveState(); 
-                    } 
-                };
-                
-                const isMarked = (cIdx, rIdx, nIdx) => myMarks.value[cIdx]?.[rIdx]?.[nIdx];
-                
-                const generateCard = () => {
-                    let card = [Array(9).fill(0), Array(9).fill(0), Array(9).fill(0)];
-                    const colBounds = [[1,9],[10,19],[20,29],[30,39],[40,49],[50,59],[60,69],[70,79],[80,90]];
-                    for(let r=0; r<3; r++){
-                        let cols = [0,1,2,3,4,5,6,7,8].sort(()=>Math.random()-0.5).slice(0,5).sort();
-                        cols.forEach(c => {
-                            let [min, max] = colBounds[c];
-                            let n; do { n = Math.floor(Math.random() * (max - min + 1)) + min; } while(card[0][c]===n || card[1][c]===n || card[2][c]===n);
-                            card[r][c] = n;
-                        });
+                    if (myCards.value[cIdx][rIdx][nIdx] !== 0) {
+                        myMarks.value[cIdx][rIdx][nIdx] = !myMarks.value[cIdx][rIdx][nIdx];
+                        saveState();
                     }
-                    return card;
                 };
 
-                const openWalletModal = () => { tempWallet.amount = wallet.amount; tempWallet.currency = wallet.currency; showWalletModal.value = true; };
-                const saveWallet = () => { wallet.amount = tempWallet.amount; wallet.currency = tempWallet.currency; showWalletModal.value = false; localStorage.setItem('loto_wallet', JSON.stringify(wallet)); };
-                const copyLink = () => { navigator.clipboard.writeText(window.location.href); alert("Copied!"); };
+                const isMarked = (cIdx, rIdx, nIdx) => myMarks.value[cIdx]?.[rIdx]?.[nIdx];
+                const openWalletModal = () => {
+                    tempWallet.amount = wallet.amount;
+                    tempWallet.currency = wallet.currency;
+                    showWalletModal.value = true;
+                };
+                const saveWallet = () => {
+                    wallet.amount = tempWallet.amount;
+                    wallet.currency = tempWallet.currency;
+                    showWalletModal.value = false;
+                    localStorage.setItem('loto_wallet', JSON.stringify(wallet));
+                };
+                const copyLink = () => {
+                    navigator.clipboard.writeText(window.location.href);
+                    alert("Link copied!");
+                };
 
-                watch(showShareModal, (v) => { if(v) setTimeout(() => { const qrEl = document.getElementById('qrcode'); qrEl.innerHTML = ""; new QRCode(qrEl, { text: window.location.href, width: 200, height: 200 }); }, 100); });
+                watch(showShareModal, (v) => {
+                    if(v) {
+                        setTimeout(() => {
+                            const qrEl = document.getElementById('qrcode');
+                            qrEl.innerHTML = "";
+                            new QRCode(qrEl, { text: window.location.href, width: 200, height: 200 });
+                        }, 100);
+                    }
+                });
 
+                // Lifecycle
                 onMounted(() => {
                     const saved = localStorage.getItem('loto_session');
                     if (saved) {
                         const d = JSON.parse(saved);
-                        // 状態を完全復元
-                        gameState.value = d.gs; 
-                        mode.value = d.m; 
-                        myCards.value = d.c; 
+                        // 完全復元
+                        gameState.value = d.gs;
+                        mode.value = d.m;
+                        myCards.value = d.c;
                         myMarks.value = d.mk;
-                        ticketCount.value = d.tc; 
-                        betAmount.value = d.ba; 
-                        isAuto.value = d.ia; 
+                        ticketCount.value = d.tc;
+                        betAmount.value = d.ba;
+                        isAuto.value = d.ia;
                         drawInterval.value = d.di;
-                        roomId.value = d.ri; 
-                        isMaster.value = d.im; 
-                        wallet.amount = d.wal; 
+                        roomId.value = d.ri;
+                        isMaster.value = d.im;
+                        wallet.amount = d.wal;
                         wallet.currency = d.cur;
                         drawnHistory.value = d.his || [];
                         currentNumber.value = drawnHistory.value.length > 0 ? drawnHistory.value[drawnHistory.value.length - 1] : null;
 
-                        // プレイ中なら通信やタイマーを再開
                         if (gameState.value === 'PLAYING') {
                             if(mode.value === 'MULTI') {
                                 const rRef = db.ref(`rooms/${roomId.value}`);
-                                rRef.on('value', s => { const data = s.val(); if(data && data.his){ drawnHistory.value = data.his; currentNumber.value = data.his[data.his.length - 1]; saveState(); } });
+                                rRef.on('value', s => {
+                                    const data = s.val();
+                                    if(data && data.his){
+                                        drawnHistory.value = data.his;
+                                        currentNumber.value = data.his[data.his.length - 1];
+                                        saveState();
+                                    }
+                                });
                             }
                             if(isAuto.value && (mode.value === 'SOLO' || isMaster.value)) startTimer();
                         }
@@ -408,7 +531,14 @@
                     if(savedWal) Object.assign(wallet, JSON.parse(savedWal));
                 });
 
-                return { currentLang, t, i18n, gameState, mode, playerName, wallet, tempWallet, showWalletModal, showShareModal, ticketCount, betAmount, isAuto, drawInterval, isPaused, myCards, currentNumber, drawnHistory, myNumbers, handleLangChange, initGame, startGame, drawNext, checkKinh, confirmQuit, toggleMark, isMarked, openWalletModal, saveWallet, copyLink, togglePause };
+                return {
+                    currentLang, t, i18n, gameState, mode, playerName, wallet, tempWallet,
+                    showWalletModal, showShareModal, ticketCount, betAmount, isAuto,
+                    drawInterval, isPaused, myCards, currentNumber, drawnHistory,
+                    myNumbers, handleLangChange, initGame, startGame, drawNext,
+                    checkKinh, confirmQuit, toggleMark, isMarked, openWalletModal,
+                    saveWallet, copyLink, togglePause
+                };
             }
         }).mount('#app');
     </script>
