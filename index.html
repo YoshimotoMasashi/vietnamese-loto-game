@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lô Tô Global - Full Multilingual Pro</title>
+    <title>Lô Tô Global - Ultimate Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -12,17 +12,24 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         [v-cloak] { display: none; }
-        .cell { aspect-ratio: 1/1; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; font-size: 0.9rem; background: white; transition: all 0.2s; position: relative; }
+        .cell { aspect-ratio: 1/1; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; font-size: 0.85rem; background: white; transition: all 0.2s; position: relative; }
         .marked::after { content: ''; position: absolute; width: 80%; height: 80%; background-color: rgba(239, 68, 68, 0.85); border-radius: 50%; z-index: 10; animation: pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .cell-num { z-index: 20; }
         .marked .cell-num { color: white; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+        .animate-pop { animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body class="bg-slate-100 font-sans">
     <div id="app" v-cloak class="min-h-screen max-w-md mx-auto flex flex-col bg-white shadow-2xl relative overflow-hidden">
         
+        <div class="fixed top-20 left-0 right-0 z-[60] px-6 pointer-events-none">
+            <div v-for="log in logs" :key="log.id" class="bg-black/80 text-white text-xs py-2.5 px-5 rounded-full shadow-xl mb-2 text-center animate-pop">
+                {{ log.message }}
+            </div>
+        </div>
+
         <header class="p-3 bg-white border-b flex justify-between items-center sticky top-0 z-40 h-16">
             <button v-if="gameState !== 'HOME'" @click="confirmQuit" class="flex items-center justify-center w-10 h-10 bg-slate-100 text-slate-600 rounded-full">
                 <i class="fas fa-home"></i>
@@ -66,17 +73,17 @@
                 </div>
             </div>
 
-            <div v-else-if="gameState === 'SETUP'" class="flex-grow p-8 space-y-6 overflow-y-auto no-scrollbar">
+            <div v-else-if="gameState === 'SETUP'" class="flex-grow p-8 space-y-5 overflow-y-auto no-scrollbar">
                 <h2 class="text-center font-black text-2xl text-slate-800 italic uppercase underline decoration-red-500 decoration-4 underline-offset-8 mb-4">{{ t.setupTitle }}</h2>
                 
-                <div class="space-y-3">
+                <div class="space-y-2">
                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ t.ticketCount }}</label>
                     <div class="grid grid-cols-4 gap-3">
                         <button v-for="n in 4" :key="n" @click="ticketCount = n" :class="ticketCount === n ? 'bg-red-600 text-white shadow-lg' : 'bg-slate-100 text-slate-400'" class="py-4 rounded-2xl font-black transition">{{ n }}</button>
                     </div>
                 </div>
 
-                <div class="space-y-3">
+                <div class="space-y-2">
                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ t.drawMethod }}</label>
                     <div class="grid grid-cols-2 gap-3">
                         <button @click="isAuto = true" :class="isAuto ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-400'" class="py-4 rounded-2xl font-black transition">AUTO</button>
@@ -84,15 +91,12 @@
                     </div>
                 </div>
 
-                <div v-if="isAuto" class="space-y-3 bg-slate-50 p-4 rounded-2xl">
-                    <div class="flex justify-between">
-                        <label class="text-[10px] font-black text-slate-400 uppercase">{{ t.speedLabel }}</label>
-                        <span class="text-xs font-black text-red-600">{{ drawInterval }}s</span>
-                    </div>
+                <div v-if="isAuto" class="space-y-2 bg-slate-50 p-4 rounded-2xl">
+                    <div class="flex justify-between"><label class="text-[10px] font-black text-slate-400 uppercase">{{ t.speedLabel }}</label><span class="text-xs font-black text-red-600">{{ drawInterval }}s</span></div>
                     <input type="range" v-model="drawInterval" min="2" max="8" step="1" class="w-full accent-red-600">
                 </div>
 
-                <div class="space-y-3">
+                <div class="space-y-2">
                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ t.betAmount }}</label>
                     <div class="flex items-center bg-slate-50 p-4 rounded-2xl border-2">
                         <span class="font-black text-slate-400 text-xl mr-3">{{ wallet.currency }}</span>
@@ -106,10 +110,10 @@
             </div>
 
             <div v-else class="flex-grow flex flex-col h-full overflow-hidden">
-                <div class="bg-slate-900 text-white p-4 shadow-2xl">
+                <div class="bg-slate-900 text-white p-4 shadow-2xl space-y-3">
                     <div class="flex justify-between items-center">
                         <div class="flex items-center space-x-4">
-                            <div class="w-20 h-20 bg-white rounded-2xl flex items-center justify-center text-slate-900 text-5xl font-black border-b-8 border-red-600">
+                            <div class="w-20 h-20 bg-white rounded-2xl flex items-center justify-center text-slate-900 text-5xl font-black border-b-8 border-red-600 animate-pop" :key="currentNumber">
                                 {{ currentNumber || '--' }}
                             </div>
                             <div>
@@ -118,6 +122,9 @@
                             </div>
                         </div>
                         <div class="flex flex-col items-end gap-2">
+                            <button v-if="mode === 'MULTI'" @click="showShareModal = true" class="bg-red-600 text-[10px] px-3 py-2 rounded-xl font-black shadow-lg flex items-center">
+                                <i class="fas fa-qrcode mr-2"></i> {{ t.inviteBtn }}
+                            </button>
                             <div class="flex gap-2">
                                 <button v-if="isAuto" @click="togglePause" class="w-10 h-10 rounded-full bg-white text-slate-900 flex items-center justify-center shadow-lg active:scale-90 transition">
                                     <i :class="isPaused ? 'fas fa-play' : 'fas fa-pause'"></i>
@@ -140,7 +147,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="pt-4 pb-24">
+                    <div class="pt-4 pb-24 text-center">
                         <button @click="checkKinh" class="w-full bg-red-600 text-white py-8 rounded-[2rem] font-black text-4xl italic shadow-2xl active:scale-95 transition">
                             {{ t.kinhBtn }}
                         </button>
@@ -148,28 +155,70 @@
                 </div>
             </div>
         </main>
+
+        <div v-if="showShareModal" class="fixed inset-0 z-50 flex items-center justify-center p-8 bg-black/80 backdrop-blur-md animate-pop">
+            <div class="bg-white rounded-[2.5rem] w-full p-8 text-center space-y-6 shadow-2xl border-t-8 border-red-600">
+                <h3 class="font-black text-2xl italic text-red-600 uppercase">{{ t.inviteTitle }}</h3>
+                <div id="qrcode" class="flex justify-center p-4 bg-white rounded-3xl border shadow-inner"></div>
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button @click="copyLink" class="bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase">{{ t.copyBtn }}</button>
+                    <button @click="showShareModal = false" class="bg-slate-100 text-slate-400 py-4 rounded-2xl font-black text-xs uppercase">{{ t.closeBtn }}</button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="showWalletModal" class="fixed inset-0 z-50 flex items-center justify-center p-8 bg-black/80 backdrop-blur-md animate-pop">
+            <div class="bg-white rounded-[2.5rem] w-full p-8 space-y-6 shadow-2xl border-t-8 border-green-500">
+                <h3 class="font-black text-2xl italic text-green-600"><i class="fas fa-wallet mr-2"></i>{{ t.walletTitle }}</h3>
+                <div class="space-y-4">
+                    <div class="bg-slate-50 p-4 rounded-2xl border"><label class="text-[10px] font-black text-slate-400">{{ t.curLabel }}</label><input type="text" v-model="tempWallet.currency" class="w-full bg-transparent font-black text-xl outline-none"></div>
+                    <div class="bg-slate-50 p-4 rounded-2xl border"><label class="text-[10px] font-black text-slate-400">{{ t.balLabel }}</label><input type="number" v-model.number="tempWallet.amount" class="w-full bg-transparent font-black text-3xl outline-none"></div>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button @click="showWalletModal = false" class="flex-1 py-4 text-slate-400 font-bold">{{ t.cancel }}</button>
+                    <button @click="saveWallet" class="flex-1 bg-green-600 text-white py-4 rounded-2xl font-black shadow-lg uppercase">{{ t.saveBtn }}</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAqKCaLzCoGY6e87gHmeRAAawN5yrVeFcg",
+            authDomain: "loto-vn.firebaseapp.com",
+            databaseURL: "https://loto-vn-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "loto-vn",
+            storageBucket: "loto-vn.firebasestorage.app",
+            messagingSenderId: "403754138736",
+            appId: "1:403754138736:web:9e8927bf43a86f299bc8b5",
+            measurementId: "G-R4Q6NS3MT8"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
         const i18n = {
-            vi: { langName: "Tiếng Việt", cur: "₫", welcomeMsg: "Chào mừng", playerNameLabel: "Tên người chơi", placeholderName: "Nhập tên...", soloMode: "Chơi một mình", multiMode: "Chơi nhiều người", setupTitle: "Thiết lập", ticketCount: "Số lượng vé", drawMethod: "Cách quay số", speedLabel: "Tốc độ (giây)", betAmount: "Mức cược", startBtn: "BẮT ĐẦU", drawnLabel: "Số đã bốc", nextBtn: "TIẾP THEO", kinhBtn: "KINH!", winMsg: "KINH! CHIẾN THẮNG!", loseMsg: "Chưa Kinh!", walletLabel: "Số dư", quitConfirm: "Bạn có chắc muốn thoát?" },
-            en: { langName: "English", cur: "$", welcomeMsg: "Welcome", playerNameLabel: "Player Name", placeholderName: "Enter name...", soloMode: "Solo Mode", multiMode: "Multiplayer", setupTitle: "Setup Game", ticketCount: "Tickets", drawMethod: "Draw Method", speedLabel: "Speed (sec)", betAmount: "Bet Amount", startBtn: "START", drawnLabel: "Drawn", nextBtn: "NEXT", kinhBtn: "KINH!", winMsg: "KINH! WINNER!", loseMsg: "Not yet!", walletLabel: "Wallet", quitConfirm: "Are you sure you want to quit?" },
-            ja: { langName: "日本語", cur: "¥", welcomeMsg: "ようこそ", playerNameLabel: "プレイヤー名", placeholderName: "名前を入力...", soloMode: "ソロプレイ", multiMode: "マルチプレイ", setupTitle: "ゲーム設定", ticketCount: "チケット枚数", drawMethod: "抽選方法", speedLabel: "速度（秒）", betAmount: "賭け金", startBtn: "開始", drawnLabel: "出た数字", nextBtn: "次へ", kinhBtn: "上がり！", winMsg: "上がり！おめでとう！", loseMsg: "まだ上がっていません", walletLabel: "残高", quitConfirm: "トップに戻りますか？" },
-            th: { langName: "ไทย", cur: "฿", welcomeMsg: "ยินดีต้อนรับ", playerNameLabel: "ชื่อผู้เล่น", placeholderName: "กรอกชื่อ...", soloMode: "เล่นคนเดียว", multiMode: "เล่นหลายคน", setupTitle: "ตั้งค่าเกม", ticketCount: "จำนวนใบ", drawMethod: "วิธีจั่ว", speedLabel: "ความเร็ว (วินาที)", betAmount: "เดิมพัน", startBtn: "เริ่มเกม", drawnLabel: "จั่วแล้ว", nextBtn: "ถัดไป", kinhBtn: "คิน!", winMsg: "คุณชนะแล้ว!", loseMsg: "ยังไม่ชนะ!", walletLabel: "ยอดเงิน", quitConfirm: "ต้องการออกจากเกม?" },
-            lo: { langName: "ລາວ", cur: "₭", welcomeMsg: "ຍິນດີຕ້ອນຮັບ", playerNameLabel: "ຊື່ຜູ້ຫຼິ້ນ", placeholderName: "ໃສ່ຊື່...", soloMode: "ຫຼິ້ນຄົນດຽວ", multiMode: "ຫຼິ້ນຫຼາຍຄົນ", setupTitle: "ຕັ້ງຄ່າ", ticketCount: "ຈຳນວນໃບ", drawMethod: "ວິທີອອກເລກ", speedLabel: "ຄວາມໄວ (ວິນາທີ)", betAmount: "ເດີມພັນ", startBtn: "ເລີ່ມ", drawnLabel: "ອອກແລ້ວ", nextBtn: "ຕໍ່ໄປ", kinhBtn: "ກິນ!", winMsg: "ທ່ານຊະນະແລ້ວ!", loseMsg: "ຍັງບໍ່ທັນກິນ!", walletLabel: "ຍອດເງິນ", quitConfirm: "ຕ້ອງການອອກຈາກເກມ?" },
-            km: { langName: "ខ្មែរ", cur: "៛", welcomeMsg: "សូមស្វាគមន៍", playerNameLabel: "ឈ្មោះអ្នកលេង", placeholderName: "បញ្ចូលឈ្មោះ...", soloMode: "លេងម្នាក់ឯង", multiMode: "លេងច្រើននាក់", setupTitle: "ការកំណត់", ticketCount: "ចំនួនសន្លឹក", drawMethod: "វិធីចាប់លេខ", speedLabel: "ល្បឿន (វិនាទី)", betAmount: "ភ្នាល់", startBtn: "ចាប់ផ្ដើម", drawnLabel: "ចេញហើយ", nextBtn: "បន្ទាប់", kinhBtn: "គីន!", winMsg: "អ្នកឈ្នះហើយ!", loseMsg: "មិនទាន់គីនទេ!", walletLabel: "សមតុល្យ", quitConfirm: "តើអ្នកចង់ចាកចេញ?" },
-            zh: { langName: "简体中文", cur: "¥", welcomeMsg: "欢迎", playerNameLabel: "玩家姓名", placeholderName: "输入名字...", soloMode: "单人模式", multiMode: "多人模式", setupTitle: "设置", ticketCount: "票数", drawMethod: "抽号方式", speedLabel: "速度 (秒)", betAmount: "下注金额", startBtn: "开始游戏", drawnLabel: "已抽", nextBtn: "下一个", kinhBtn: "赢了!", winMsg: "恭喜! 你赢了!", loseMsg: "还没赢呢!", walletLabel: "余额", quitConfirm: "确定要退出吗?" },
-            fr: { langName: "Français", cur: "€", welcomeMsg: "Bienvenue", playerNameLabel: "Nom du joueur", placeholderName: "Entrez un nom...", soloMode: "Mode Solo", multiMode: "Multijoueur", setupTitle: "Configuration", ticketCount: "Tickets", drawMethod: "Méthode", speedLabel: "Vitesse (sec)", betAmount: "Mise", startBtn: "JOUER", drawnLabel: "Tirés", nextBtn: "SUIVANT", kinhBtn: "KINH!", winMsg: "Félicitations!", loseMsg: "Pas encore!", walletLabel: "Solde", quitConfirm: "Voulez-vous quitter?" }
+            vi: { langName: "Tiếng Việt", cur: "₫", welcomeMsg: "Chào mừng", playerNameLabel: "Tên người chơi", placeholderName: "Nhập tên...", soloMode: "Chơi một mình", multiMode: "Chơi nhiều người", setupTitle: "Thiết lập", ticketCount: "Số lượng vé", drawMethod: "Cách quay số", speedLabel: "Tốc độ (giây)", betAmount: "Mức cược", startBtn: "BẮT ĐẦU", drawnLabel: "Số đã bốc", nextBtn: "TIẾP THEO", kinhBtn: "KINH!", winMsg: "KINH! CHIẾN THẮNG!", loseMsg: "Chưa Kinh!", walletLabel: "Số dư", quitConfirm: "Bạn có chắc muốn thoát?", inviteBtn: "MỜI", inviteTitle: "Mời Tham Gia", copyBtn: "Sao chép", closeBtn: "Đóng", walletTitle: "Ví", curLabel: "Đơn vị", balLabel: "Số dư", cancel: "Hủy", saveBtn: "Lưu", fullMsg: "Phòng đã đầy (10 người)" },
+            en: { langName: "English", cur: "$", welcomeMsg: "Welcome", playerNameLabel: "Player Name", placeholderName: "Enter name...", soloMode: "Solo Mode", multiMode: "Multiplayer", setupTitle: "Setup Game", ticketCount: "Tickets", drawMethod: "Draw Method", speedLabel: "Speed (sec)", betAmount: "Bet Amount", startBtn: "START", drawnLabel: "Drawn", nextBtn: "NEXT", kinhBtn: "KINH!", winMsg: "KINH! WINNER!", loseMsg: "Not yet!", walletLabel: "Wallet", quitConfirm: "Are you sure you want to quit?", inviteBtn: "INVITE", inviteTitle: "Invitation", copyBtn: "Copy", closeBtn: "Close", walletTitle: "Wallet", curLabel: "Currency", balLabel: "Balance", cancel: "Cancel", saveBtn: "Save", fullMsg: "Room Full (Max 10)" },
+            ja: { langName: "日本語", cur: "¥", welcomeMsg: "ようこそ", playerNameLabel: "プレイヤー名", placeholderName: "名前を入力...", soloMode: "ソロプレイ", multiMode: "マルチプレイ", setupTitle: "ゲーム設定", ticketCount: "チケット枚数", drawMethod: "抽選方法", speedLabel: "速度（秒）", betAmount: "賭け金", startBtn: "開始", drawnLabel: "出た数字", nextBtn: "次へ", kinhBtn: "上がり！", winMsg: "おめでとう！上がりです！", loseMsg: "まだ上がっていません", walletLabel: "残高", quitConfirm: "終了しますか？", inviteBtn: "招待", inviteTitle: "ルーム招待", copyBtn: "コピー", closeBtn: "閉じる", walletTitle: "ウォレット", curLabel: "単位", balLabel: "残高", cancel: "キャンセル", saveBtn: "保存", fullMsg: "満員です(最大10人)" },
+            th: { langName: "ไทย", cur: "฿", welcomeMsg: "ยินดีต้อนรับ", playerNameLabel: "ชื่อผู้เล่น", placeholderName: "กรอกชื่อ...", soloMode: "เล่นคนเดียว", multiMode: "เล่นหลายคน", setupTitle: "ตั้งค่าเกม", ticketCount: "จำนวนใบ", drawMethod: "วิธีจั่ว", speedLabel: "ความเร็ว", betAmount: "เดิมพัน", startBtn: "เริ่มเกม", drawnLabel: "จั่วแล้ว", nextBtn: "ถัดไป", kinhBtn: "คิน!", winMsg: "คุณชนะแล้ว!", loseMsg: "ยังไม่ชนะ!", walletLabel: "ยอดเงิน", quitConfirm: "ออก?", inviteBtn: "เชิญ", inviteTitle: "เชิญเพื่อน", copyBtn: "คัดลอก", closeBtn: "ปิด", walletTitle: "กระเป๋าเงิน", curLabel: "สกุลเงิน", balLabel: "ยอดเงิน", cancel: "ยกเลิก", saveBtn: "บันทึก", fullMsg: "ห้องเต็ม" },
+            lo: { langName: "ລາວ", cur: "₭", welcomeMsg: "ຍິນດີຕ້ອນຮັບ", playerNameLabel: "ຊື່ຜູ້ຫຼິ້ນ", placeholderName: "ໃສ່ຊື່...", soloMode: "ຫຼິ້ນຄົນດຽວ", multiMode: "ຫຼິ້ນຫຼາຍຄົນ", setupTitle: "ຕັ້ງຄ່າ", ticketCount: "ຈຳນວນໃບ", drawMethod: "ວິທີອອກເລກ", speedLabel: "ຄວາມໄວ", betAmount: "ເດີມພັນ", startBtn: "ເລີ່ມ", drawnLabel: "ອອກແລ້ວ", nextBtn: "ຕໍ່ໄປ", kinhBtn: "ກິນ!", winMsg: "ທ່ານຊະນະແລ້ວ!", loseMsg: "ຍັງບໍ່ທັນກິນ!", walletLabel: "ຍອດເງິນ", quitConfirm: "ອອກ?", inviteBtn: "ເຊີນ", inviteTitle: "ເຊີນ", copyBtn: "ຄັດລອກ", closeBtn: "ປິດ", walletTitle: "ກະເປົາ", curLabel: "ສະກຸນ", balLabel: "ຍອດ", cancel: "ຍົກເລີກ", saveBtn: "ບັນທຶກ", fullMsg: "ເຕັມແລ້ວ" },
+            km: { langName: "ខ្មែរ", cur: "៛", welcomeMsg: "សូមស្វាគមន៍", playerNameLabel: "ឈ្មោះអ្នកលេង", placeholderName: "បញ្ចូលឈ្មោះ...", soloMode: "លេងម្នាក់ឯង", multiMode: "លេងច្រើននាក់", setupTitle: "ការកំណត់", ticketCount: "ចំនួនសន្លឹក", drawMethod: "វិធីចាប់លេខ", speedLabel: "ល្បឿន", betAmount: "ភ្នាល់", startBtn: "ចាប់ផ្ដើម", drawnLabel: "ចេញហើយ", nextBtn: "បន្ទាប់", kinhBtn: "គីន!", winMsg: "អ្នកឈ្នះហើយ!", loseMsg: "មិនទាន់គីនទេ!", walletLabel: "សមតុល្យ", quitConfirm: "ចាកចេញ?", inviteBtn: "អញ្ជើញ", inviteTitle: "អញ្ជើញ", copyBtn: "ចម្លង", closeBtn: "បិទ", walletTitle: "កាបូប", curLabel: "រូបិយប័ណ្ណ", balLabel: "សមតុល្យ", cancel: "បោះបង់", saveBtn: "រក្សាទុក", fullMsg: "ពេញហើយ" },
+            zh: { langName: "简体中文", cur: "¥", welcomeMsg: "欢迎", playerNameLabel: "玩家姓名", placeholderName: "输入名字...", soloMode: "单人模式", multiMode: "多人模式", setupTitle: "设置", ticketCount: "票数", drawMethod: "抽号方式", speedLabel: "速度", betAmount: "下注金额", startBtn: "开始游戏", drawnLabel: "已抽", nextBtn: "下一个", kinhBtn: "赢了!", winMsg: "恭喜! 你赢了!", loseMsg: "还没赢呢!", walletLabel: "余额", quitConfirm: "退出吗?", inviteBtn: "邀请", inviteTitle: "邀请好友", copyBtn: "复制", closeBtn: "关闭", walletTitle: "钱包", curLabel: "货币", balLabel: "余额", cancel: "取消", saveBtn: "保存", fullMsg: "满员" },
+            fr: { langName: "Français", cur: "€", welcomeMsg: "Bienvenue", playerNameLabel: "Nom du joueur", placeholderName: "Entrez un nom...", soloMode: "Mode Solo", multiMode: "Multijoueur", setupTitle: "Configuration", ticketCount: "Tickets", drawMethod: "Méthode", speedLabel: "Vitesse", betAmount: "Mise", startBtn: "JOUER", drawnLabel: "Tirés", nextBtn: "SUIVANT", kinhBtn: "KINH!", winMsg: "Félicitations!", loseMsg: "Pas encore!", walletLabel: "Solde", quitConfirm: "Quitter?", inviteBtn: "INVITER", inviteTitle: "Invitation", copyBtn: "Copier", closeBtn: "Fermer", walletTitle: "Portefeuille", curLabel: "Devise", balLabel: "Solde", cancel: "Annuler", saveBtn: "Sauver", fullMsg: "Complet" }
         };
 
-        const { createApp, ref, reactive, computed } = Vue;
+        const { createApp, ref, reactive, computed, watch, onMounted } = Vue;
         createApp({
             setup() {
                 const currentLang = ref(localStorage.getItem('loto_lang') || 'vi');
                 const t = computed(() => i18n[currentLang.value]);
                 const gameState = ref('HOME');
+                const mode = ref('SOLO');
                 const playerName = ref(localStorage.getItem('loto_player_name') || '');
                 const wallet = reactive({ amount: 10000, currency: t.value.cur });
+                const tempWallet = reactive({ amount: 0, currency: '' });
+                const showWalletModal = ref(false);
+                const showShareModal = ref(false);
                 const ticketCount = ref(1);
                 const betAmount = ref(100);
                 const isAuto = ref(true);
@@ -179,42 +228,48 @@
                 const myMarks = ref([]);
                 const currentNumber = ref(null);
                 const drawnHistory = ref([]);
-                const roomId = ref(null);
+                const roomId = ref(new URLSearchParams(window.location.search).get('room'));
+                const logs = ref([]);
                 let timer = null;
 
-                const handleLangChange = () => {
-                    localStorage.setItem('loto_lang', currentLang.value);
-                    wallet.currency = t.value.cur;
-                };
+                const addLog = (m) => { const id = Date.now(); logs.value.push({id, message: m}); setTimeout(() => logs.value = logs.value.filter(l => l.id !== id), 3000); };
+                const handleLangChange = () => { localStorage.setItem('loto_lang', currentLang.value); wallet.currency = t.value.cur; };
 
-                const initGame = (mode) => {
-                    if(!playerName.value) playerName.value = 'Player ' + Math.floor(Math.random()*999);
-                    localStorage.setItem('loto_player_name', playerName.value);
+                const initGame = async (m) => {
+                    mode.value = m;
+                    const name = playerName.value.trim() || 'Player ' + Math.floor(Math.random()*900+100);
+                    playerName.value = name; localStorage.setItem('loto_player_name', name);
+                    if(m === 'MULTI') {
+                        if(!roomId.value) roomId.value = Math.random().toString(36).substring(2, 7).toUpperCase();
+                        window.history.pushState({}, '', `?room=${roomId.value}`);
+                        const pRef = db.ref(`rooms/${roomId.value}/players`);
+                        const s = await pRef.once('value');
+                        if(Object.keys(s.val()||{}).length >= 10 && !(s.val()||{})[name.replace(/[.#$[\]]/g, "_")]) return alert(t.value.fullMsg);
+                        pRef.child(name.replace(/[.#$[\]]/g, "_")).set(true);
+                        db.ref(`rooms/${roomId.value}`).update({ msg: `${name} joined!` });
+                    }
                     gameState.value = 'SETUP';
                 };
 
-                const toggleMark = (cIdx, rIdx, nIdx) => {
-                    if (myCards.value[cIdx][rIdx][nIdx] === 0) return;
-                    myMarks.value[cIdx][rIdx][nIdx] = !myMarks.value[cIdx][rIdx][nIdx];
-                };
-                const isMarked = (cIdx, rIdx, nIdx) => myMarks.value[cIdx]?.[rIdx]?.[nIdx];
-
-                const drawNext = () => {
-                    if(drawnHistory.value.length >= 90) { clearInterval(timer); return; }
-                    let n; do { n = Math.floor(Math.random()*90)+1; } while(drawnHistory.value.includes(n));
-                    currentNumber.value = n;
-                    drawnHistory.value.push(n);
-                };
-
                 const startGame = () => {
+                    if(wallet.amount < (betAmount.value * ticketCount.value)) return alert("Low balance");
+                    wallet.amount -= (betAmount.value * ticketCount.value);
                     myCards.value = Array.from({length: ticketCount.value}, () => generateCard());
                     myMarks.value = myCards.value.map(c => c.map(r => r.map(() => false)));
-                    drawnHistory.value = [];
-                    currentNumber.value = null;
-                    gameState.value = 'PLAYING';
-                    if(isAuto.value) {
-                        timer = setInterval(() => { if(!isPaused.value) drawNext(); }, drawInterval.value * 1000);
+                    drawnHistory.value = []; currentNumber.value = null; gameState.value = 'PLAYING';
+                    if(mode.value === 'SOLO') { if(isAuto.value) timer = setInterval(() => { if(!isPaused.value) drawNext(); }, drawInterval.value * 1000); }
+                    else {
+                        const rRef = db.ref(`rooms/${roomId.value}`);
+                        rRef.on('value', s => { const d = s.val(); if(d){ if(d.num) currentNumber.value = d.num; if(d.his) drawnHistory.value = d.his; if(d.msg){ addLog(d.msg); rRef.update({msg: null}); }} });
+                        if(isAuto.value) timer = setInterval(() => { if(!isPaused.value && drawnHistory.value.length < 90) drawNext(); }, drawInterval.value * 1000);
                     }
+                };
+
+                const drawNext = () => {
+                    if(drawnHistory.value.length >= 90) return clearInterval(timer);
+                    let n; do { n = Math.floor(Math.random()*90)+1; } while(drawnHistory.value.includes(n));
+                    if(mode.value === 'SOLO') { currentNumber.value = n; drawnHistory.value.push(n); }
+                    else db.ref(`rooms/${roomId.value}`).update({ num: n, his: [...drawnHistory.value, n] });
                 };
 
                 const checkKinh = () => {
@@ -223,12 +278,13 @@
                         const marks = myCards.value[cIdx][rIdx].filter((n, nIdx) => n !== 0 && row[nIdx]);
                         return nums.length === 5 && marks.length === 5 && marks.every(n => drawnHistory.value.includes(n));
                     }));
-                    if(win) { alert(t.value.winMsg); clearInterval(timer); gameState.value = 'HOME'; }
+                    if(win) { alert(t.value.winMsg); wallet.amount += (betAmount.value * 10); if(mode.value === 'MULTI') db.ref(`rooms/${roomId.value}`).update({ msg: `🎉 ${playerName.value} KINH!` }); confirmQuit(); }
                     else alert(t.value.loseMsg);
                 };
 
-                const confirmQuit = () => { if(confirm(t.value.quitConfirm)) { clearInterval(timer); gameState.value = 'HOME'; } };
-
+                const confirmQuit = () => { if(confirm(t.value.quitConfirm)) { clearInterval(timer); if(mode.value === 'MULTI') db.ref(`rooms/${roomId.value}/players/${playerName.value.replace(/[.#$[\]]/g, "_")}`).remove(); gameState.value = 'HOME'; } };
+                const toggleMark = (cIdx, rIdx, nIdx) => { if (myCards.value[cIdx][rIdx][nIdx] !== 0) myMarks.value[cIdx][rIdx][nIdx] = !myMarks.value[cIdx][rIdx][nIdx]; };
+                const isMarked = (cIdx, rIdx, nIdx) => myMarks.value[cIdx]?.[rIdx]?.[nIdx];
                 const generateCard = () => {
                     let card = [Array(9).fill(0), Array(9).fill(0), Array(9).fill(0)];
                     const colBounds = [[1,9],[10,19],[20,29],[30,39],[40,49],[50,59],[60,69],[70,79],[80,90]];
@@ -236,19 +292,21 @@
                         let cols = [0,1,2,3,4,5,6,7,8].sort(()=>Math.random()-0.5).slice(0,5).sort();
                         cols.forEach(c => {
                             let [min, max] = colBounds[c];
-                            let n; do { n = Math.floor(Math.random() * (max - min + 1)) + min; } 
-                            while(card[0][c]===n || card[1][c]===n || card[2][c]===n);
+                            let n; do { n = Math.floor(Math.random() * (max - min + 1)) + min; } while(card[0][c]===n || card[1][c]===n || card[2][c]===n);
                             card[r][c] = n;
                         });
                     }
                     return card;
                 };
 
-                return {
-                    currentLang, t, i18n, gameState, playerName, wallet, ticketCount, betAmount, 
-                    isAuto, drawInterval, isPaused, myCards, currentNumber, drawnHistory,
-                    handleLangChange, initGame, toggleMark, isMarked, drawNext, startGame, togglePause: () => isPaused.value = !isPaused.value, checkKinh, confirmQuit, openWalletModal: () => {}
-                };
+                const openWalletModal = () => { tempWallet.amount = wallet.amount; tempWallet.currency = wallet.currency; showWalletModal.value = true; };
+                const saveWallet = () => { wallet.amount = tempWallet.amount; wallet.currency = tempWallet.currency; showWalletModal.value = false; };
+                const copyLink = () => { navigator.clipboard.writeText(window.location.href); addLog(t.value.copyBtn + " OK!"); };
+
+                watch(showShareModal, (v) => { if(v) setTimeout(() => { document.getElementById('qrcode').innerHTML = ""; new QRCode(document.getElementById("qrcode"), { text: window.location.href, width: 180, height: 180 }); }, 100); });
+                onMounted(() => { if(roomId.value) initGame('MULTI'); });
+
+                return { currentLang, t, i18n, gameState, mode, playerName, wallet, tempWallet, showWalletModal, showShareModal, ticketCount, betAmount, isAuto, drawInterval, isPaused, myCards, currentNumber, drawnHistory, roomId, logs, handleLangChange, initGame, startGame, drawNext, checkKinh, confirmQuit, toggleMark, isMarked, openWalletModal, saveWallet, copyLink, togglePause: () => isPaused.value = !isPaused.value };
             }
         }).mount('#app');
     </script>
