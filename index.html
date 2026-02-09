@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lô Tô Global - Full Definitive Edition</title>
+    <title>Lô Tô Global - Final Rev 10</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -23,7 +23,6 @@
         .history-item { width: 36px; height: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #334155; font-weight: 800; font-size: 0.85rem; color: #cbd5e1; border: 1px solid #475569; transition: all 0.3s; }
         .history-latest { background: #ef4444; color: white; border-color: #ef4444; transform: scale(1.1); box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); z-index: 10; }
         
-        /* マッチした時の履歴演出：黄色く光る */
         .history-match { background: #fbbf24 !important; color: #78350f !important; border-color: #f59e0b !important; animation: match-glow 1s infinite alternate; transform: scale(1.15); z-index: 11; }
         @keyframes match-glow { from { box-shadow: 0 0 5px #fbbf24; } to { box-shadow: 0 0 20px #fbbf24; } }
     </style>
@@ -160,7 +159,7 @@
             </div>
 
             <div class="absolute bottom-1 right-2 pointer-events-none text-[8px] text-slate-300 font-mono">
-                Last Update: 2026-02-09 07:42 / Rev: 9
+                Last Update: 2026-02-09 07:46 / Rev: 10
             </div>
         </main>
 
@@ -250,12 +249,14 @@
                         const data = {
                             gs: gameState.value, m: mode.value, c: myCards.value, mk: myMarks.value,
                             tc: ticketCount.value, ba: betAmount.value, ia: isAuto.value, di: drawInterval.value,
-                            ri: roomId.value, im: isMaster.value, wal: wallet.amount, cur: wallet.currency
+                            ri: roomId.value, im: isMaster.value, wal: wallet.amount, cur: wallet.currency,
+                            his: drawnHistory.value
                         };
                         localStorage.setItem('loto_session', JSON.stringify(data));
                     }
                 };
 
+                // オートマーク処理
                 watch(currentNumber, (newVal) => {
                     if (!newVal || !isAuto.value) return;
                     myCards.value.forEach((card, cIdx) => {
@@ -299,9 +300,10 @@
                     }
                     gameState.value = 'PLAYING';
                     saveState();
+                    
                     if(mode.value === 'MULTI') {
                         const rRef = db.ref(`rooms/${roomId.value}`);
-                        rRef.on('value', s => { const d = s.val(); if(d && d.his){ drawnHistory.value = d.his; currentNumber.value = d.his[d.his.length - 1]; } });
+                        rRef.on('value', s => { const d = s.val(); if(d && d.his){ drawnHistory.value = d.his; currentNumber.value = d.his[d.his.length - 1]; saveState(); } });
                     }
                     if(isAuto.value && (mode.value === 'SOLO' || isMaster.value)) startTimer();
                 };
@@ -311,7 +313,7 @@
                 const drawNext = () => {
                     if(drawnHistory.value.length >= 90) return;
                     let n; do { n = Math.floor(Math.random()*90)+1; } while(drawnHistory.value.includes(n));
-                    if(mode.value === 'SOLO') { drawnHistory.value.push(n); currentNumber.value = n; }
+                    if(mode.value === 'SOLO') { drawnHistory.value.push(n); currentNumber.value = n; saveState(); }
                     else if(isMaster.value) { db.ref(`rooms/${roomId.value}`).update({ his: [...drawnHistory.value, n] }); }
                 };
 
@@ -332,11 +334,22 @@
                         if(!s.exists()) await db.ref(`rooms/${roomId.value}`).remove();
                     }
                     gameState.value = 'HOME';
+                    const url = new URL(window.location.href); url.searchParams.delete('room'); window.history.pushState({}, '', url);
+                    roomId.value = null;
                 };
 
                 const togglePause = () => isPaused.value = !isPaused.value;
                 const confirmQuit = () => { if(confirm(t.value.quitConfirm)) exitToHome(); };
-                const toggleMark = (cIdx, rIdx, nIdx) => { if (myCards.value[cIdx][rIdx][nIdx] !== 0) { myMarks.value[cIdx][rIdx][nIdx] = !myMarks.value[cIdx][rIdx][nIdx]; saveState(); } };
+                
+                // オートモード時は手動タップを無効化
+                const toggleMark = (cIdx, rIdx, nIdx) => { 
+                    if (isAuto.value) return; 
+                    if (myCards.value[cIdx][rIdx][nIdx] !== 0) { 
+                        myMarks.value[cIdx][rIdx][nIdx] = !myMarks.value[cIdx][rIdx][nIdx]; 
+                        saveState(); 
+                    } 
+                };
+                
                 const isMarked = (cIdx, rIdx, nIdx) => myMarks.value[cIdx]?.[rIdx]?.[nIdx];
                 
                 const generateCard = () => {
@@ -363,11 +376,34 @@
                     const saved = localStorage.getItem('loto_session');
                     if (saved) {
                         const d = JSON.parse(saved);
-                        gameState.value = d.gs; mode.value = d.m; myCards.value = d.c; myMarks.value = d.mk;
-                        ticketCount.value = d.tc; betAmount.value = d.ba; isAuto.value = d.ia; drawInterval.value = d.di;
-                        roomId.value = d.ri; isMaster.value = d.im; wallet.amount = d.wal; wallet.currency = d.cur;
-                        if (gameState.value === 'PLAYING') startGame();
-                    } else if (roomId.value) initGame('MULTI');
+                        // 状態を完全復元
+                        gameState.value = d.gs; 
+                        mode.value = d.m; 
+                        myCards.value = d.c; 
+                        myMarks.value = d.mk;
+                        ticketCount.value = d.tc; 
+                        betAmount.value = d.ba; 
+                        isAuto.value = d.ia; 
+                        drawInterval.value = d.di;
+                        roomId.value = d.ri; 
+                        isMaster.value = d.im; 
+                        wallet.amount = d.wal; 
+                        wallet.currency = d.cur;
+                        drawnHistory.value = d.his || [];
+                        currentNumber.value = drawnHistory.value.length > 0 ? drawnHistory.value[drawnHistory.value.length - 1] : null;
+
+                        // プレイ中なら通信やタイマーを再開
+                        if (gameState.value === 'PLAYING') {
+                            if(mode.value === 'MULTI') {
+                                const rRef = db.ref(`rooms/${roomId.value}`);
+                                rRef.on('value', s => { const data = s.val(); if(data && data.his){ drawnHistory.value = data.his; currentNumber.value = data.his[data.his.length - 1]; saveState(); } });
+                            }
+                            if(isAuto.value && (mode.value === 'SOLO' || isMaster.value)) startTimer();
+                        }
+                    } else if (roomId.value) {
+                        initGame('MULTI');
+                    }
+                    
                     const savedWal = localStorage.getItem('loto_wallet');
                     if(savedWal) Object.assign(wallet, JSON.parse(savedWal));
                 });
