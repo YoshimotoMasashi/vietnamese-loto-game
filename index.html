@@ -3,81 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>LOTO ONLINE - Professional Build Rev.20260209-ULTIMATE</title>
+    <title>LOTO ONLINE - Professional Ultimate Build Rev.20260209.3</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
+        /* --- Root & Basic Variables --- */
         :root { 
-            --primary-red: #dc2626; 
-            --primary-dark: #1e293b;
-            --target-size: 48px; /* 押しやすさを確保 */
+            --primary: #dc2626; 
+            --primary-dark: #991b1b;
+            --bg-slate: #0f172a;
+            --bg-light: #f8fafc;
+            --header-height: 75px;
             --safe-top: env(safe-area-inset-top, 0px);
             --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --action-area-height: 120px;
         }
 
+        /* --- Global Reset & Scroll --- */
         [v-cloak] { display: none !important; }
 
         body { 
-            background: #0f172a; 
+            background: var(--bg-slate); 
             font-family: 'Nunito', 'Noto Sans JP', sans-serif; 
             overflow: hidden; 
+            margin: 0;
+            padding: 0;
             touch-action: manipulation;
             color: #1e293b;
         }
 
-        /* --- ヘッダー要素の重なり解消用スタイル --- */
+        /* --- Layout Core --- */
+        .app-shell {
+            height: 100dvh;
+            max-width: 480px;
+            margin: 0 auto;
+            background: var(--bg-light);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 80px rgba(0,0,0,0.5);
+            border-left: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        /* --- Header: Improved for overlapping prevention --- */
         .app-header {
-            height: 70px;
-            display: grid;
-            grid-template-columns: 60px 1fr 140px; /* ロゴ、タイトル、ユーティリティを明確に分離 */
-            align-items: center;
+            height: var(--header-height);
             background: #ffffff;
-            border-bottom: 2px solid #e2e8f0;
+            border-bottom: 2px solid #f1f5f9;
+            display: grid;
+            grid-template-columns: 60px 1fr 160px; /* Explicit columns */
+            align-items: center;
             padding: 0 15px;
             z-index: 1000;
+            flex-shrink: 0;
         }
 
-        /* --- 抽選ボールのアニメーション --- */
-        .loto-ball {
-            width: 45px; height: 45px;
-            background: radial-gradient(circle at 30% 30%, #ff5f5f, #c62828);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 10px rgba(198, 40, 40, 0.4);
-            animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            color: white; font-weight: 900; font-size: 1.2rem;
-        }
-        @keyframes bounceIn {
-            0% { transform: scale(0); }
-            100% { transform: scale(1); }
+        .header-title-container {
+            text-align: center;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
-        /* --- ビンゴカードのグリッド設計 --- */
-        .card-container {
-            background: #ffffff;
-            border-radius: 20px;
-            padding: 12px;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        .header-brand {
+            font-weight: 900;
+            font-size: 1.1rem;
+            letter-spacing: -0.05em;
+            text-transform: uppercase;
+            font-style: italic;
+            white-space: nowrap;
+        }
+
+        /* --- Wallet UI: Fix for large numbers & overflow --- */
+        .wallet-pill {
+            background: #f1f5f9;
             border: 1px solid #e2e8f0;
-            margin-bottom: 20px;
+            border-radius: 999px;
+            padding: 5px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            min-width: 80px;
+            max-width: 120px; /* Strict max width */
+            transition: all 0.2s ease;
         }
-        .loto-grid {
+
+        .wallet-pill:active {
+            transform: scale(0.95);
+            background: #e2e8f0;
+        }
+
+        .wallet-val {
+            font-weight: 900;
+            font-size: 0.75rem;
+            color: #0f172a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; /* Key fix for large numbers */
+            margin-left: 6px;
+        }
+
+        /* --- Bot Configuration Card --- */
+        .bot-setup-card {
+            background: white;
+            border-radius: 28px;
+            padding: 24px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        .bot-slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .bot-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+
+        .bot-btn:active {
+            background: #e2e8f0;
+            transform: scale(0.9);
+        }
+
+        .custom-slider {
+            flex-grow: 1;
+            height: 8px;
+            background: #f1f5f9;
+            border-radius: 4px;
+            appearance: none;
+            outline: none;
+        }
+
+        .custom-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* --- Main Content Areas --- */
+        .scroll-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* PLAYING SCREEN: Action area height consideration */
+        .playing-scroll {
+            padding-bottom: var(--action-area-height);
+        }
+
+        /* --- Action Area: KINH Button FIXED --- */
+        .action-tray {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--action-area-height);
+            background: linear-gradient(to top, #ffffff 80%, rgba(255,255,255,0));
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1500; /* High priority */
+            padding-bottom: calc(20px + var(--safe-bottom));
+        }
+
+        .kinh-btn {
+            width: 100%;
+            height: 75px;
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            color: white;
+            border-radius: 24px;
+            font-weight: 900;
+            font-size: 1.8rem;
+            letter-spacing: -0.02em;
+            box-shadow: 0 15px 30px -5px rgba(220, 38, 38, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: none;
+            cursor: pointer;
+        }
+
+        .kinh-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 5px 10px rgba(220, 38, 38, 0.3);
+        }
+
+        /* --- Loto Card Grid --- */
+        .loto-card-wrapper {
+            background: white;
+            border-radius: 24px;
+            padding: 16px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+
+        .grid-9x3 {
             display: grid;
             grid-template-columns: repeat(9, 1fr);
-            gap: 4px;
+            gap: 5px;
         }
+
         .loto-cell {
             aspect-ratio: 1/1;
-            background: #f8fafc;
+            background: #f1f5f9;
             border: 1px solid #cbd5e1;
-            border-radius: 6px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -86,288 +249,294 @@
             position: relative;
             transition: all 0.2s;
         }
-        .loto-cell.active-num { background: #fff; cursor: pointer; }
-        .loto-cell.active-num:active { transform: scale(0.9); }
+
+        .loto-cell.has-number {
+            background: #ffffff;
+            cursor: pointer;
+        }
+
         .loto-cell.marked::after {
             content: '';
             position: absolute;
-            width: 80%; height: 80%;
+            width: 80%;
+            height: 80%;
             background: rgba(220, 38, 38, 0.85);
             border-radius: 50%;
             z-index: 1;
-            animation: markPop 0.3s ease-out;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        @keyframes markPop {
+
+        @keyframes popIn {
             0% { transform: scale(0); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
+
         .loto-cell span { position: relative; z-index: 2; }
         .loto-cell.marked span { color: white; }
-        
-        /* オートモード時のタップ無効化（指示通り） */
-        .auto-mode-disabled {
+
+        .auto-mode-mask {
             pointer-events: none !important;
-            opacity: 0.95;
+            opacity: 0.9;
         }
 
-        /* --- スピード調節スライダー（指示：ゲーム中でも操作可能） --- */
-        .speed-control {
-            background: rgba(30, 41, 59, 0.9);
-            padding: 10px 20px;
-            border-radius: 15px;
-            color: white;
+        /* --- Caller Panel --- */
+        .caller-panel {
+            background: #0f172a;
+            padding: 18px;
+            border-bottom: 1px solid #1e293b;
+            z-index: 1100;
+        }
+
+        .current-num-box {
+            width: 85px;
+            height: 85px;
+            background: white;
+            border-radius: 22px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 4px solid var(--primary);
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .history-pill {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
-            gap: 15px;
-            border: 1px solid #475569;
-        }
-        .custom-range {
-            flex-grow: 1;
-            height: 8px;
-            background: #475569;
-            border-radius: 4px;
-            appearance: none;
-            outline: none;
-        }
-        .custom-range::-webkit-slider-thumb {
-            appearance: none;
-            width: 20px; height: 20px;
-            background: #ef4444;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid white;
-        }
-
-        /* --- 招待コードセクション（指示：視認性向上） --- */
-        .invite-section {
-            background: #f1f5f9;
-            padding: 20px;
-            border-radius: 20px;
-            text-align: center;
-            border: 2px dashed #cbd5e1;
-        }
-        .invite-code-large {
-            font-size: 2.5rem;
+            justify-content: center;
             font-weight: 900;
-            letter-spacing: 0.2em;
-            color: #0f172a;
-            margin: 10px 0;
+            font-size: 0.75rem;
+            color: white;
+            flex-shrink: 0;
         }
 
-        /* --- スクロールエリア --- */
-        .main-scroll {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 20px;
-            padding-bottom: 150px; /* 下部ボタン用の余白 */
+        /* --- Modals --- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(8px);
+            z-index: 5000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
         }
 
-        /* --- ローディング・アニメーション --- */
-        .shimmer {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
+        .modal-body {
+            background: white;
+            width: 100%;
+            max-width: 380px;
+            border-radius: 40px;
+            padding: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-        /* --- リビジョン表記 --- */
-        .rev-text {
-            font-size: 9px;
+        /* --- Utility Classes --- */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .rev-stamp {
+            font-size: 8px;
             font-weight: 900;
             color: #94a3b8;
-            letter-spacing: 1px;
+            letter-spacing: 0.1em;
             text-transform: uppercase;
         }
 
-        /* --- 言語設定ボタン --- */
-        .lang-grid {
+        /* --- Wallet Tools --- */
+        .wallet-btn-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 10px;
+            margin-top: 15px;
         }
-        .lang-btn {
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 14px;
+        .w-tool-btn {
+            padding: 12px 0;
+            border-radius: 14px;
+            font-weight: 900;
+            font-size: 0.8rem;
             transition: all 0.2s;
         }
-        .lang-btn.active {
-            border-color: #dc2626;
-            background: #fef2f2;
-            color: #dc2626;
-        }
+        .w-tool-btn.plus { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .w-tool-btn.minus { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .w-tool-btn:active { transform: scale(0.95); }
+
     </style>
 </head>
 <body>
 
-<div id="app" v-cloak class="h-[100dvh] max-w-md mx-auto bg-slate-50 relative flex flex-col shadow-2xl border-x border-slate-200">
+<div id="app" v-cloak class="app-shell">
     
-    <header class="app-header shadow-sm">
+    <header class="app-header">
         <div class="flex items-center">
-            <button v-if="gameState !== 'HOME'" @click="handleBack" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-red-600">
+            <button v-if="gameState !== 'HOME'" @click="handleExitRequest" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400">
                 <i class="fas fa-chevron-left text-xl"></i>
             </button>
-            <div v-else class="loto-ball" style="width: 35px; height: 35px; font-size: 0.7rem;">LOTO</div>
+            <div v-else class="w-9 h-9 bg-red-600 rounded-full flex items-center justify-center text-white font-black text-[10px] shadow-lg">LOTO</div>
         </div>
 
-        <div class="text-center">
-            <h1 class="font-black text-xl italic tracking-tighter uppercase text-slate-800">
-                Loto<span class="text-red-600">Online</span>
+        <div class="header-title-container">
+            <h1 class="header-brand">
+                LOTO <span class="text-red-600">ONLINE</span>
             </h1>
+            <span class="rev-stamp">REV.20260209-ULT</span>
         </div>
 
-        <div class="flex items-center justify-end space-x-2">
-            <div @click="showWalletModal = true" class="bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200 flex items-center cursor-pointer">
-                <i class="fas fa-coins text-yellow-500 mr-1.5 text-xs"></i>
-                <span class="font-black text-xs text-slate-700">{{ wallet.amount.toLocaleString() }}</span>
+        <div class="flex items-center justify-end gap-2">
+            <div @click="showWalletModal = true" class="wallet-pill">
+                <i class="fas fa-coins text-yellow-500 text-[10px]"></i>
+                <div class="wallet-val">{{ wallet.amount.toLocaleString() }}</div>
             </div>
-            <button @click="showSettingsModal = true" class="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 border border-slate-200">
-                <i class="fas fa-cog"></i>
+            <button @click="showSettingsModal = true" class="w-9 h-9 bg-slate-50 border border-slate-200 rounded-full flex items-center justify-center text-slate-400">
+                <i class="fas fa-cog text-sm"></i>
             </button>
         </div>
     </header>
-
-    <div class="bg-white px-4 py-1 flex justify-between items-center border-b border-slate-100">
-        <span class="rev-text">REV: 20260209-ULTIMATE</span>
-        <div class="flex items-center gap-1">
-            <div class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-            <span class="rev-text" style="color: #22c55e;">Sync Active</span>
-        </div>
-    </div>
 
     <main class="flex-grow relative flex flex-col overflow-hidden">
         
         <div v-if="gameState === 'HOME'" class="flex-grow flex flex-col items-center justify-center p-8 space-y-10">
             <div class="text-center space-y-4">
-                <div class="loto-ball w-24 h-24 mx-auto text-3xl shadow-2xl mb-4">90</div>
-                <h2 class="text-4xl font-black text-slate-900 tracking-tighter uppercase italic">{{ t.welcomeTitle }}</h2>
-                <p class="text-slate-400 font-bold text-xs tracking-widest">{{ t.welcomeSubtitle }}</p>
+                <div class="relative inline-block">
+                    <div class="w-28 h-28 bg-red-600 rounded-[35%] rotate-12 absolute inset-0 opacity-10 animate-pulse"></div>
+                    <div class="w-28 h-28 bg-white rounded-3xl flex items-center justify-center text-5xl font-black text-slate-900 shadow-2xl relative border-2 border-slate-100">
+                        90
+                    </div>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-black text-slate-800 tracking-tighter uppercase italic">{{ t.welcomeTitle }}</h2>
+                    <p class="text-slate-400 font-bold text-[10px] tracking-[0.3em] mt-2 uppercase">Professional Gaming Experience</p>
+                </div>
             </div>
 
-            <div class="w-full space-y-4">
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+            <div class="w-full space-y-4 max-w-xs">
+                <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
                     <label class="text-[10px] font-black text-slate-400 uppercase block mb-2">{{ t.playerNameLabel }}</label>
                     <input v-model="playerName" class="w-full text-center font-black text-2xl text-slate-800 outline-none" :placeholder="t.placeholderName">
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <button @click="enterSetup('SOLO')" class="bg-white h-36 rounded-3xl shadow-lg border-b-4 border-slate-200 flex flex-col items-center justify-center group active:border-b-0 active:translate-y-1 transition-all">
-                        <i class="fas fa-user text-4xl text-slate-300 group-hover:text-red-500 mb-3"></i>
-                        <span class="font-black text-sm uppercase text-slate-600">{{ t.modeSolo }}</span>
+                    <button @click="navToSetup('SOLO')" class="h-36 bg-white rounded-[40px] shadow-lg border-b-4 border-slate-200 flex flex-col items-center justify-center group active:translate-y-1 active:border-b-0 transition-all">
+                        <i class="fas fa-user text-3xl text-slate-200 group-hover:text-red-500 mb-3 transition-colors"></i>
+                        <span class="font-black text-[11px] uppercase text-slate-500">{{ t.modeSolo }}</span>
                     </button>
-                    <button @click="enterSetup('MULTI')" class="bg-red-600 h-36 rounded-3xl shadow-xl shadow-red-200 flex flex-col items-center justify-center group active:scale-95 transition-all">
-                        <i class="fas fa-users text-4xl text-white/40 group-hover:text-white mb-3"></i>
-                        <span class="font-black text-sm uppercase text-white">{{ t.modeMulti }}</span>
+                    <button @click="navToSetup('MULTI')" class="h-36 bg-red-600 rounded-[40px] shadow-xl shadow-red-200 flex flex-col items-center justify-center group active:scale-95 transition-all">
+                        <i class="fas fa-users text-3xl text-white/40 group-hover:text-white mb-3 transition-colors"></i>
+                        <span class="font-black text-[11px] uppercase text-white">{{ t.modeMulti }}</span>
                     </button>
                 </div>
             </div>
+
+            <footer class="text-center">
+                <p class="rev-stamp">{{ currentTime }}</p>
+            </footer>
         </div>
 
-        <div v-if="gameState === 'SETUP'" class="main-scroll space-y-6">
-            <div class="flex justify-between items-end">
-                <h3 class="text-3xl font-black text-slate-800">{{ t.setupTitle }}</h3>
-                <span class="text-xs font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full uppercase">{{ mode }} MODE</span>
+        <div v-if="gameState === 'SETUP'" class="scroll-area space-y-6">
+            <div class="flex justify-between items-center">
+                <h3 class="text-2xl font-black text-slate-800">{{ t.setupTitle }}</h3>
+                <span class="bg-red-50 text-red-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">{{ mode }}</span>
             </div>
 
-            <div v-if="mode === 'MULTI'" class="invite-section">
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ t.inviteTitle }}</span>
-                <div class="invite-code-large">{{ roomId }}</div>
-                <button @click="showShareModal = true" class="bg-blue-600 text-white px-6 py-2 rounded-full font-black text-xs shadow-lg">
-                    <i class="fas fa-share-alt mr-2"></i> {{ t.inviteBtn }}
-                </button>
-            </div>
-
-            <div class="space-y-4">
-                <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
-                    <label class="text-[10px] font-black text-slate-400 uppercase mb-4 block">{{ t.ticketQtyLabel }}</label>
-                    <div class="flex gap-2">
-                        <button v-for="n in 4" :key="n" @click="ticketQty = n" 
-                            :class="ticketQty === n ? 'bg-red-600 text-white' : 'bg-slate-100 text-slate-400'"
-                            class="flex-1 h-14 rounded-xl font-black text-xl transition-all">
-                            {{ n }}
-                        </button>
-                    </div>
+            <div class="bot-setup-card">
+                <div class="flex justify-between items-center">
+                    <label class="text-[10px] font-black text-slate-400 uppercase">{{ t.opponentsLabel }}</label>
+                    <span class="text-2xl font-black text-red-600">{{ botCount }}</span>
                 </div>
-
-                <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
-                    <div class="flex justify-between mb-4">
-                        <label class="text-[10px] font-black text-slate-400 uppercase">{{ t.opponentsLabel }}</label>
-                        <span class="font-black text-red-600">{{ botCount }}</span>
-                    </div>
-                    <input type="range" v-model.number="botCount" min="0" max="10" class="custom-range">
-                </div>
-
-                <div class="bg-slate-900 p-6 rounded-[32px] text-white shadow-2xl relative overflow-hidden">
-                    <div class="relative z-10">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">{{ t.betLabel }}</label>
-                        <div class="flex items-center">
-                            <span class="text-3xl font-black text-slate-600 mr-2">$</span>
-                            <input type="number" v-model.number="betAmount" class="bg-transparent text-5xl font-black outline-none w-full">
-                        </div>
-                    </div>
-                    <i class="fas fa-dollar-sign absolute -right-4 -bottom-4 text-8xl text-white/5 rotate-12"></i>
+                <div class="bot-slider-container">
+                    <button @click="botCount = Math.max(0, botCount - 1)" class="bot-btn"><i class="fas fa-minus"></i></button>
+                    <input type="range" v-model.number="botCount" min="0" max="10" class="custom-slider">
+                    <button @click="botCount = Math.min(10, botCount + 1)" class="bot-btn"><i class="fas fa-plus"></i></button>
                 </div>
             </div>
 
-            <button @click="startGame" class="w-full h-20 bg-red-600 text-white rounded-[24px] font-black text-2xl shadow-2xl shadow-red-200 mt-4 active:scale-95 transition-transform flex items-center justify-center space-x-3">
+            <div class="bg-white p-6 rounded-[32px] border border-slate-200">
+                <label class="text-[10px] font-black text-slate-400 uppercase block mb-4">{{ t.ticketQtyLabel }}</label>
+                <div class="grid grid-cols-4 gap-3">
+                    <button v-for="n in 4" :key="n" @click="ticketQty = n" 
+                        :class="ticketQty === n ? 'bg-red-600 text-white shadow-lg' : 'bg-slate-50 text-slate-400'"
+                        class="h-14 rounded-2xl font-black text-lg transition-all">
+                        {{ n }}
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 p-8 rounded-[40px] text-white shadow-2xl relative overflow-hidden">
+                <div class="relative z-10">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">{{ t.betLabel }}</label>
+                    <div class="flex items-center">
+                        <span class="text-3xl font-black text-slate-600 mr-3">$</span>
+                        <input type="number" v-model.number="betAmount" class="bg-transparent text-5xl font-black outline-none w-full">
+                    </div>
+                </div>
+                <i class="fas fa-wallet absolute -right-6 -bottom-6 text-9xl text-white/5 rotate-12"></i>
+            </div>
+
+            <button @click="startGame" class="w-full h-20 bg-red-600 text-white rounded-[28px] font-black text-2xl shadow-2xl shadow-red-200 active:scale-95 transition-transform flex items-center justify-center gap-3">
                 <span>{{ t.startBtn }}</span>
-                <i class="fas fa-play-circle"></i>
+                <i class="fas fa-play"></i>
             </button>
+            
+            <div class="h-10"></div>
         </div>
 
-        <div v-if="gameState === 'PLAYING'" class="flex-grow flex flex-col h-full bg-slate-100">
-            <div class="bg-slate-900 p-5 shadow-2xl z-50 shrink-0 border-b border-slate-800">
+        <div v-if="gameState === 'PLAYING'" class="flex-grow flex flex-col h-full bg-slate-50">
+            <div class="caller-panel">
                 <div class="flex gap-5 items-center">
-                    <div class="w-24 h-24 bg-white rounded-[24px] flex flex-col items-center justify-center shadow-inner border-4 border-red-600">
-                        <span class="text-[10px] font-black text-slate-400 leading-none mb-1 uppercase">Current</span>
-                        <span class="text-5xl font-black text-slate-900">{{ currentNumber || '--' }}</span>
+                    <div class="current-num-box">
+                        <span class="text-[9px] font-black text-slate-400 uppercase leading-none mb-1">Number</span>
+                        <span class="text-4xl font-black text-slate-900">{{ currentNumber || '--' }}</span>
                     </div>
                     
-                    <div class="flex-grow space-y-3">
-                        <div class="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-500">
-                            <span>{{ t.historyLabel }} ({{ drawnNumbers.length }}/90)</span>
-                            <span v-if="isAutoMode" class="text-red-500 animate-pulse"><i class="fas fa-robot mr-1"></i>AUTO ON</span>
+                    <div class="flex-grow">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">{{ t.historyLabel }} ({{ drawnNumbers.length }}/90)</span>
+                            <div v-if="isAutoMode" class="flex items-center gap-1.5 bg-red-950/50 px-2 py-0.5 rounded-full border border-red-900/50">
+                                <div class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
+                                <span class="text-[9px] font-black text-red-500">AUTO</span>
+                            </div>
                         </div>
-                        <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-                            <div v-if="!drawnNumbers.length" class="text-slate-600 text-[10px] italic py-3">{{ t.waitingMsg }}</div>
-                            <div v-for="(num, idx) in [...drawnNumbers].reverse().slice(0, 10)" :key="idx" 
-                                :class="idx === 0 ? 'bg-red-600 border-red-400 scale-110 shadow-lg shadow-red-900/40' : 'bg-slate-800 border-slate-700'"
-                                class="w-10 h-10 rounded-full border flex items-center justify-center text-xs font-black text-white shrink-0 transition-all">
+                        
+                        <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2 pt-1">
+                            <div v-if="drawnNumbers.length === 0" class="text-slate-600 text-[10px] italic py-3">Waiting for first draw...</div>
+                            <div v-for="(num, idx) in [...drawnNumbers].reverse().slice(0, 15)" :key="idx" 
+                                :class="idx === 0 ? 'bg-red-600 scale-110 shadow-lg' : 'bg-slate-800 border border-slate-700'"
+                                class="history-pill transition-all">
                                 {{ num }}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-5 speed-control">
-                    <i class="fas fa-bolt text-yellow-400"></i>
-                    <input type="range" v-model.number="drawInterval" min="1" max="10" step="1" class="custom-range">
+                <div class="mt-4 flex items-center gap-4 bg-slate-800/40 p-3 rounded-2xl border border-white/5">
+                    <i class="fas fa-bolt text-yellow-500 text-xs"></i>
+                    <input type="range" v-model.number="drawInterval" min="1" max="10" step="1" class="custom-slider" style="height: 4px;">
                     <div class="w-12 text-right">
-                        <span class="font-black text-sm">{{ drawInterval }}</span>
-                        <span class="text-[8px] font-bold text-slate-500 ml-1">SEC</span>
+                        <span class="text-white font-black text-xs">{{ drawInterval }}</span>
+                        <span class="text-[8px] font-bold text-slate-500 ml-0.5">SEC</span>
                     </div>
                 </div>
             </div>
 
-            <div class="main-scroll">
-                <div v-for="(card, cardIdx) in myCards" :key="cardIdx" class="card-container">
-                    <div class="flex justify-between items-center mb-3 px-1">
-                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ticket #{{ cardIdx + 1 }}</span>
-                        <div class="flex gap-1">
-                            <div v-if="checkWinReady(cardIdx)" class="text-green-600 text-[10px] font-black animate-bounce bg-green-50 px-2 py-0.5 rounded-full border border-green-200">
-                                <i class="fas fa-check-circle mr-1"></i>READY
-                            </div>
+            <div class="scroll-area playing-scroll">
+                <div v-for="(card, cardIdx) in myCards" :key="cardIdx" class="loto-card-wrapper">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">TICKET #00{{ cardIdx + 1 }}</span>
+                        <div v-if="isReadyToWin(cardIdx)" class="flex items-center gap-1 text-green-600 font-black text-[10px] animate-bounce">
+                            <i class="fas fa-check-circle"></i> READY
                         </div>
                     </div>
 
-                    <div class="loto-grid" :class="{'auto-mode-disabled': isAutoMode}">
+                    <div class="grid-9x3" :class="{'auto-mode-mask': isAutoMode}">
                         <template v-for="(row, rowIdx) in card" :key="rowIdx">
                             <div v-for="(cell, cellIdx) in row" :key="cellIdx"
-                                @click="handleManualMark(cardIdx, rowIdx, cellIdx)"
+                                @click="toggleMark(cardIdx, rowIdx, cellIdx)"
                                 :class="[
-                                    cell === 0 ? 'opacity-0' : 'loto-cell active-num',
+                                    cell === 0 ? 'opacity-0' : 'loto-cell has-number',
                                     isMarked(cardIdx, rowIdx, cellIdx) ? 'marked' : ''
                                 ]">
                                 <span>{{ cell !== 0 ? cell : '' }}</span>
@@ -376,103 +545,84 @@
                     </div>
                 </div>
                 
-                <div class="h-10"></div>
+                <div class="h-20"></div>
             </div>
 
-            <div class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white/95 to-transparent z-[60] max-w-md mx-auto">
-                <div class="flex gap-3">
-                    <button @click="callBingo" class="flex-grow h-18 bg-gradient-to-r from-red-600 to-red-800 text-white rounded-[24px] font-black text-3xl shadow-2xl shadow-red-300 active:scale-95 transition-transform flex items-center justify-center">
+            <div class="action-tray">
+                <div class="flex gap-3 w-full">
+                    <button @click="callBingo" class="kinh-btn">
                         {{ t.kinhBtn }}
                     </button>
-                    <button v-if="!isAutoMode" @click="drawNextNumber" class="w-18 h-18 bg-slate-900 text-white rounded-[24px] flex items-center justify-center shadow-lg active:scale-90 transition-all">
-                        <i class="fas fa-forward text-xl"></i>
+                    <button v-if="!isAutoMode" @click="drawNextNumber" class="w-24 h-[75px] bg-slate-900 text-white rounded-3xl flex items-center justify-center shadow-xl">
+                        <i class="fas fa-forward text-2xl"></i>
                     </button>
                 </div>
             </div>
         </div>
     </main>
 
-    <footer class="bg-white border-t border-slate-200 py-3 px-6 flex justify-between items-center z-[70]">
-        <div class="flex flex-col">
-            <span class="rev-text">REV: 20260209-ULTIMATE</span>
-            <span class="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">{{ currentTime }}</span>
-        </div>
-        <div class="flex space-x-3">
-            <i class="fab fa-facebook-f text-slate-300 text-xs"></i>
-            <i class="fab fa-twitter text-slate-300 text-xs"></i>
-            <i class="fab fa-discord text-slate-300 text-xs"></i>
-        </div>
-    </footer>
+    <div v-if="showWalletModal" class="modal-overlay">
+        <div class="modal-body text-center">
+            <h3 class="font-black text-2xl text-slate-800 mb-8">{{ t.walletTitle }}</h3>
+            
+            <div class="bg-slate-50 p-8 rounded-[40px] border border-slate-100 mb-6">
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Available Funds</span>
+                <input type="number" v-model.number="wallet.amount" class="text-5xl font-black text-slate-900 w-full text-center bg-transparent outline-none">
+            </div>
 
-    <div v-if="showSettingsModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[2000] flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-xs rounded-[40px] p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div class="space-y-3 mb-10">
+                <div class="wallet-btn-grid">
+                    <button @click="wallet.amount += 100" class="w-tool-btn plus">+100</button>
+                    <button @click="wallet.amount += 1000" class="w-tool-btn plus">+1,000</button>
+                    <button @click="wallet.amount += 10000" class="w-tool-btn plus">+10,000</button>
+                </div>
+                <div class="wallet-btn-grid">
+                    <button @click="wallet.amount = Math.max(0, wallet.amount - 100)" class="w-tool-btn minus">-100</button>
+                    <button @click="wallet.amount = Math.max(0, wallet.amount - 1000)" class="w-tool-btn minus">-1,000</button>
+                    <button @click="wallet.amount = Math.max(0, wallet.amount - 10000)" class="w-tool-btn minus">-10,000</button>
+                </div>
+            </div>
+
+            <button @click="showWalletModal = false" class="w-full h-16 bg-slate-900 text-white rounded-3xl font-black text-sm tracking-widest shadow-xl">
+                DONE
+            </button>
+        </div>
+    </div>
+
+    <div v-if="showSettingsModal" class="modal-overlay">
+        <div class="modal-body max-h-[85vh] overflow-y-auto no-scrollbar">
             <div class="flex justify-between items-center mb-8">
                 <h3 class="font-black text-2xl text-slate-800">{{ t.settingsTitle }}</h3>
-                <button @click="showSettingsModal = false" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100"><i class="fas fa-times"></i></button>
+                <button @click="showSettingsModal = false" class="text-slate-300"><i class="fas fa-times text-xl"></i></button>
             </div>
 
             <div class="space-y-8">
                 <div>
-                    <label class="text-[10px] font-black text-slate-400 uppercase mb-4 block tracking-widest">Select Language</label>
-                    <div class="lang-grid">
-                        <button v-for="(lang, key) in languages" :key="key" @click="changeLanguage(key)"
-                            :class="{'active': currentLang === key}" class="lang-btn">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">Localization</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button v-for="(lang, key) in languages" :key="key" @click="setLanguage(key)"
+                            :class="currentLang === key ? 'border-red-600 bg-red-50 text-red-700' : 'border-slate-100 bg-slate-50 text-slate-500'"
+                            class="p-4 border-2 rounded-2xl font-black text-xs transition-all">
                             {{ lang.label }}
                         </button>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between bg-slate-50 p-5 rounded-3xl border border-slate-100">
+                <div class="flex items-center justify-between bg-slate-50 p-6 rounded-3xl border border-slate-100">
                     <div>
-                        <span class="block font-black text-slate-800 text-sm">Auto Mark Mode</span>
-                        <span class="text-[9px] font-bold text-slate-400 uppercase">Recommended for beginners</span>
+                        <span class="block font-black text-slate-800 text-sm">Auto-Mark Mode</span>
+                        <span class="text-[9px] font-bold text-slate-400 uppercase">Recommended for pros</span>
                     </div>
                     <button @click="isAutoMode = !isAutoMode" 
                         :class="isAutoMode ? 'bg-green-500' : 'bg-slate-300'"
-                        class="w-14 h-8 rounded-full relative transition-all duration-300 shadow-inner">
-                        <div :class="isAutoMode ? 'translate-x-7' : 'translate-x-1'" class="absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-300"></div>
+                        class="w-16 h-9 rounded-full relative transition-all duration-300">
+                        <div :class="isAutoMode ? 'translate-x-8' : 'translate-x-1'" class="absolute top-1 w-7 h-7 bg-white rounded-full shadow-md transition-transform duration-300"></div>
                     </button>
                 </div>
             </div>
 
-            <button @click="showSettingsModal = false" class="w-full mt-10 h-14 bg-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl">
-                Close Settings
-            </button>
-        </div>
-    </div>
-
-    <div v-if="showShareModal" class="fixed inset-0 bg-slate-900/90 z-[3000] flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-sm rounded-[50px] p-10 text-center shadow-2xl">
-            <h3 class="font-black text-2xl text-slate-900 mb-2">{{ t.inviteTitle }}</h3>
-            <p class="text-xs font-bold text-blue-600 mb-8 tracking-[0.3em] uppercase">Private Room #{{ roomId }}</p>
-            
-            <div class="flex justify-center mb-10 bg-white p-6 rounded-[30px] border border-slate-100 shadow-inner">
-                <div id="qrcode"></div>
-            </div>
-
-            <p class="text-[10px] text-slate-400 font-bold uppercase leading-relaxed mb-10">
-                Scan this code to join the multiplayer session.<br>Code valid for this session only.
-            </p>
-
-            <button @click="showShareModal = false" class="text-slate-400 font-black text-xs uppercase tracking-widest hover:text-red-600 transition-colors">
-                Back to Game
-            </button>
-        </div>
-    </div>
-
-    <div v-if="showWalletModal" class="fixed inset-0 bg-slate-900/80 z-[2000] flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-xs rounded-[40px] p-8 shadow-2xl text-center">
-            <h3 class="font-black text-2xl mb-8">{{ t.walletTitle }}</h3>
-            <div class="bg-slate-50 p-10 rounded-[40px] border border-slate-100 mb-8">
-                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Current Balance</span>
-                <div class="text-6xl font-black text-slate-900 mt-4 leading-none">${{ wallet.amount.toLocaleString() }}</div>
-            </div>
-            <div class="grid grid-cols-2 gap-3 mb-10">
-                <button @click="wallet.amount += 1000" class="h-14 bg-green-50 text-green-700 border border-green-100 rounded-2xl font-black text-xs active:scale-95 transition-all">+ $1,000</button>
-                <button @click="wallet.amount = Math.max(0, wallet.amount - 1000)" class="h-14 bg-red-50 text-red-700 border border-red-100 rounded-2xl font-black text-xs active:scale-95 transition-all">- $1,000</button>
-            </div>
-            <button @click="showWalletModal = false" class="w-full h-16 bg-slate-900 text-white rounded-[24px] font-black shadow-xl">
-                Done
+            <button @click="showSettingsModal = false" class="w-full mt-10 h-16 bg-slate-900 text-white rounded-3xl font-black uppercase text-xs tracking-widest">
+                Save & Close
             </button>
         </div>
     </div>
@@ -481,136 +631,115 @@
 
 <script>
 /**
- * 言語データ定義 (i18n)
- * 全8言語を完全に網羅
+ * --- INTERNATIONALIZATION DATA (8 Languages, Full Definition) ---
+ * VERBOSE DEFINITION TO ENSURE SCALE AND ACCURACY
  */
-const i18n = {
+const i18nData = {
     ja: {
         label: "日本語",
         welcomeTitle: "ロト・オンライン",
-        welcomeSubtitle: "最高峰のビンゴ・シミュレーション",
         playerNameLabel: "プレイヤー名",
         placeholderName: "名前を入力...",
-        modeSolo: "ソロプレイ",
-        modeMulti: "マルチプレイ",
+        modeSolo: "一人で遊ぶ",
+        modeMulti: "みんなで遊ぶ",
         setupTitle: "ゲーム設定",
-        ticketQtyLabel: "チケット枚数",
+        ticketQtyLabel: "購入チケット枚数",
         opponentsLabel: "対戦相手 (BOT)",
-        betLabel: "賭け金",
-        startBtn: "ゲーム開始",
-        inviteBtn: "友達を招待",
-        inviteTitle: "招待コード",
-        settingsTitle: "各種設定",
-        walletTitle: "ウォレット",
-        historyLabel: "抽選履歴",
-        waitingMsg: "番号を待っています...",
-        kinhBtn: "ビンゴ！",
-        winMsg: "おめでとう！ビンゴ達成です！",
-        loseMsg: "まだ番号が揃っていません。",
-        confirmQuit: "ゲームを終了してホームに戻りますか？"
+        betLabel: "ベット金額",
+        startBtn: "ゲームを開始する",
+        kinhBtn: "ビンゴ！ (KINH)",
+        winMsg: "おめでとうございます！ビンゴ達成です！",
+        loseMsg: "まだ番号が揃っていないようです。",
+        settingsTitle: "環境設定",
+        walletTitle: "ウォレット管理",
+        historyLabel: "直近の当選番号",
+        confirmExit: "現在のゲームを終了してホームに戻りますか？"
     },
     vi: {
         label: "Tiếng Việt",
         welcomeTitle: "LOTO ONLINE",
-        welcomeSubtitle: "TRẢI NGHIỆM LÔ TÔ CHUYÊN NGHIỆP",
         playerNameLabel: "TÊN NGƯỜI CHƠI",
-        placeholderName: "Nhập tên...",
+        placeholderName: "Nhập tên của bạn...",
         modeSolo: "CHƠI ĐƠN",
         modeMulti: "CHƠI NHIỀU NGƯỜI",
-        setupTitle: "THIẾT LẬP",
+        setupTitle: "THIẾT LẬP GAME",
         ticketQtyLabel: "SỐ LƯỢNG VÉ",
         opponentsLabel: "ĐỐI THỦ (BOT)",
-        betLabel: "TIỀN CƯỢC",
-        startBtn: "BẮT ĐẦU",
-        inviteBtn: "MỜI BẠN BÈ",
-        inviteTitle: "MÃ PHÒNG",
-        settingsTitle: "CÀI ĐẶT",
-        walletTitle: "VÍ TIỀN",
-        historyLabel: "LỊCH SỬ QUAY",
-        waitingMsg: "Đang chờ số...",
+        betLabel: "MỨC TIỀN CƯỢC",
+        startBtn: "BẮT ĐẦU CHƠI",
         kinhBtn: "KINH!",
-        winMsg: "Chúc mừng! Bạn đã thắng!",
-        loseMsg: "Chưa đủ số để Kinh!",
-        confirmQuit: "Bạn có muốn thoát game không?"
+        winMsg: "Chúc mừng! Bạn đã giành chiến thắng!",
+        loseMsg: "Chưa đủ số để Kinh, hãy kiểm tra lại!",
+        settingsTitle: "CÀI ĐẶT",
+        walletTitle: "VÍ CỦA BẠN",
+        historyLabel: "LỊCH SỬ KÉO SỐ",
+        confirmExit: "Bạn có thực sự muốn thoát game không?"
     },
     en: {
         label: "English",
         welcomeTitle: "LOTO ONLINE",
-        welcomeSubtitle: "PREMIUM BINGO EXPERIENCE",
         playerNameLabel: "PLAYER NAME",
-        placeholderName: "Enter name...",
+        placeholderName: "Your name...",
         modeSolo: "SOLO PLAY",
         modeMulti: "MULTIPLAYER",
         setupTitle: "GAME SETUP",
-        ticketQtyLabel: "TICKET QTY",
+        ticketQtyLabel: "TICKET QUANTITY",
         opponentsLabel: "BOT OPPONENTS",
         betLabel: "BET AMOUNT",
         startBtn: "START GAME",
-        inviteBtn: "INVITE FRIENDS",
-        inviteTitle: "INVITE CODE",
+        kinhBtn: "BINGO!",
+        winMsg: "Congratulations! You won the game!",
+        loseMsg: "Not enough numbers for Bingo yet.",
         settingsTitle: "SETTINGS",
         walletTitle: "WALLET",
         historyLabel: "DRAW HISTORY",
-        waitingMsg: "Waiting for balls...",
-        kinhBtn: "BINGO!",
-        winMsg: "Congratulations! You won!",
-        loseMsg: "Not enough numbers yet!",
-        confirmQuit: "Quit game and return home?"
+        confirmExit: "Are you sure you want to quit the game?"
     },
     cn: {
         label: "简体中文",
         welcomeTitle: "在线乐透",
-        welcomeSubtitle: "专业宾果游戏体验",
-        playerNameLabel: "玩家名称",
+        playerNameLabel: "玩家姓名",
         placeholderName: "输入名字...",
-        modeSolo: "单人游戏",
-        modeMulti: "多人对戦",
+        modeSolo: "单人模式",
+        modeMulti: "多人对战",
         setupTitle: "游戏设置",
-        ticketQtyLabel: "门票数量",
-        opponentsLabel: "机器人对手",
-        betLabel: "赌注额",
+        ticketQtyLabel: "购买票数",
+        opponentsLabel: "机器人数量",
+        betLabel: "下注金额",
         startBtn: "开始游戏",
-        inviteBtn: "邀请朋友",
-        inviteTitle: "邀请码",
+        kinhBtn: "胡了!",
+        winMsg: "恭喜你！你赢了！",
+        loseMsg: "号码还没凑齐，再接再厉！",
         settingsTitle: "设置",
         walletTitle: "钱包",
-        historyLabel: "抽奖历史",
-        waitingMsg: "正在等待数字...",
-        kinhBtn: "胡了!",
-        winMsg: "恭喜！你赢了！",
-        loseMsg: "号码还没凑齐。",
-        confirmQuit: "确定要退出游戏吗？"
+        historyLabel: "历史开奖",
+        confirmExit: "确定要退出当前游戏吗？"
     },
     th: {
         label: "ไทย",
         welcomeTitle: "โลโต้ ออนไลน์",
-        welcomeSubtitle: "ประสบการณ์บิงโกที่เหนือระดับ",
         playerNameLabel: "ชื่อผู้เล่น",
-        placeholderName: "กรอกชื่อของคุณ...",
+        placeholderName: "กรอกชื่อ...",
         modeSolo: "เล่นคนเดียว",
         modeMulti: "เล่นหลายคน",
         setupTitle: "ตั้งค่าเกม",
         ticketQtyLabel: "จำนวนตั๋ว",
         opponentsLabel: "คู่แข่ง (BOT)",
-        betLabel: "เงินเดิมพัน",
+        betLabel: "จำนวนเงินเดิมพัน",
         startBtn: "เริ่มเกม",
-        inviteBtn: "เชิญเพื่อน",
-        inviteTitle: "รหัสคำเชิญ",
+        kinhBtn: "บิงโก!",
+        winMsg: "ยินดีด้วย! คุณเป็นผู้ชนะ!",
+        loseMsg: "ยังไม่บิงโก ลองเช็คอีกครั้ง!",
         settingsTitle: "การตั้งค่า",
         walletTitle: "กระเป๋าเงิน",
         historyLabel: "ประวัติการออกรางวัล",
-        waitingMsg: "กำลังรอตัวเลข...",
-        kinhBtn: "บิงโก!",
-        winMsg: "ยินดีด้วย! คุณชนะแล้ว!",
-        loseMsg: "ตัวเลขยังไม่ครบ!",
-        confirmQuit: "คุณต้องการออกจากเกมหรือไม่?"
+        confirmExit: "คุณต้องการออกจากเกมใช่หรือไม่?"
     },
     lo: {
         label: "ລາວ",
         welcomeTitle: "ໂລໂຕ ອອນລາຍ",
-        welcomeSubtitle: "ປະສົບການບິງໂກລະດັບພຣີມຽມ",
         playerNameLabel: "ຊື່ຜູ້ຫຼິ້ນ",
-        placeholderName: "ໃສ່ຊື່...",
+        placeholderName: "ປ້ອນຊື່...",
         modeSolo: "ຫຼິ້ນດ່ຽວ",
         modeMulti: "ຫຼິ້ນຫຼາຍຄົນ",
         setupTitle: "ຕັ້ງຄ່າເກມ",
@@ -618,316 +747,329 @@ const i18n = {
         opponentsLabel: "ຄູ່ແຂ່ງ (BOT)",
         betLabel: "ເງິນເດີມພັນ",
         startBtn: "ເລີ່ມເກມ",
-        inviteBtn: "ເຊີນເພື່ອນ",
-        inviteTitle: "ລະຫັດຫ້ອງ",
-        settingsTitle: "ການຕັ້ງຄ່າ",
-        walletTitle: "ກະເປົາເງິນ",
-        historyLabel: "ປະຫວັດການອອກເລກ",
-        waitingMsg: "ກຳລັງລໍຖ້າຕົວເລກ...",
         kinhBtn: "ຊະນະ!",
         winMsg: "ຂໍສະແດງຄວາມຍິນດີ! ທ່ານຊະນະແລ້ວ!",
         loseMsg: "ຕົວເລກຍັງບໍ່ທັນຄົບ!",
-        confirmQuit: "ທ່ານຕ້ອງການອອກຈາກເກມບໍ່?"
+        settingsTitle: "ການຕັ້ງຄ່າ",
+        walletTitle: "ກະເປົາເງິນ",
+        historyLabel: "ປະຫວັດການອອກເລກ",
+        confirmExit: "ທ່ານຕ້ອງການອອກຈາກເກມບໍ່?"
     },
     km: {
         label: "ភាសាខ្មែរ",
         welcomeTitle: "ឡូតូ អនឡាញ",
-        welcomeSubtitle: "បទពិសោធន៍ប៊ីងហ្គោដ៏ល្អឥតខ្ចោះ",
         playerNameLabel: "ឈ្មោះអ្នកលេង",
         placeholderName: "បញ្ចូលឈ្មោះ...",
         modeSolo: "លេងម្នាក់ឯង",
         modeMulti: "លេងច្រើននាក់",
-        setupTitle: "ការកំណត់ហ្គេម",
+        setupTitle: "ការកំណត់",
         ticketQtyLabel: "ចំនួនសន្លឹក",
         opponentsLabel: "គូប្រកួត (BOT)",
         betLabel: "ប្រាក់ភ្នាល់",
         startBtn: "ចាប់ផ្ដើម",
-        inviteBtn: "អញ្ជើញមិត្តភក្តិ",
-        inviteTitle: "លេខកូដបន្ទប់",
-        settingsTitle: "ការកំណត់",
-        walletTitle: "កាបូបប្រាក់",
-        historyLabel: "ប្រវត្តិចេញលេខ",
-        waitingMsg: "កំពុងរង់ចាំលេខ...",
         kinhBtn: "ឈ្នះ!",
         winMsg: "អបអរសាទរ! អ្នកបានឈ្នះ!",
         loseMsg: "មិនទាន់គ្រប់លេខទេ!",
-        confirmQuit: "តើអ្នកចង់ចាកចេញពីហ្គេមមែនទេ?"
+        settingsTitle: "ការកំណត់",
+        walletTitle: "កាបូបប្រាក់",
+        historyLabel: "ប្រវត្តិចេញលេខ",
+        confirmExit: "តើអ្នកចង់ចាកចេញពីហ្គេមមែនទេ?"
     },
     fr: {
         label: "Français",
         welcomeTitle: "LOTO EN LIGNE",
-        welcomeSubtitle: "EXPÉRIENCE BINGO PREMIUM",
         playerNameLabel: "NOM DU JOUEUR",
-        placeholderName: "Entrez le nom...",
-        modeSolo: "MODE SOLO",
+        placeholderName: "Entrez votre nom...",
+        modeSolo: "SOLO",
         modeMulti: "MULTIJOUEUR",
         setupTitle: "CONFIGURATION",
-        ticketQtyLabel: "NB DE BILLETS",
-        opponentsLabel: "OPPOSANTS BOTS",
-        betLabel: "MISE",
-        startBtn: "JOUER",
-        inviteBtn: "INVITER AMIS",
-        inviteTitle: "CODE D'INVITATION",
+        ticketQtyLabel: "QUANTITÉ BILLETS",
+        opponentsLabel: "ADVERSAIRES BOTS",
+        betLabel: "MONTANT DE MISE",
+        startBtn: "COMMENCER",
+        kinhBtn: "BINGO!",
+        winMsg: "Félicitations ! Vous avez gagné !",
+        loseMsg: "Pas encore de Bingo, continuez !",
         settingsTitle: "RÉGLAGES",
         walletTitle: "PORTEFEUILLE",
         historyLabel: "HISTORIQUE",
-        waitingMsg: "En attente...",
-        kinhBtn: "BINGO!",
-        winMsg: "Félicitations ! Vous avez gagné !",
-        loseMsg: "Pas encore de Bingo !",
-        confirmQuit: "Quitter et revenir à l'accueil ?"
+        confirmExit: "Voulez-vous vraiment quitter ?"
     }
 };
 
+/**
+ * --- VUE APPLICATION LOGIC ---
+ */
 const { createApp, ref, reactive, computed, watch, onMounted, onUnmounted } = Vue;
 
 createApp({
     setup() {
-        // --- 状態定義 ---
-        const currentLang = ref(localStorage.getItem('loto_lang_v2026') || 'ja');
-        const gameState = ref('HOME'); // HOME, SETUP, PLAYING
-        const mode = ref('SOLO');      // SOLO, MULTI
-        const playerName = ref(localStorage.getItem('loto_name') || '');
-        const wallet = reactive({ amount: 5000 });
+        // --- State ---
+        const currentLang = ref(localStorage.getItem('app_lang_v3') || 'ja');
+        const gameState = ref('HOME'); 
+        const mode = ref('SOLO');
+        const playerName = ref(localStorage.getItem('app_user_name') || '');
+        const wallet = reactive({ amount: 10000 });
         
         const ticketQty = ref(1);
         const botCount = ref(3);
         const betAmount = ref(100);
         const isAutoMode = ref(true);
-        const drawInterval = ref(3); // 抽選間隔(秒)
+        const drawInterval = ref(3); // In seconds
         
         const myCards = ref([]);
-        const myMarks = ref([]); // myMarks[cardIdx][rowIdx][colIdx] = boolean
+        const myMarks = ref([]); 
         const drawnNumbers = ref([]);
         const currentNumber = ref(null);
-        const roomId = ref(null);
-        const isMaster = ref(false);
         
         const showSettingsModal = ref(false);
         const showWalletModal = ref(false);
-        const showShareModal = ref(false);
         const currentTime = ref('');
         
-        let timer = null;
+        let gameTimer = null;
         let clockTimer = null;
 
-        // --- Firebase初期化設定 (同期ロジック用) ---
-        // ※実際にはここにFirebaseのConfigが必要です。
-        const fbConfig = { databaseURL: "https://your-project.firebaseio.com" };
-        let dbRef = null;
+        // --- Computed ---
+        const t = computed(() => i18nData[currentLang.value]);
+        const languages = computed(() => i18nData);
 
-        // --- コンピューテッド属性 ---
-        const t = computed(() => i18n[currentLang.value]);
-        const languages = computed(() => i18n);
-
-        // --- ライフサイクル ---
+        // --- Lifecycle ---
         onMounted(() => {
             updateClock();
             clockTimer = setInterval(updateClock, 1000);
         });
 
         onUnmounted(() => {
-            if(timer) clearInterval(timer);
+            stopGameTimer();
             if(clockTimer) clearInterval(clockTimer);
         });
 
-        // --- メソッド ---
+        // --- Core Methods ---
         const updateClock = () => {
             const now = new Date();
             currentTime.value = now.toLocaleString();
         };
 
-        const changeLanguage = (langKey) => {
-            currentLang.value = langKey;
-            localStorage.setItem('loto_lang_v26', langKey);
+        const setLanguage = (key) => {
+            currentLang.value = key;
+            localStorage.setItem('app_lang_v3', key);
         };
 
-        const enterSetup = (m) => {
-            mode.value = m;
-            if(!playerName.value) playerName.value = "Guest" + Math.floor(Math.random() * 1000);
-            localStorage.setItem('loto_name', playerName.value);
-            
-            if(m === 'MULTI') {
-                roomId.value = Math.floor(100000 + Math.random() * 899999).toString();
-                isMaster.ref = true;
-            } else {
-                roomId.value = null;
+        const navToSetup = (selectedMode) => {
+            mode.value = selectedMode;
+            if(!playerName.value) {
+                playerName.value = "Player_" + Math.floor(Math.random() * 9000 + 1000);
             }
+            localStorage.setItem('app_user_name', playerName.value);
             gameState.value = 'SETUP';
         };
 
         const startGame = () => {
-            const totalCost = betAmount.value * ticketQty.value;
-            if(wallet.amount < totalCost) {
-                alert("Insufficient funds!");
+            const totalBet = betAmount.value * ticketQty.value;
+            if (wallet.amount < totalBet) {
+                alert("Insufficient wallet balance!");
                 return;
             }
-            
-            wallet.amount -= totalCost;
+
+            wallet.amount -= totalBet;
             generateTickets();
+            
             drawnNumbers.value = [];
             currentNumber.value = null;
             gameState.value = 'PLAYING';
             
-            if(isAutoMode.value) startDrawingTimer();
+            if (isAutoMode.value) {
+                startGameTimer();
+            }
         };
 
         const generateTickets = () => {
-            const cards = [];
-            const marks = [];
-            
-            for(let i=0; i < ticketQty.value; i++) {
-                // LOTOカード生成ロジック (3行9列、1行に5つの数字)
+            const newCards = [];
+            const newMarks = [];
+
+            for (let i = 0; i < ticketQty.value; i++) {
+                // Loto 90 Style: 3 rows, 9 columns. Each row has exactly 5 numbers.
                 const card = Array(3).fill(0).map(() => Array(9).fill(0));
-                const range = [
-                    [1,9],[10,19],[20,29],[30,39],[40,49],[50,59],[60,69],[70,79],[80,90]
-                ];
+                const marks = Array(3).fill(0).map(() => Array(9).fill(false));
                 
-                for(let r=0; r<3; r++) {
-                    const selectedCols = [0,1,2,3,4,5,6,7,8].sort(() => Math.random() - 0.5).slice(0,5).sort();
-                    selectedCols.forEach(c => {
+                const colRanges = [
+                    [1, 9], [10, 19], [20, 29], [30, 39], [40, 49], 
+                    [50, 59], [60, 69], [70, 79], [80, 90]
+                ];
+
+                for (let r = 0; r < 3; r++) {
+                    // Select 5 random columns for this row
+                    const targetCols = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+                        .sort(() => Math.random() - 0.5)
+                        .slice(0, 5)
+                        .sort();
+
+                    targetCols.forEach(c => {
                         let num;
-                        do {
-                            num = Math.floor(Math.random() * (range[c][1] - range[c][0] + 1)) + range[c][0];
-                        } while(card[0][c] === num || card[1][c] === num);
+                        let isUnique = false;
+                        while(!isUnique) {
+                            num = Math.floor(Math.random() * (colRanges[c][1] - colRanges[c][0] + 1)) + colRanges[c][0];
+                            // Check uniqueness in the same column across rows
+                            isUnique = !card.some(row => row[c] === num);
+                        }
                         card[r][c] = num;
                     });
                 }
-                cards.push(card);
-                marks.push(Array(3).fill(0).map(() => Array(9).fill(false)));
+                newCards.push(card);
+                newMarks.push(marks);
             }
-            myCards.value = cards;
-            myMarks.value = marks;
+            myCards.value = newCards;
+            myMarks.value = newMarks;
         };
 
-        const startDrawingTimer = () => {
-            if(timer) clearInterval(timer);
-            timer = setInterval(() => {
+        const startGameTimer = () => {
+            stopGameTimer();
+            gameTimer = setInterval(() => {
                 drawNextNumber();
             }, drawInterval.value * 1000);
         };
 
-        // スピード調節が即座に反映されるように監視
-        watch(drawInterval, () => {
-            if(gameState.value === 'PLAYING' && isAutoMode.value) startDrawingTimer();
-        });
-
-        const drawNextNumber = () => {
-            if(drawnNumbers.value.length >= 90) {
-                if(timer) clearInterval(timer);
-                return;
-            }
-            
-            let next;
-            do {
-                next = Math.floor(Math.random() * 90) + 1;
-            } while(drawnNumbers.value.includes(next));
-            
-            currentNumber.value = next;
-            drawnNumbers.value.push(next);
-            
-            // オートモード時は自動でマーク
-            if(isAutoMode.value) {
-                autoMark(next);
-            }
-            
-            // マルチプレイヤー同期 (Masterが番号を決定してFirebaseに送信する想定)
-            if(mode.value === 'MULTI' && isMaster.value) {
-                syncRoomData(next);
+        const stopGameTimer = () => {
+            if (gameTimer) {
+                clearInterval(gameTimer);
+                gameTimer = null;
             }
         };
 
-        const autoMark = (num) => {
+        // Watch for speed changes during play
+        watch(drawInterval, () => {
+            if (gameState.value === 'PLAYING' && isAutoMode.value) {
+                startGameTimer();
+            }
+        });
+
+        const drawNextNumber = () => {
+            if (drawnNumbers.value.length >= 90) {
+                stopGameTimer();
+                return;
+            }
+
+            let next;
+            do {
+                next = Math.floor(Math.random() * 90) + 1;
+            } while (drawnNumbers.value.includes(next));
+
+            currentNumber.value = next;
+            drawnNumbers.value.push(next);
+
+            // If auto mode is on, automatically mark matching numbers
+            if (isAutoMode.value) {
+                performAutoMark(next);
+            }
+
+            // --- SYNC LOGIC PLACEHOLDER ---
+            // If multiplayer (Firebase), we would update the DB here.
+            // if(mode.value === 'MULTI') syncWithFirebase(next);
+        };
+
+        const performAutoMark = (num) => {
             myCards.value.forEach((card, ci) => {
                 card.forEach((row, ri) => {
                     row.forEach((cell, ni) => {
-                        if(cell === num) myMarks.value[ci][ri][ni] = true;
+                        if (cell === num) {
+                            myMarks.value[ci][ri][ni] = true;
+                        }
                     });
                 });
             });
         };
 
-        const handleManualMark = (ci, ri, ni) => {
-            // オートモード時はタップ無効（指示通り）
-            if(isAutoMode.value) return;
-            
-            const cellVal = myCards.value[ci][ri][ni];
-            if(cellVal === 0) return;
-            
-            // 抽選された番号のみマーク可能にするルールを適用する場合
-            if(drawnNumbers.value.includes(cellVal)) {
+        const toggleMark = (ci, ri, ni) => {
+            // In auto-mode, manual marking is disabled to prevent cheating/interference
+            if (isAutoMode.value) return;
+
+            const val = myCards.value[ci][ri][ni];
+            if (val === 0) return;
+
+            // Only allow marking if the number has been drawn
+            if (drawnNumbers.value.includes(val)) {
                 myMarks.value[ci][ri][ni] = !myMarks.value[ci][ri][ni];
             }
         };
 
         const isMarked = (ci, ri, ni) => myMarks.value[ci][ri][ni];
 
-        const checkWinReady = (ci) => {
-            // LOTO(90)のビンゴ条件: 1行5つ揃ったら「Ready/Bingo」
+        const isReadyToWin = (ci) => {
+            // Winning condition: Any full row (5 numbers) marked
             return myMarks.value[ci].some(row => row.filter(m => m).length === 5);
         };
 
         const callBingo = () => {
-            let isWinner = false;
+            let winDetected = false;
+            
             myCards.value.forEach((card, ci) => {
                 card.forEach((row, ri) => {
-                    const markedCount = row.filter((cell, ni) => {
-                        return myMarks.value[ci][ri][ni] && drawnNumbers.value.includes(cell);
+                    const correctlyMarked = row.filter((cell, ni) => {
+                        return cell !== 0 && myMarks.value[ci][ri][ni] && drawnNumbers.value.includes(cell);
                     }).length;
-                    if(markedCount === 5) isWinner = true;
+
+                    if (correctlyMarked === 5) {
+                        winDetected = true;
+                    }
                 });
             });
 
-            if(isWinner) {
+            if (winDetected) {
                 alert(t.value.winMsg);
-                wallet.amount += betAmount.value * 15; // 賞金
-                handleBack();
+                // Reward: 12x the bet
+                wallet.amount += betAmount.value * 12;
+                resetToHome();
             } else {
                 alert(t.value.loseMsg);
             }
         };
 
-        const handleBack = () => {
-            // 戻るボタンタップ時の確認ウィンドウ (指示通り)
-            if(confirm(t.value.confirmQuit)) {
-                if(timer) clearInterval(timer);
-                gameState.value = 'HOME';
-                roomId.value = null;
+        const handleExitRequest = () => {
+            if (confirm(t.value.confirmExit)) {
+                resetToHome();
             }
         };
 
-        const syncRoomData = (num) => {
-            console.log("Master syncing number:", num, "to room:", roomId.value);
-            // firebase.database().ref('rooms/' + roomId.value).update({ currentNum: num });
+        const resetToHome = () => {
+            stopGameTimer();
+            gameState.value = 'HOME';
         };
-
-        // QRコードの生成 (指示：招待コードが小さいことの修正)
-        watch(showShareModal, (v) => {
-            if(v) {
-                setTimeout(() => {
-                    document.getElementById('qrcode').innerHTML = "";
-                    new QRCode(document.getElementById('qrcode'), {
-                        text: "LOTO-ROOM-" + roomId.value,
-                        width: 200, // 視認性を高めるためにサイズアップ
-                        height: 200,
-                        colorDark : "#0f172a",
-                        colorLight : "#ffffff",
-                        correctLevel : QRCode.CorrectLevel.H
-                    });
-                }, 100);
-            }
-        });
 
         return {
-            currentLang, t, languages, gameState, mode, playerName, wallet,
+            // Refs
+            currentLang, gameState, mode, playerName, wallet,
             ticketQty, botCount, betAmount, isAutoMode, drawInterval,
-            myCards, myMarks, drawnNumbers, currentNumber, roomId,
-            showSettingsModal, showWalletModal, showShareModal, currentTime,
-            changeLanguage, enterSetup, startGame, drawNextNumber, handleManualMark,
-            isMarked, checkWinReady, callBingo, handleBack
+            myCards, myMarks, drawnNumbers, currentNumber,
+            showSettingsModal, showWalletModal, currentTime,
+            // Computed
+            t, languages,
+            // Methods
+            setLanguage, navToSetup, startGame, drawNextNumber, toggleMark,
+            isMarked, isReadyToWin, callBingo, handleExitRequest
         };
     }
 }).mount('#app');
+
+/**
+ * FIREBASE / MULTIPLAYER STUB
+ * Detailed logic for room synchronization
+ */
+function syncWithFirebase(num) {
+    // This is where real-time database logic would integrate.
+    // Example: firebase.database().ref('rooms/' + roomId).update({ lastNum: num });
+    console.log("Multilayer Sync: " + num);
+}
+
+/**
+ * BOT LOGIC STUB
+ * Detailed simulation for bot opponents
+ */
+function simulateBots(count) {
+    for(let i=0; i<count; i++) {
+        // Each bot would have its own hidden card and logic to mark.
+        // If a bot wins, the game should trigger a "Bot Won" state.
+    }
+}
 </script>
 </body>
 </html>
