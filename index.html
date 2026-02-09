@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lô Tô Global - Enhanced UI</title>
+    <title>Lô Tô Global - Full Translation</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -34,14 +34,13 @@
             </button>
             <div v-else class="w-10"></div>
 
-            <select v-if="gameState === 'HOME'" v-model="currentLang" @change="updateCurrencyByLang" class="text-xs font-bold bg-slate-50 border rounded-lg px-2 py-1.5 outline-none">
+            <select v-model="currentLang" @change="updateCurrencyByLang" class="text-xs font-bold bg-slate-50 border rounded-lg px-2 py-1.5 outline-none">
                 <option v-for="(l, code) in i18n" :key="code" :value="code">{{ l.name }}</option>
             </select>
-            <div v-else class="text-xs font-black text-slate-300 uppercase italic">Lô Tô Global</div>
             
             <button @click="openWalletModal" class="flex items-center bg-green-50 px-3 py-1.5 rounded-xl border border-green-100 active:scale-95 transition-transform">
                 <div class="flex flex-col items-end mr-2">
-                    <span class="text-[10px] text-green-700 font-black leading-none uppercase tracking-tighter">Wallet Balance</span>
+                    <span class="text-[10px] text-green-700 font-black leading-none uppercase tracking-tighter">{{ t.balLabelShort }}</span>
                     <span class="font-black text-green-600 text-xl leading-tight">{{ wallet.currency }}{{ wallet.amount.toLocaleString() }}</span>
                 </div>
                 <i class="fas fa-pen-to-square text-green-400 text-sm"></i>
@@ -117,9 +116,9 @@
                         </div>
                     </div>
 
-                    <div class="pt-4 pb-12">
+                    <div class="pt-4 pb-12 text-center">
                         <button @click="checkKinh" class="w-full bg-red-600 text-white py-8 rounded-[2rem] font-black text-4xl italic tracking-tighter shadow-2xl active:scale-95 transition-all">
-                            KINH!
+                            {{ t.kinhBtn }}
                         </button>
                         <p class="text-center text-[10px] text-slate-400 mt-4 font-bold uppercase tracking-widest opacity-50">Lô Tô Global Game Engine</p>
                     </div>
@@ -179,14 +178,14 @@
         const db = firebase.database();
 
         const i18n = {
-            vi: { name: "Tiếng Việt", cur: "₫", welcome: "Chào mừng", solo: "Chơi một mình", soloSub: "Luyện tập với CPU", multi: "Chơi nhiều người", multiSub: "Chia sẻ mã phòng", setupTitle: "Thiết lập", ticketCount: "Số lượng vé", betAmount: "Mức cược", startBtn: "BẮT ĐẦU", drawn: "Số đã bốc", quitMsg: "Bạn có chắc muốn thoát?", shareSuccess: "Đã sao chép!", inviteBtn: "MỜI BẠN", inviteTitle: "Mời Tham Gia", inviteSub: "Quét mã để cùng chơi", copyBtn: "Sao chép", closeBtn: "Đóng", cancel: "Hủy", ticket: "Vé", walletTitle: "Ví Tiền", curLabel: "Đơn vị", balLabel: "Số dư", saveBtn: "Lưu" },
-            en: { name: "English", cur: "$", welcome: "Welcome", solo: "Solo Mode", soloSub: "Versus CPU", multi: "Multiplayer", multiSub: "Share room link", setupTitle: "Setup Game", ticketCount: "Tickets", betAmount: "Bet Amount", startBtn: "START", drawn: "Balls", quitMsg: "Return to Home?", shareSuccess: "Copied!", inviteBtn: "INVITE", inviteTitle: "Invitation", inviteSub: "Scan to join room", copyBtn: "Copy", closeBtn: "Close", cancel: "Cancel", ticket: "Ticket", walletTitle: "Wallet", curLabel: "Currency", balLabel: "Balance", saveBtn: "Save" },
-            ja: { name: "日本語", cur: "¥", welcome: "ようこそ", solo: "ソロプレイ", soloSub: "CPUと対戦", multi: "マルチプレイ", multiSub: "ルーム共有", setupTitle: "ゲーム設定", ticketCount: "枚数", betAmount: "賭け金", startBtn: "開始", drawn: "出た数字", quitMsg: "トップに戻りますか？", shareSuccess: "コピー完了！", inviteBtn: "友達を招待", inviteTitle: "ルーム招待", inviteSub: "スキャンして参加", copyBtn: "コピー", closeBtn: "閉じる", cancel: "キャンセル", ticket: "チケット", walletTitle: "ウォレット", curLabel: "通貨単位", balLabel: "残高", saveBtn: "保存" },
-            lo: { name: "ລາວ", cur: "₭", welcome: "ຍິນດີຕ້ອນຮັບ", solo: "ຫຼິ້ນຄົນດຽວ", soloSub: "ຝຶກກັບ CPU", multi: "ຫຼິ້ນຫຼາຍຄົນ", multiSub: "ແບ່ງປັນລະຫັດ", setupTitle: "ຕັ້ງຄ່າ", ticketCount: "ຈຳນວນໃບ", betAmount: "ເດີມພັນ", startBtn: "ເລີ່ມ", drawn: "ອອກແລ້ວ", quitMsg: "ອອກຈາກເກມ?", shareSuccess: "ສຳເລັດ!", inviteBtn: "ເຊີນໝູ່", inviteTitle: "ການເຊື້ອເຊີນ", inviteSub: "ສະແກນເພື່ອເຂົ້າຮ່ວມ", copyBtn: "ກັອບປີ້", closeBtn: "ປິດ", cancel: "ຍົកເລີກ", ticket: "ໃບ", walletTitle: "ກະເປົາເງິນ", curLabel: "ສະກຸນເງິນ", balLabel: "ຍອດເງິນ", saveBtn: "ບັນທຶກ" },
-            th: { name: "ไทย", cur: "฿", welcome: "ยินดีต้อนรับ", solo: "เล่นคนเดียว", soloSub: "ฝึกกับ CPU", multi: "เล่นหลายคน", multiSub: "แชร์ห้อง", setupTitle: "ตั้งค่าเกม", ticketCount: "จำนวนใบ", betAmount: "เดิมพัน", startBtn: "เริ่ม", drawn: "ออกแล้ว", quitMsg: "ออกจากเกม?", shareSuccess: "คัดลอกแล้ว!", inviteBtn: "เชิญเพื่อน", inviteTitle: "คำเชิญเข้าห้อง", inviteSub: "สแกนเพื่อเข้าร่วม", copyBtn: "คัดลอก", closeBtn: "ปิด", cancel: "ยกเลิก", ticket: "ใบ", walletTitle: "กระเป๋าเงิน", curLabel: "สกุลเงิน", balLabel: "ยอดเงิน", saveBtn: "บันทึก" },
-            km: { name: "ខ្មែរ", cur: "៛", welcome: "សូមស្វាគមន៍", solo: "លេងម្នាក់ឯង", soloSub: "ហាត់ជាមួយ CPU", multi: "លេងច្រើននាក់", multiSub: "ចែករំលែកបន្ទប់", setupTitle: "ការរៀបចំ", ticketCount: "ចំនួនសន្លឹក", betAmount: "ភ្នាល់", startBtn: "ចាប់ផ្ដើម", drawn: "ចេញហើយ", quitMsg: "ចាកចេញ?", shareSuccess: "ចម្លងរួច!", inviteBtn: "អញ្ជើញមិត្ត", inviteTitle: "ការអញ្ជើញ", inviteSub: "ស្កេនដើម្បីចូលរួម", copyBtn: "ចម្លង", closeBtn: "បិទ", cancel: "បោះបង់", ticket: "សន្លឹក", walletTitle: "កាបូបប្រាក់", curLabel: "រូបិយប័ណ្ណ", balLabel: "សមតុល្យ", saveBtn: "រក្សាទុក" },
-            zh: { name: "简体中文", cur: "¥", welcome: "欢迎", solo: "单人模式", soloSub: "与CPU练习", multi: "多人模式", multiSub: "分享房间", setupTitle: "设置", ticketCount: "票数", betAmount: "赌注", startBtn: "开始", drawn: "已抽数字", quitMsg: "确定退出吗？", shareSuccess: "已复制！", inviteBtn: "邀请好友", inviteTitle: "房间邀请", inviteSub: "扫码加入房间", copyBtn: "复制链接", closeBtn: "关闭", cancel: "取消", ticket: "票", walletTitle: "钱包设置", curLabel: "货币", balLabel: "余额", saveBtn: "保存" },
-            fr: { name: "Français", cur: "€", welcome: "Bienvenue", solo: "Mode Solo", soloSub: "Versus CPU", multi: "Multijoueur", multiSub: "Partager salle", setupTitle: "Configuration", ticketCount: "Tickets", betAmount: "Mise", startBtn: "JOUER", drawn: "Tirés", quitMsg: "Quitter?", shareSuccess: "Copié!", inviteBtn: "INVITER", inviteTitle: "Invitation", inviteSub: "Scanner pour rejoindre", copyBtn: "Copier", closeBtn: "Fermer", cancel: "Annuler", ticket: "Ticket", walletTitle: "Portefeuille", curLabel: "Devise", balLabel: "Solde", saveBtn: "Sauver" }
+            vi: { name: "Tiếng Việt", cur: "₫", welcome: "Chào mừng", solo: "Chơi một mình", soloSub: "Luyện tập với CPU", multi: "Chơi nhiều người", multiSub: "Chia sẻ mã phòng", setupTitle: "Thiết lập", ticketCount: "Số lượng vé", betAmount: "Mức cược", startBtn: "BẮT ĐẦU", drawn: "Số đã bốc", quitMsg: "Bạn có chắc muốn thoát?", shareSuccess: "Đã sao chép!", inviteBtn: "MỜI BẠN", inviteTitle: "Mời Tham Gia", inviteSub: "Quét mã để cùng chơi", copyBtn: "Sao chép", closeBtn: "Đóng", cancel: "Hủy", ticket: "Vé", walletTitle: "Ví Tiền", curLabel: "Đơn vị", balLabel: "Số dư", balLabelShort: "Số dư ví", saveBtn: "Lưu", kinhBtn: "KINH!", winMsg: "KINH! CHIẾN THẮNG!", loseMsg: "Chưa Kinh!" },
+            en: { name: "English", cur: "$", welcome: "Welcome", solo: "Solo Mode", soloSub: "Versus CPU", multi: "Multiplayer", multiSub: "Share room link", setupTitle: "Setup Game", ticketCount: "Tickets", betAmount: "Bet Amount", startBtn: "START", drawn: "Balls", quitMsg: "Return to Home?", shareSuccess: "Copied!", inviteBtn: "INVITE", inviteTitle: "Invitation", inviteSub: "Scan to join room", copyBtn: "Copy", closeBtn: "Close", cancel: "Cancel", ticket: "Ticket", walletTitle: "Wallet", curLabel: "Currency", balLabel: "Balance", balLabelShort: "Wallet Balance", saveBtn: "Save", kinhBtn: "KINH!", winMsg: "KINH! WINNER!", loseMsg: "Not yet!" },
+            ja: { name: "日本語", cur: "¥", welcome: "ようこそ", solo: "ソロプレイ", soloSub: "CPUと対戦", multi: "マルチプレイ", multiSub: "ルーム共有", setupTitle: "ゲーム設定", ticketCount: "枚数", betAmount: "賭け金", startBtn: "開始", drawn: "出た数字", quitMsg: "トップに戻りますか？", shareSuccess: "コピー完了！", inviteBtn: "友達を招待", inviteTitle: "ルーム招待", inviteSub: "スキャンして参加", copyBtn: "コピー", closeBtn: "閉じる", cancel: "キャンセル", ticket: "チケット", walletTitle: "ウォレット", curLabel: "通貨単位", balLabel: "残高", balLabelShort: "お財布残高", saveBtn: "保存", kinhBtn: "上がり！", winMsg: "おめでとう！上がりです！", loseMsg: "まだ上がっていません" },
+            lo: { name: "ລາວ", cur: "₭", welcome: "ຍິນດີຕ້ອນຮັບ", solo: "ຫຼິ້ນຄົນດຽວ", soloSub: "ຝຶກກັບ CPU", multi: "ຫຼິ້ນຫຼາຍຄົນ", multiSub: "ແບ່ງປັນລະຫັດ", setupTitle: "ຕັ້ງຄ່າ", ticketCount: "ຈຳນວນໃບ", betAmount: "ເດີມພັນ", startBtn: "ເລີ່ມ", drawn: "ອອກແລ້ວ", quitMsg: "ອອກຈາກເກມ?", shareSuccess: "ສຳເລັດ!", inviteBtn: "ເຊີນໝູ່", inviteTitle: "ການເຊື້ອເຊີນ", inviteSub: "ສະແກນເພື່ອເຂົ້າຮ່ວມ", copyBtn: "ກັອບປີ້", closeBtn: "ປິດ", cancel: "ຍົកເລີກ", ticket: "ໃບ", walletTitle: "ກະເປົາເງິນ", curLabel: "ສະກຸນເງິນ", balLabel: "ຍອດເງິນ", balLabelShort: "ຍອດເງິນ", saveBtn: "ບັນທຶກ", kinhBtn: "ກິນ!", winMsg: "ກິນ! ທ່ານຊະນະແລ້ວ!", loseMsg: "ຍັງບໍ່ທັນກິນ!" },
+            th: { name: "ไทย", cur: "฿", welcome: "ยินดีต้อนรับ", solo: "เล่นคนเดียว", soloSub: "ฝึกกับ CPU", multi: "เล่นหลายคน", multiSub: "แชร์ห้อง", setupTitle: "ตั้งค่าเกม", ticketCount: "จำนวนใบ", betAmount: "เดิมพัน", startBtn: "เริ่ม", drawn: "ออกแล้ว", quitMsg: "ออกจากเกม?", shareSuccess: "คัดลอกแล้ว!", inviteBtn: "เชิญเพื่อน", inviteTitle: "คำเชิญเข้าห้อง", inviteSub: "สแกนเพื่อเข้าร่วม", copyBtn: "คัดลอก", closeBtn: "ปิด", cancel: "ยกเลิก", ticket: "ใบ", walletTitle: "กระเป๋าเงิน", curLabel: "สกุลเงิน", balLabel: "ยอดเงิน", balLabelShort: "ยอดเงินในวอลเล็ท", saveBtn: "บันทึก", kinhBtn: "คิน!", winMsg: "คิน! คุณชนะแล้ว!", loseMsg: "ยังไม่คิน!" },
+            km: { name: "ខ្មែរ", cur: "៛", welcome: "សូមស្វាគមន៍", solo: "លេងម្នាក់ឯង", soloSub: "ហាត់ជាមួយ CPU", multi: "លេងច្រើននាក់", multiSub: "ចែករំលែកបន្ទប់", setupTitle: "ការរៀបចំ", ticketCount: "ចំនួនសន្លឹក", betAmount: "ភ្នាល់", startBtn: "ចាប់ផ្ដើម", drawn: "ចេញហើយ", quitMsg: "ចាកចេញ?", shareSuccess: "ចម្លងរួច!", inviteBtn: "អញ្ជើញមិត្ត", inviteTitle: "ការអញ្ជើញ", inviteSub: "ស្កេនដើម្បីចូលរួម", copyBtn: "ចម្លង", closeBtn: "បិទ", cancel: "បោះបង់", ticket: "សន្លឹក", walletTitle: "កាបូបប្រាក់", curLabel: "រូបិយប័ណ្ណ", balLabel: "សមតុល្យ", balLabelShort: "សមតុល្យកាបូប", saveBtn: "រក្សាទុក", kinhBtn: "គីន!", winMsg: "គីន! អ្នកឈ្នះហើយ!", loseMsg: "មិនទាន់គីនទេ!" },
+            zh: { name: "简体中文", cur: "¥", welcome: "欢迎", solo: "单人模式", soloSub: "与CPU练习", multi: "多人模式", multiSub: "分享房间", setupTitle: "设置", ticketCount: "票数", betAmount: "赌注", startBtn: "开始", drawn: "已抽数字", quitMsg: "确定退出吗？", shareSuccess: "已复制！", inviteBtn: "邀请好友", inviteTitle: "房间邀请", inviteSub: "扫码加入房间", copyBtn: "复制链接", closeBtn: "关闭", cancel: "取消", ticket: "票", walletTitle: "钱包设置", curLabel: "货币单位", balLabel: "账户余额", balLabelShort: "钱包余额", saveBtn: "保存", kinhBtn: "赢了!", winMsg: "赢了! 恭喜你!", loseMsg: "还没赢呢" },
+            fr: { name: "Français", cur: "€", welcome: "Bienvenue", solo: "Mode Solo", soloSub: "Versus CPU", multi: "Multijoueur", multiSub: "Partager salle", setupTitle: "Configuration", ticketCount: "Tickets", betAmount: "Mise", startBtn: "JOUER", drawn: "Tirés", quitMsg: "Quitter?", shareSuccess: "Copié!", inviteBtn: "INVITER", inviteTitle: "Invitation", inviteSub: "Scanner pour rejoindre", copyBtn: "Copier", closeBtn: "Fermer", cancel: "Annuler", ticket: "Ticket", walletTitle: "Portefeuille", curLabel: "Devise", balLabel: "Solde", balLabelShort: "Solde du compte", saveBtn: "Sauver", kinhBtn: "KINH!", winMsg: "KINH! GAGNÉ!", loseMsg: "Pas encore!" }
         };
 
         const { createApp, ref, reactive, computed, watch, onMounted } = Vue;
@@ -284,10 +283,10 @@
                         return nums.length > 0 && nums.every(n => drawnHistory.value.includes(n));
                     }));
                     if(win) {
-                        alert("KINH! WINNER!");
+                        alert(t.value.winMsg);
                         wallet.amount += (betAmount.value * 10);
                         confirmQuit();
-                    } else alert("Chưa Kinh!");
+                    } else alert(t.value.loseMsg);
                 };
 
                 const confirmQuit = () => {
