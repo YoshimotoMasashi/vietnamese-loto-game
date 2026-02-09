@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lô Tô Global - Ultimate Edition</title>
+    <title>Lô Tô Global - Ultimate Fixed Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -12,7 +12,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         [v-cloak] { display: none; }
-        .cell { aspect-ratio: 1/1; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; font-size: 0.85rem; background: white; transition: all 0.2s; position: relative; }
+        .cell { aspect-ratio: 1/1; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; font-size: 0.85rem; background: white; transition: all 0.2s; position: relative; cursor: pointer; }
         .marked::after { content: ''; position: absolute; width: 80%; height: 80%; background-color: rgba(239, 68, 68, 0.85); border-radius: 50%; z-index: 10; animation: pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .cell-num { z-index: 20; }
         .marked .cell-num { color: white; }
@@ -230,6 +230,7 @@
                 const drawnHistory = ref([]);
                 const roomId = ref(new URLSearchParams(window.location.search).get('room'));
                 const logs = ref([]);
+                const lastLogTime = ref(Date.now()); // 通知重複防止用
                 let timer = null;
 
                 const addLog = (m) => { const id = Date.now(); logs.value.push({id, message: m}); setTimeout(() => logs.value = logs.value.filter(l => l.id !== id), 3000); };
@@ -246,7 +247,8 @@
                         const s = await pRef.once('value');
                         if(Object.keys(s.val()||{}).length >= 10 && !(s.val()||{})[name.replace(/[.#$[\]]/g, "_")]) return alert(t.value.fullMsg);
                         pRef.child(name.replace(/[.#$[\]]/g, "_")).set(true);
-                        db.ref(`rooms/${roomId.value}`).update({ msg: `${name} joined!` });
+                        // 送信時にタイムスタンプを付与
+                        db.ref(`rooms/${roomId.value}`).update({ msg: `${name} joined!`, msgTime: firebase.database.ServerValue.TIMESTAMP });
                     }
                     gameState.value = 'SETUP';
                 };
@@ -257,10 +259,26 @@
                     myCards.value = Array.from({length: ticketCount.value}, () => generateCard());
                     myMarks.value = myCards.value.map(c => c.map(r => r.map(() => false)));
                     drawnHistory.value = []; currentNumber.value = null; gameState.value = 'PLAYING';
-                    if(mode.value === 'SOLO') { if(isAuto.value) timer = setInterval(() => { if(!isPaused.value) drawNext(); }, drawInterval.value * 1000); }
-                    else {
+                    
+                    if(mode.value === 'SOLO') { 
+                        if(isAuto.value) timer = setInterval(() => { if(!isPaused.value) drawNext(); }, drawInterval.value * 1000); 
+                    } else {
                         const rRef = db.ref(`rooms/${roomId.value}`);
-                        rRef.on('value', s => { const d = s.val(); if(d){ if(d.num) currentNumber.value = d.num; if(d.his) drawnHistory.value = d.his; if(d.msg){ addLog(d.msg); rRef.update({msg: null}); }} });
+                        // 参加時点の時間を記録
+                        lastLogTime.value = Date.now();
+                        
+                        rRef.on('value', s => { 
+                            const d = s.val(); 
+                            if(d){ 
+                                if(d.num) currentNumber.value = d.num; 
+                                if(d.his) drawnHistory.value = d.his; 
+                                // メッセージのタイムスタンプを確認し、新しいものだけ表示
+                                if(d.msg && d.msgTime && d.msgTime > lastLogTime.value){ 
+                                    addLog(d.msg); 
+                                    lastLogTime.value = d.msgTime; 
+                                }
+                            } 
+                        });
                         if(isAuto.value) timer = setInterval(() => { if(!isPaused.value && drawnHistory.value.length < 90) drawNext(); }, drawInterval.value * 1000);
                     }
                 };
@@ -278,11 +296,25 @@
                         const marks = myCards.value[cIdx][rIdx].filter((n, nIdx) => n !== 0 && row[nIdx]);
                         return nums.length === 5 && marks.length === 5 && marks.every(n => drawnHistory.value.includes(n));
                     }));
-                    if(win) { alert(t.value.winMsg); wallet.amount += (betAmount.value * 10); if(mode.value === 'MULTI') db.ref(`rooms/${roomId.value}`).update({ msg: `🎉 ${playerName.value} KINH!` }); confirmQuit(); }
-                    else alert(t.value.loseMsg);
+                    if(win) { 
+                        alert(t.value.winMsg); 
+                        wallet.amount += (betAmount.value * 10); 
+                        if(mode.value === 'MULTI') db.ref(`rooms/${roomId.value}`).update({ msg: `🎉 ${playerName.value} KINH!`, msgTime: firebase.database.ServerValue.TIMESTAMP }); 
+                        confirmQuit(); 
+                    } else alert(t.value.loseMsg);
                 };
 
-                const confirmQuit = () => { if(confirm(t.value.quitConfirm)) { clearInterval(timer); if(mode.value === 'MULTI') db.ref(`rooms/${roomId.value}/players/${playerName.value.replace(/[.#$[\]]/g, "_")}`).remove(); gameState.value = 'HOME'; } };
+                const confirmQuit = () => { 
+                    if(confirm(t.value.quitConfirm)) { 
+                        clearInterval(timer); 
+                        if(mode.value === 'MULTI') {
+                            db.ref(`rooms/${roomId.value}/players/${playerName.value.replace(/[.#$[\]]/g, "_")}`).remove();
+                            db.ref(`rooms/${roomId.value}`).off(); // リスナー解除
+                        }
+                        gameState.value = 'HOME'; 
+                    } 
+                };
+
                 const toggleMark = (cIdx, rIdx, nIdx) => { if (myCards.value[cIdx][rIdx][nIdx] !== 0) myMarks.value[cIdx][rIdx][nIdx] = !myMarks.value[cIdx][rIdx][nIdx]; };
                 const isMarked = (cIdx, rIdx, nIdx) => myMarks.value[cIdx]?.[rIdx]?.[nIdx];
                 const generateCard = () => {
