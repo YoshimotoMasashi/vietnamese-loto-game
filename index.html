@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lô Tô Global - Full Specification Rev 12</title>
+    <title>Lô Tô Global - Full Specification Rev 13</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -74,7 +74,12 @@
             </div>
 
             <div v-else-if="gameState === 'SETUP'" class="flex-grow p-8 space-y-6 overflow-y-auto no-scrollbar">
-                <h2 class="text-center font-black text-3xl text-slate-800 italic uppercase border-b-4 border-red-500 inline-block mx-auto pb-1 mb-6 w-full">{{ t.setupTitle }}</h2>
+                <div class="flex justify-between items-start mb-6">
+                    <h2 class="font-black text-3xl text-slate-800 italic uppercase border-b-4 border-red-500 pb-1">{{ t.setupTitle }}</h2>
+                    <button v-if="mode === 'MULTI'" @click="showShareModal = true" class="bg-slate-900 text-white text-[10px] px-4 py-2 rounded-xl font-black shadow-lg flex items-center uppercase active:scale-95 transition">
+                        <i class="fas fa-qrcode mr-2 text-sm"></i> {{ t.inviteBtn }}
+                    </button>
+                </div>
                 
                 <div class="space-y-3">
                     <label class="text-xs font-black text-slate-400 uppercase tracking-widest">{{ t.ticketCount }}</label>
@@ -170,7 +175,7 @@
             </div>
 
             <div class="absolute bottom-1 right-2 pointer-events-none text-[8px] text-slate-300 font-mono">
-                System: Gemini 3 Flash / Last Update: 2026-02-09 / Rev: 12
+                Gemini 3 Flash / Rev: 13 (Setup Invite + Sync)
             </div>
         </main>
 
@@ -209,7 +214,6 @@
     </div>
 
     <script>
-        // CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyAqKCaLzCoGY6e87gHmeRAAawN5yrVeFcg",
             authDomain: "loto-vn.firebaseapp.com",
@@ -222,13 +226,12 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // LANGUAGES
         const i18n = {
             vi: { langName: "Tiếng Việt", cur: "₫", defWallet: 500000, defBet: 10000, welcomeMsg: "Chào mừng", playerNameLabel: "Tên người chơi", placeholderName: "Nhập tên...", soloMode: "Solo", multiMode: "Multiplayer", setupTitle: "Thiết lập", ticketCount: "Số vé", drawMethod: "Cách quay", speedLabel: "Tốc độ", betAmount: "Mức cược", startBtn: "BẮT ĐẦU", drawnLabel: "Số đã bốc", nextBtn: "Tiếp theo", playText: "Chạy", pauseText: "Dừng", homeBtn: "Home", historyEmpty: "Trống", kinhBtn: "KINH!", winMsg: "CHIẾN THẮNG!", loseMsg: "Chưa Kinh!", walletLabel: "Số dư", quitConfirm: "Thoát game?", inviteBtn: "Mời", inviteTitle: "Mời Tham Gia", copyBtn: "Copy", closeBtn: "Đóng", walletTitle: "Ví", curLabel: "Đơn vị", balLabel: "Số dư", cancel: "Hủy", saveBtn: "Lưu", fullMsg: "Phòng đầy" },
             ja: { langName: "日本語", cur: "¥", defWallet: 3000, defBet: 100, welcomeMsg: "ようこそ", playerNameLabel: "プレイヤー名", placeholderName: "名前を入力...", soloMode: "ソロプレイ", multiMode: "マルチプレイ", setupTitle: "ゲーム設定", ticketCount: "チケット枚数", drawMethod: "抽選方法", speedLabel: "自動の間隔", betAmount: "賭け金", startBtn: "開始", drawnLabel: "出た数字", nextBtn: "次を引く", playText: "再開", pauseText: "停止", homeBtn: "ホーム", historyEmpty: "履歴なし", kinhBtn: "上がり！", winMsg: "おめでとう！上がりです！", loseMsg: "まだ上がっていません", walletLabel: "残高", quitConfirm: "ホームに戻りますか？", inviteBtn: "招待", inviteTitle: "ルーム招待", copyBtn: "コピー", closeBtn: "閉じる", walletTitle: "ウォレット", curLabel: "通貨単位", balLabel: "残高設定", cancel: "戻る", saveBtn: "保存", fullMsg: "満員です" },
             en: { langName: "English", cur: "$", defWallet: 20, defBet: 1, welcomeMsg: "Welcome", playerNameLabel: "Player Name", placeholderName: "Enter name...", soloMode: "Solo", multiMode: "Multi", setupTitle: "Setup", ticketCount: "Tickets", drawMethod: "Method", speedLabel: "Speed", betAmount: "Bet", startBtn: "START", drawnLabel: "Drawn", nextBtn: "Next", playText: "Play", pauseText: "Pause", homeBtn: "Home", historyEmpty: "Empty", kinhBtn: "KINH!", winMsg: "WINNER!", loseMsg: "Not yet!", walletLabel: "Wallet", quitConfirm: "Quit?", inviteBtn: "Invite", inviteTitle: "Invitation", copyBtn: "Copy", closeBtn: "Close", walletTitle: "Wallet", curLabel: "Currency", balLabel: "Balance", cancel: "Cancel", saveBtn: "Save", fullMsg: "Full" },
             th: { langName: "ไทย", cur: "฿", defWallet: 500, defBet: 20, welcomeMsg: "ยินดีต้อนรับ", playerNameLabel: "ชื่อผู้เล่น", placeholderName: "กรอกชื่อ...", soloMode: "เล่นคนเดียว", multiMode: "เล่นหลายคน", setupTitle: "ตั้งค่า", ticketCount: "จำนวนใบ", drawMethod: "วิธีจั่ว", speedLabel: "ความเร็ว", betAmount: "เดิมพัน", startBtn: "เริ่ม", drawnLabel: "จั่วแล้ว", nextBtn: "ถัดไป", playText: "เล่น", pauseText: "หยุด", homeBtn: "หน้าหลัก", historyEmpty: "ไม่มีประวัติ", kinhBtn: "คิน!", winMsg: "คุณชนะ!", loseMsg: "ยัง!", walletLabel: "ยอดเงิน", quitConfirm: "ออก?", inviteBtn: "เชิญ", inviteTitle: "เชิญเพื่อน", copyBtn: "คัดลอก", closeBtn: "ปิด", walletTitle: "กระเป๋า", curLabel: "สกุลเงิน", balLabel: "ยอด", cancel: "ยกเลิก", saveBtn: "บันทึก", fullMsg: "เต็ม" },
-            lo: { langName: "ລາວ", cur: "₭", defWallet: 500000, defBet: 10000, welcomeMsg: "ຍິນດີຕ້ອນຮັບ", playerNameLabel: "ຊື່ຜູ້ຫຼິ້ນ", placeholderName: "ໃສ່ຊື່...", soloMode: "ຫຼິ້ນຄົນດຽວ", multiMode: "ຫຼິ້ນຫຼາຍຄົນ", setupTitle: "ຕັ້ງຄ່າ", ticketCount: "ໃບ", drawMethod: "ວິທີ", speedLabel: "ຄວາມໄວ", betAmount: "ເດີມພັນ", startBtn: "ເລີ່ມ", drawnLabel: "ອອກແລ້ວ", nextBtn: "ຕໍ່ໄປ", playText: "ຫຼິ້ນ", pauseText: "ຢຸດ", homeBtn: "ໜ້າຫຼັກ", historyEmpty: "ບໍ່ມີປະຫວັດ", kinhBtn: "ກິນ!", winMsg: "ຊະນະ!", loseMsg: "ຍັງ!", walletLabel: "ຍອດ", quitConfirm: "ອອກ?", inviteBtn: "ເຊີນ", inviteTitle: "ເຊີນ", copyBtn: "ຄັດລອກ", closeBtn: "ປິດ", walletTitle: "ກະເປົາ", curLabel: "ສະກຸນ", balLabel: "ຍອດ", cancel: "ຍົກເລີກ", saveBtn: "ບັນທຶກ", fullMsg: "ເຕັມ" },
+            lo: { langName: "ລາວ", cur: "₭", defWallet: 500000, defBet: 10000, welcomeMsg: "ຍິນດີຕ້ອນຮັບ", playerNameLabel: "ຊື່ຜູ້ຫຼິ້ນ", placeholderName: "ໃສ່ຊື່...", soloMode: "ຫຼິ້ນຄົນດຽວ", multiMode: "ຫຼิ້ນຫຼາຍຄົນ", setupTitle: "ຕັ້ງຄ່າ", ticketCount: "ໃບ", drawMethod: "ວິທີ", speedLabel: "ຄວາມໄວ", betAmount: "ເດີມພັນ", startBtn: "ເລີ່ມ", drawnLabel: "ອອກແລ້ວ", nextBtn: "ຕໍ່ໄປ", playText: "ຫຼິ້ນ", pauseText: "ຢຸດ", homeBtn: "ໜ້າຫຼັກ", historyEmpty: "ບໍ່ມີປະຫວັດ", kinhBtn: "ກິນ!", winMsg: "ຊະນະ!", loseMsg: "ຍັງ!", walletLabel: "ຍອດ", quitConfirm: "ອອກ?", inviteBtn: "ເຊີນ", inviteTitle: "ເຊີນ", copyBtn: "ຄັດລອກ", closeBtn: "ປິດ", walletTitle: "ກະເປົາ", curLabel: "ສະກຸນ", balLabel: "ຍອດ", cancel: "ຍົកເລີກ", saveBtn: "ບັນທຶກ", fullMsg: "ເຕັມ" },
             km: { langName: "ខ្មែរ", cur: "៛", defWallet: 80000, defBet: 2000, welcomeMsg: "សូមស្វាគមន៍", playerNameLabel: "ឈ្មោះអ្នកលេង", placeholderName: "បញ្ចូលឈ្មោះ...", soloMode: "ម្នាក់ឯង", multiMode: "ច្រើននាក់", setupTitle: "ការកំណត់", ticketCount: "សន្លឹក", drawMethod: "វិធី", speedLabel: "ល្បឿន", betAmount: "ភ្នាល់", startBtn: "ផ្ដើម", drawnLabel: "ចេញហើយ", nextBtn: "បន្ទាប់", playText: "បន្ត", pauseText: "ឈប់", homeBtn: "មេ", historyEmpty: "គ្មានប្រវត្តិ", kinhBtn: "គីន!", winMsg: "ឈ្នះ!", loseMsg: "នៅ!", walletLabel: "សមតុល្យ", quitConfirm: "ចេញ?", inviteBtn: "អញ្ជើញ", inviteTitle: "អញ្ជើញ", copyBtn: "ចម្លង", closeBtn: "បិទ", walletTitle: "កាបូប", curLabel: "រូបិយ", balLabel: "សមតុល្យ", cancel: "បោះបង់", saveBtn: "រក្សា", fullMsg: "ពេញ" },
             zh: { langName: "简体中文", cur: "¥", defWallet: 150, defBet: 5, welcomeMsg: "欢迎", playerNameLabel: "姓名", placeholderName: "输入...", soloMode: "单人", multiMode: "多人", setupTitle: "设置", ticketCount: "票数", drawMethod: "方式", speedLabel: "速度", betAmount: "下注", startBtn: "开始", drawnLabel: "已抽", nextBtn: "下个", playText: "继续", pauseText: "暂停", homeBtn: "首页", historyEmpty: "暂无数据", kinhBtn: "赢了!", winMsg: "恭喜!", loseMsg: "未中!", walletLabel: "余额", quitConfirm: "退出?", inviteBtn: "邀请", inviteTitle: "邀请好友", copyBtn: "复制", closeBtn: "关闭", walletTitle: "钱包", curLabel: "货币", balLabel: "余额", cancel: "取消", saveBtn: "保存", fullMsg: "满员" },
             fr: { langName: "Français", cur: "€", defWallet: 20, defBet: 1, welcomeMsg: "Bienvenue", playerNameLabel: "Nom", placeholderName: "Nom...", soloMode: "Solo", multiMode: "Multi", setupTitle: "Réglage", ticketCount: "Tickets", drawMethod: "Mode", speedLabel: "Vitesse", betAmount: "Mise", startBtn: "JOUER", drawnLabel: "Tirés", nextBtn: "Suiv.", playText: "Play", pauseText: "Pause", homeBtn: "Home", historyEmpty: "Vide", kinhBtn: "KINH!", winMsg: "Gagné!", loseMsg: "Non!", walletLabel: "Solde", quitConfirm: "Quitter?", inviteBtn: "Inviter", inviteTitle: "Invitation", copyBtn: "Copier", closeBtn: "Fermer", walletTitle: "Porte-monnaie", curLabel: "Devise", balLabel: "Solde", cancel: "Annuler", saveBtn: "Sauver", fullMsg: "Plein" }
@@ -237,7 +240,6 @@
         const { createApp, ref, reactive, computed, watch, onMounted } = Vue;
         createApp({
             setup() {
-                // Reactive State
                 const currentLang = ref(localStorage.getItem('loto_lang') || 'ja');
                 const t = computed(() => i18n[currentLang.value] || i18n.ja);
                 const gameState = ref('HOME');
@@ -260,14 +262,12 @@
                 const isMaster = ref(false);
                 let timer = null;
 
-                // Computed
                 const myNumbers = computed(() => {
                     let nums = [];
                     myCards.value.forEach(card => card.forEach(row => row.forEach(n => { if(n !== 0) nums.push(n); })));
                     return nums;
                 });
 
-                // Methods
                 const saveState = () => {
                     if (gameState.value === 'PLAYING') {
                         const data = {
@@ -280,24 +280,26 @@
                     }
                 };
 
-                // Watch for auto-mark
-                watch(currentNumber, (newVal) => {
-                    if (!newVal || !isAuto.value) return;
+                // 新しく出た数字を自分のカードと照合
+                const syncMarksWithHistory = () => {
                     myCards.value.forEach((card, cIdx) => {
                         card.forEach((row, rIdx) => {
                             row.forEach((num, nIdx) => {
-                                if (num === newVal) {
+                                if (num !== 0 && drawnHistory.value.includes(num)) {
                                     myMarks.value[cIdx][rIdx][nIdx] = true;
                                 }
                             });
                         });
                     });
                     saveState();
+                };
+
+                watch(currentNumber, (newVal) => {
+                    if (!newVal || !isAuto.value) return;
+                    syncMarksWithHistory();
                 });
 
-                const handleLangChange = () => {
-                    localStorage.setItem('loto_lang', currentLang.value);
-                };
+                const handleLangChange = () => { localStorage.setItem('loto_lang', currentLang.value); };
 
                 const initGame = async (m) => {
                     mode.value = m;
@@ -322,14 +324,25 @@
                     gameState.value = 'SETUP';
                 };
 
-                const stopAllProcesses = () => {
-                    if(timer) clearInterval(timer);
-                    timer = null;
-                    if(mode.value === 'MULTI' && roomId.value) {
-                        db.ref(`rooms/${roomId.value}`).off();
-                    }
-                    isPaused.value = false;
-                    localStorage.removeItem('loto_session');
+                const generateUniqueCards = (count) => {
+                    const colBounds = [[1,9],[10,19],[20,29],[30,39],[40,49],[50,59],[60,69],[70,79],[80,90]];
+                    let usedGlobal = new Set();
+                    return Array.from({length: count}, () => {
+                        let card = [Array(9).fill(0), Array(9).fill(0), Array(9).fill(0)];
+                        for(let r=0; r<3; r++){
+                            let cols = [0,1,2,3,4,5,6,7,8].sort(()=>Math.random()-0.5).slice(0,5).sort();
+                            cols.forEach(c => {
+                                let [min, max] = colBounds[c];
+                                let n; let attempts = 0;
+                                do {
+                                    n = Math.floor(Math.random() * (max - min + 1)) + min;
+                                    attempts++;
+                                } while((usedGlobal.has(n) || card[0][c]===n || card[1][c]===n || card[2][c]===n) && attempts < 100);
+                                card[r][c] = n; usedGlobal.add(n);
+                            });
+                        }
+                        return card;
+                    });
                 };
 
                 const startGame = () => {
@@ -337,16 +350,11 @@
                         const totalBet = betAmount.value * ticketCount.value;
                         if(wallet.amount < totalBet) return alert("Insufficient balance");
                         wallet.amount -= totalBet;
-                        
-                        // 生成：重複なしチケット
                         myCards.value = generateUniqueCards(ticketCount.value);
                         myMarks.value = myCards.value.map(c => c.map(r => r.map(() => false)));
-                        drawnHistory.value = [];
-                        currentNumber.value = null;
+                        drawnHistory.value = []; currentNumber.value = null;
                     }
-                    
                     gameState.value = 'PLAYING';
-                    saveState();
                     
                     if(mode.value === 'MULTI') {
                         const rRef = db.ref(`rooms/${roomId.value}`);
@@ -355,104 +363,57 @@
                             if(d && d.his){
                                 drawnHistory.value = d.his;
                                 currentNumber.value = d.his[d.his.length - 1];
-                                saveState();
+                                // 途中参加時の同期
+                                syncMarksWithHistory();
                             }
                         });
                     }
-
-                    if(isAuto.value && (mode.value === 'SOLO' || isMaster.value)) {
-                        startTimer();
-                    }
+                    if(isAuto.value && (mode.value === 'SOLO' || isMaster.value)) startTimer();
+                    saveState();
                 };
 
                 const startTimer = () => {
                     if(timer) clearInterval(timer);
                     timer = setInterval(() => {
-                        if(!isPaused.value && drawnHistory.value.length < 90) {
-                            drawNext();
-                        }
+                        if(!isPaused.value && drawnHistory.value.length < 90) drawNext();
                     }, drawInterval.value * 1000);
                 };
 
                 const drawNext = () => {
                     if(drawnHistory.value.length >= 90) return;
-                    let n;
-                    do {
-                        n = Math.floor(Math.random() * 90) + 1;
-                    } while(drawnHistory.value.includes(n));
-
+                    let n; do { n = Math.floor(Math.random() * 90) + 1; } while(drawnHistory.value.includes(n));
                     if(mode.value === 'SOLO') {
-                        drawnHistory.value.push(n);
-                        currentNumber.value = n;
-                        saveState();
+                        drawnHistory.value.push(n); currentNumber.value = n; saveState();
                     } else if(isMaster.value) {
-                        db.ref(`rooms/${roomId.value}`).update({
-                            his: [...drawnHistory.value, n]
-                        });
+                        db.ref(`rooms/${roomId.value}`).update({ his: [...drawnHistory.value, n] });
                     }
-                };
-
-                const generateUniqueCards = (count) => {
-                    const colBounds = [[1,9],[10,19],[20,29],[30,39],[40,49],[50,59],[60,69],[70,79],[80,90]];
-                    let usedGlobal = new Set();
-                    
-                    return Array.from({length: count}, () => {
-                        let card = [Array(9).fill(0), Array(9).fill(0), Array(9).fill(0)];
-                        for(let r=0; r<3; r++){
-                            let cols = [0,1,2,3,4,5,6,7,8].sort(()=>Math.random()-0.5).slice(0,5).sort();
-                            cols.forEach(c => {
-                                let [min, max] = colBounds[c];
-                                let n;
-                                let attempts = 0;
-                                do {
-                                    n = Math.floor(Math.random() * (max - min + 1)) + min;
-                                    attempts++;
-                                } while((usedGlobal.has(n) || card[0][c]===n || card[1][c]===n || card[2][c]===n) && attempts < 100);
-                                
-                                card[r][c] = n;
-                                usedGlobal.add(n);
-                            });
-                        }
-                        return card;
-                    });
                 };
 
                 const checkKinh = () => {
-                    const win = myMarks.value.some((card, cIdx) => {
-                        return card.some((row, rIdx) => {
-                            const numsInRow = myCards.value[cIdx][rIdx].filter(n => n !== 0);
-                            const marksInRow = myCards.value[cIdx][rIdx].filter((n, nIdx) => n !== 0 && row[nIdx]);
-                            return numsInRow.length === 5 && marksInRow.length === 5 && marksInRow.every(n => drawnHistory.value.includes(n));
-                        });
-                    });
-
+                    const win = myMarks.value.some((card, cIdx) => card.some((row, rIdx) => {
+                        const numsInRow = myCards.value[cIdx][rIdx].filter(n => n !== 0);
+                        const marksInRow = myCards.value[cIdx][rIdx].filter((n, nIdx) => n !== 0 && row[nIdx]);
+                        return numsInRow.length === 5 && marksInRow.length === 5 && marksInRow.every(n => drawnHistory.value.includes(n));
+                    }));
                     if(win) {
-                        alert(t.value.winMsg);
-                        wallet.amount += (betAmount.value * 10);
-                        exitToHome();
-                    } else {
-                        alert(t.value.loseMsg);
-                    }
+                        alert(t.value.winMsg); wallet.amount += (betAmount.value * 10); exitToHome();
+                    } else alert(t.value.loseMsg);
                 };
 
                 const exitToHome = async () => {
-                    stopAllProcesses();
+                    if(timer) clearInterval(timer); timer = null;
                     if(mode.value === 'MULTI' && roomId.value) {
                         await db.ref(`rooms/${roomId.value}/players/${playerName.value}`).remove();
                         const s = await db.ref(`rooms/${roomId.value}/players`).once('value');
                         if(!s.exists()) await db.ref(`rooms/${roomId.value}`).remove();
                     }
                     gameState.value = 'HOME';
-                    const url = new URL(window.location.href);
-                    url.searchParams.delete('room');
-                    window.history.pushState({}, '', url);
-                    roomId.value = null;
+                    const url = new URL(window.location.href); url.searchParams.delete('room'); window.history.pushState({}, '', url);
+                    roomId.value = null; localStorage.removeItem('loto_session');
                 };
 
                 const togglePause = () => isPaused.value = !isPaused.value;
                 const confirmQuit = () => { if(confirm(t.value.quitConfirm)) exitToHome(); };
-                
-                // オートモード時は手動操作を無効化
                 const toggleMark = (cIdx, rIdx, nIdx) => {
                     if (isAuto.value) return; 
                     if (myCards.value[cIdx][rIdx][nIdx] !== 0) {
@@ -460,55 +421,21 @@
                         saveState();
                     }
                 };
-
                 const isMarked = (cIdx, rIdx, nIdx) => myMarks.value[cIdx]?.[rIdx]?.[nIdx];
-                const openWalletModal = () => {
-                    tempWallet.amount = wallet.amount;
-                    tempWallet.currency = wallet.currency;
-                    showWalletModal.value = true;
-                };
-                const saveWallet = () => {
-                    wallet.amount = tempWallet.amount;
-                    wallet.currency = tempWallet.currency;
-                    showWalletModal.value = false;
-                    localStorage.setItem('loto_wallet', JSON.stringify(wallet));
-                };
-                const copyLink = () => {
-                    navigator.clipboard.writeText(window.location.href);
-                    alert("Link copied!");
-                };
+                const openWalletModal = () => { tempWallet.amount = wallet.amount; tempWallet.currency = wallet.currency; showWalletModal.value = true; };
+                const saveWallet = () => { wallet.amount = tempWallet.amount; wallet.currency = tempWallet.currency; showWalletModal.value = false; localStorage.setItem('loto_wallet', JSON.stringify(wallet)); };
+                const copyLink = () => { navigator.clipboard.writeText(window.location.href); alert("Copied!"); };
 
-                watch(showShareModal, (v) => {
-                    if(v) {
-                        setTimeout(() => {
-                            const qrEl = document.getElementById('qrcode');
-                            qrEl.innerHTML = "";
-                            new QRCode(qrEl, { text: window.location.href, width: 200, height: 200 });
-                        }, 100);
-                    }
-                });
+                watch(showShareModal, (v) => { if(v) setTimeout(() => { const qrEl = document.getElementById('qrcode'); qrEl.innerHTML = ""; new QRCode(qrEl, { text: window.location.href, width: 200, height: 200 }); }, 100); });
 
-                // Lifecycle
                 onMounted(() => {
                     const saved = localStorage.getItem('loto_session');
                     if (saved) {
                         const d = JSON.parse(saved);
-                        // 完全復元
-                        gameState.value = d.gs;
-                        mode.value = d.m;
-                        myCards.value = d.c;
-                        myMarks.value = d.mk;
-                        ticketCount.value = d.tc;
-                        betAmount.value = d.ba;
-                        isAuto.value = d.ia;
-                        drawInterval.value = d.di;
-                        roomId.value = d.ri;
-                        isMaster.value = d.im;
-                        wallet.amount = d.wal;
-                        wallet.currency = d.cur;
-                        drawnHistory.value = d.his || [];
-                        currentNumber.value = drawnHistory.value.length > 0 ? drawnHistory.value[drawnHistory.value.length - 1] : null;
-
+                        gameState.value = d.gs; mode.value = d.m; myCards.value = d.c; myMarks.value = d.mk;
+                        ticketCount.value = d.tc; betAmount.value = d.ba; isAuto.value = d.ia; drawInterval.value = d.di;
+                        roomId.value = d.ri; isMaster.value = d.im; wallet.amount = d.wal; wallet.currency = d.cur;
+                        drawnHistory.value = d.his || []; currentNumber.value = drawnHistory.value.length > 0 ? drawnHistory.value[drawnHistory.value.length - 1] : null;
                         if (gameState.value === 'PLAYING') {
                             if(mode.value === 'MULTI') {
                                 const rRef = db.ref(`rooms/${roomId.value}`);
@@ -517,27 +444,18 @@
                                     if(data && data.his){
                                         drawnHistory.value = data.his;
                                         currentNumber.value = data.his[data.his.length - 1];
-                                        saveState();
+                                        syncMarksWithHistory();
                                     }
                                 });
                             }
                             if(isAuto.value && (mode.value === 'SOLO' || isMaster.value)) startTimer();
                         }
-                    } else if (roomId.value) {
-                        initGame('MULTI');
-                    }
-                    
-                    const savedWal = localStorage.getItem('loto_wallet');
-                    if(savedWal) Object.assign(wallet, JSON.parse(savedWal));
+                    } else if (roomId.value) { initGame('MULTI'); }
+                    const savedWal = localStorage.getItem('loto_wallet'); if(savedWal) Object.assign(wallet, JSON.parse(savedWal));
                 });
 
                 return {
-                    currentLang, t, i18n, gameState, mode, playerName, wallet, tempWallet,
-                    showWalletModal, showShareModal, ticketCount, betAmount, isAuto,
-                    drawInterval, isPaused, myCards, currentNumber, drawnHistory,
-                    myNumbers, handleLangChange, initGame, startGame, drawNext,
-                    checkKinh, confirmQuit, toggleMark, isMarked, openWalletModal,
-                    saveWallet, copyLink, togglePause
+                    currentLang, t, i18n, gameState, mode, playerName, wallet, tempWallet, showWalletModal, showShareModal, ticketCount, betAmount, isAuto, drawInterval, isPaused, myCards, currentNumber, drawnHistory, myNumbers, handleLangChange, initGame, startGame, drawNext, checkKinh, confirmQuit, toggleMark, isMarked, openWalletModal, saveWallet, copyLink, togglePause
                 };
             }
         }).mount('#app');
