@@ -3,51 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lô Tô Global - Complete Full Specification Rev 18</title>
+    <title>Lô Tô Global - Full Specification Rev 20</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <style>
         [v-cloak] { display: none; }
         
-        /* セル・盤面スタイル */
-        .cell { aspect-ratio: 1/1; font-weight: 800; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; font-size: 0.85rem; background: white; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); position: relative; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        /* 盤面セルの基本スタイル */
+        .cell { 
+            aspect-ratio: 1/1; 
+            font-weight: 800; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border: 1px solid #e2e8f0; 
+            font-size: 0.85rem; 
+            background: white; 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+            position: relative; 
+            cursor: pointer; 
+            -webkit-tap-highlight-color: transparent; 
+        }
         .cell:active { transform: scale(0.95); background-color: #f8fafc; }
-        .marked::after { content: ''; position: absolute; width: 75%; height: 75%; background-color: rgba(239, 68, 68, 0.85); border-radius: 50%; z-index: 10; animation: pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        
+        /* マークされた時の赤い円 */
+        .marked::after { 
+            content: ''; 
+            position: absolute; 
+            width: 75%; 
+            height: 75%; 
+            background-color: rgba(239, 68, 68, 0.85); 
+            border-radius: 50%; 
+            z-index: 10; 
+            animation: pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2); 
+        }
         .cell-num { z-index: 20; position: relative; }
         .marked .cell-num { color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
         
-        /* 履歴スタイル */
-        .history-item { width: 40px; height: 40px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #334155; font-weight: 800; font-size: 0.9rem; color: #cbd5e1; border: 2px solid #475569; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .history-latest { background: #ef4444; color: white; border-color: #fca5a5; transform: scale(1.15); box-shadow: 0 0 15px rgba(239, 68, 68, 0.6); z-index: 10; animation: pulse-red 2s infinite; }
+        /* 履歴（ボール）のスタイル */
+        .history-item { 
+            width: 40px; 
+            height: 40px; 
+            flex-shrink: 0; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 50%; 
+            background: #334155; 
+            font-weight: 800; 
+            font-size: 0.9rem; 
+            color: #cbd5e1; 
+            border: 2px solid #475569; 
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        .history-latest { 
+            background: #ef4444; 
+            color: white; 
+            border-color: #fca5a5; 
+            transform: scale(1.15); 
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.6); 
+            z-index: 10; 
+            animation: pulse-red 2s infinite; 
+        }
         .history-match { background: #fbbf24 !important; color: #78350f !important; border-color: #f59e0b !important; }
 
-        /* アニメーション */
+        /* アニメーション定義 */
         @keyframes pop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
         @keyframes reach-glow { from { opacity: 1; transform: scale(1); box-shadow: 0 0 5px rgba(239, 68, 68, 0.5); } to { opacity: 0.6; transform: scale(0.95); box-shadow: 0 0 15px rgba(239, 68, 68, 0.8); } }
         .reach-pulse { animation: reach-glow 0.6s infinite alternate; color: #ef4444; font-weight: 900; }
 
-        /* UIコンポーネント */
+        /* レイアウトユーティリティ */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .opponent-card { background: #ffffff; border: 1px solid #e2e8f0; padding: 10px; border-radius: 16px; min-width: 110px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         
-        /* レイアウト固定 */
-        .main-scroll-area { height: calc(100vh - 80px); overflow-y: auto; padding-bottom: 160px; }
-        .fixed-action-bar { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, white 90%, rgba(255,255,255,0)); padding: 16px; z-index: 50; }
-        .info-bar { font-size: 8px; font-family: 'Courier New', Courier, monospace; color: #94a3b8; text-align: center; width: 100%; }
+        /* メインコンテンツエリア：最下部ボタンの高さ分を確保 */
+        .game-main-content { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding-bottom: 140px; 
+        }
+        
+        /* KINHボタン：ビューポートの最下部に完全に固定 */
+        .sticky-kinh-container { 
+            position: fixed; 
+            bottom: 0; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: 100%; 
+            max-width: 448px; /* Tailwind's max-w-md */
+            padding: 20px 16px; 
+            background: linear-gradient(to top, rgba(255,255,255,1) 60%, rgba(255,255,255,0)); 
+            z-index: 100; 
+            pointer-events: none; 
+        }
+        .sticky-kinh-button { 
+            pointer-events: auto; 
+            width: 100%;
+        }
+        
+        .info-bar { 
+            font-size: 8px; 
+            font-family: 'Courier New', Courier, monospace; 
+            color: #94a3b8; 
+            text-align: center; 
+            width: 100%; 
+        }
     </style>
 </head>
-<body class="bg-slate-50 font-sans antialiased text-slate-900">
-    <div id="app" v-cloak class="min-h-screen max-w-md mx-auto bg-white shadow-2xl relative overflow-hidden flex flex-col">
+<body class="bg-slate-100 font-sans antialiased text-slate-900">
+    <div id="app" v-cloak class="h-screen max-w-md mx-auto bg-white shadow-2xl relative overflow-hidden flex flex-col">
         
-        <header class="bg-white border-b z-50 flex flex-col">
+        <header class="bg-white border-b z-50 flex flex-col shrink-0">
             <div v-if="gameState === 'PLAYING'" class="info-bar py-1 border-b border-slate-50 bg-slate-50/50">
-                REV: 18 | UPDATED: 2026-02-09 16:05
+                REV: 20 | UPDATED: 2026-02-09 16:10
             </div>
+            
             <div class="p-3 flex justify-between items-center h-20">
                 <button v-if="gameState !== 'HOME'" @click="confirmQuit" class="flex flex-col items-center justify-center min-w-[60px] text-slate-400 hover:text-red-500 transition-colors">
                     <i class="fas fa-home text-xl"></i>
@@ -69,17 +146,19 @@
             </div>
         </header>
 
-        <main class="flex-grow relative overflow-hidden">
-            <div v-if="gameState === 'HOME'" class="h-full p-8 flex flex-col justify-center animate-pop">
+        <main class="flex-grow relative overflow-hidden flex flex-col">
+            <div v-if="gameState === 'HOME'" class="flex-grow p-8 flex flex-col justify-center animate-pop">
                 <div class="text-center mb-10">
                     <div class="inline-block bg-red-600 text-white px-4 py-1 rounded-full text-[10px] font-black tracking-[0.3em] mb-4 shadow-lg shadow-red-200 uppercase italic">International Edition</div>
                     <h1 class="text-8xl font-black text-red-600 italic tracking-tighter drop-shadow-2xl">LÔ TÔ</h1>
                     <p class="text-[10px] text-slate-400 font-bold tracking-[0.5em] uppercase mt-4">{{ t.welcomeMsg }}</p>
                 </div>
+                
                 <div class="bg-slate-50 p-6 rounded-[2.5rem] border-2 border-slate-100 shadow-inner mb-8">
                     <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-4 block mb-2">{{ t.playerNameLabel }}</label>
                     <input type="text" v-model="playerName" class="w-full bg-transparent text-2xl font-black px-4 outline-none text-slate-800" :placeholder="t.placeholderName">
                 </div>
+                
                 <div class="space-y-4">
                     <button @click="initGame('SOLO')" class="w-full bg-slate-900 text-white p-6 rounded-[2rem] flex items-center justify-between shadow-xl active:scale-95 transition-all font-black text-xl uppercase italic">
                         <div class="flex items-center"><i class="fas fa-play text-3xl mr-6 text-red-500"></i>{{ t.soloMode }}</div>
@@ -92,7 +171,7 @@
                 </div>
             </div>
 
-            <div v-else-if="gameState === 'SETUP'" class="h-full p-8 overflow-y-auto no-scrollbar space-y-6">
+            <div v-else-if="gameState === 'SETUP'" class="flex-grow p-8 overflow-y-auto no-scrollbar space-y-6">
                 <div class="flex justify-between items-center border-b-4 border-red-500 pb-2">
                     <h2 class="font-black text-3xl text-slate-800 italic uppercase">{{ t.setupTitle }}</h2>
                     <button v-if="mode === 'MULTI'" @click="showShareModal = true" class="bg-slate-900 text-white text-[10px] px-4 py-2 rounded-xl font-black uppercase flex items-center">
@@ -103,7 +182,9 @@
                 <div class="space-y-3">
                     <label class="text-[11px] font-black text-slate-400 uppercase tracking-widest">{{ t.ticketCount }}</label>
                     <div class="grid grid-cols-4 gap-3">
-                        <button v-for="n in 4" :key="n" @click="ticketCount = n" :class="ticketCount === n ? 'bg-red-600 text-white shadow-lg scale-105' : 'bg-slate-100 text-slate-400'" class="py-4 rounded-2xl font-black text-xl transition-all">{{ n }}</button>
+                        <button v-for="n in 4" :key="n" @click="ticketCount = n" 
+                            :class="ticketCount === n ? 'bg-red-600 text-white shadow-lg scale-105' : 'bg-slate-100 text-slate-400'" 
+                            class="py-4 rounded-2xl font-black text-xl transition-all">{{ n }}</button>
                     </div>
                 </div>
 
@@ -144,8 +225,8 @@
                 </button>
             </div>
 
-            <div v-else class="h-full flex flex-col bg-slate-50">
-                <div class="bg-slate-900 text-white p-6 shadow-2xl z-10 border-b-4 border-red-600">
+            <div v-else class="flex-grow flex flex-col bg-slate-50 overflow-hidden relative">
+                <div class="bg-slate-900 text-white p-6 shadow-2xl z-10 border-b-4 border-red-600 shrink-0">
                     <div class="flex justify-between items-center mb-6">
                         <div class="flex items-center space-x-5">
                             <div class="w-24 h-24 bg-white rounded-[2rem] flex items-center justify-center text-slate-900 text-6xl font-black border-b-[8px] border-slate-300 shadow-2xl animate-pop" :key="currentNumber">
@@ -179,7 +260,7 @@
                     </div>
                 </div>
 
-                <div class="main-scroll-area p-4 space-y-6">
+                <div class="game-main-content p-4 space-y-6 no-scrollbar">
                     <div v-for="(card, cIdx) in myCards" :key="cIdx" class="bg-white p-4 rounded-[2rem] shadow-xl border-2 border-slate-200 relative overflow-hidden">
                         <div class="absolute top-0 right-0 p-2"><span class="text-[8px] font-black text-slate-200 uppercase">Ticket #{{cIdx+1}}</span></div>
                         <div v-for="(row, rIdx) in card" :key="rIdx" class="grid grid-cols-9 gap-1.5 mb-1.5">
@@ -216,22 +297,22 @@
                     </div>
                 </div>
 
-                <div class="fixed-action-bar">
-                    <button @click="checkKinh" class="w-full bg-red-600 text-white py-6 rounded-[2.5rem] font-black text-5xl shadow-2xl active:scale-95 transition-all border-b-[10px] border-red-800 uppercase italic tracking-tighter">
+                <div class="sticky-kinh-container">
+                    <button @click="checkKinh" class="sticky-kinh-button bg-red-600 text-white py-6 rounded-[2.5rem] font-black text-5xl shadow-2xl active:scale-95 transition-all border-b-[10px] border-red-800 uppercase italic tracking-tighter">
                         {{ t.kinhBtn }}
                     </button>
                 </div>
             </div>
         </main>
 
-        <footer v-if="gameState !== 'PLAYING'" class="bg-white border-t p-3">
+        <footer v-if="gameState !== 'PLAYING'" class="bg-white border-t p-3 shrink-0">
             <div class="info-bar">
-                REV: 18 | UPDATED: 2026-02-09 16:05
+                REV: 20 | UPDATED: 2026-02-09 16:10
             </div>
         </footer>
 
         <transition name="fade">
-            <div v-if="showShareModal" class="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-black/95 backdrop-blur-xl">
+            <div v-if="showShareModal" class="fixed inset-0 z-[110] flex items-center justify-center p-8 bg-black/95 backdrop-blur-xl">
                 <div class="bg-white rounded-[3.5rem] w-full p-10 text-center shadow-2xl border-t-[15px] border-red-600 animate-pop">
                     <h3 class="font-black text-4xl italic text-red-600 uppercase mb-8 tracking-tighter">{{ t.inviteTitle }}</h3>
                     <div class="flex justify-center p-6 bg-slate-50 rounded-3xl mb-8 border-4 border-slate-100 shadow-inner">
@@ -246,7 +327,7 @@
         </transition>
 
         <transition name="fade">
-            <div v-if="showWalletModal" class="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-black/95 backdrop-blur-xl">
+            <div v-if="showWalletModal" class="fixed inset-0 z-[110] flex items-center justify-center p-8 bg-black/95 backdrop-blur-xl">
                 <div class="bg-white rounded-[3.5rem] w-full p-10 shadow-2xl border-t-[15px] border-green-500 animate-pop">
                     <h3 class="font-black text-3xl italic text-green-600 uppercase flex items-center mb-8"><i class="fas fa-wallet mr-5 text-4xl"></i>{{ t.walletTitle }}</h3>
                     <div class="space-y-6">
@@ -269,7 +350,7 @@
     </div>
 
     <script>
-        // FIREBASE INITIALIZATION
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyAqKCaLzCoGY6e87gHmeRAAawN5yrVeFcg",
             authDomain: "loto-vn.firebaseapp.com",
@@ -282,22 +363,131 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // FULL I18N DATA (8 LANGUAGES)
+        // 翻訳データ (8ヶ国語)
         const i18n = {
-            vi: { langName: "Tiếng Việt", cur: "₫", welcomeMsg: "Chào mừng bạn đến với Lô Tô", playerNameLabel: "Tên của bạn", placeholderName: "Nhập tên...", soloMode: "Chơi Đơn", multiMode: "Chơi Nhiều Người", setupTitle: "Thiết Lập Game", ticketCount: "Số lượng vé", botCountLabel: "Số lượng Bot đối thủ", drawMethod: "Phương thức quay", speedLabel: "Tốc độ tự động", betAmount: "Mức cược mỗi vé", startBtn: "BẮT ĐẦU NGAY", drawnLabel: "Số vừa bốc", nextBtn: "Số tiếp", playText: "Tiếp tục", pauseText: "Tạm dừng", homeBtn: "Trang chủ", historyEmpty: "Chưa có số nào được bốc", kinhBtn: "KINH!", winMsg: "CHÚC MỪNG! BẠN ĐÃ CHIẾN THẮNG!", loseMsg: "Chưa đủ số để Kinh!", walletLabel: "Số dư ví", quitConfirm: "Bạn có chắc muốn thoát và hủy trận đấu này không?", inviteBtn: "Mời bạn", inviteTitle: "Mời Tham Gia", copyBtn: "Sao chép link", closeBtn: "Đóng", walletTitle: "Quản lý ví", opponentsLabel: "Tiến độ đối thủ", botWinMsg: "Rất tiếc! Bot đã Kinh trước bạn!", leftLabel: "số nữa", reachText: "SẮP KINH!", winLabelShort: "THẮNG" },
-            ja: { langName: "日本語", cur: "¥", welcomeMsg: "ロト・ワールドへようこそ", playerNameLabel: "プレイヤー名", placeholderName: "名前を入力してください...", soloMode: "ソロプレイ", multiMode: "マルチプレイ", setupTitle: "ゲーム設定", ticketCount: "チケット購入枚数", botCountLabel: "対戦Botの数", drawMethod: "抽選モード", speedLabel: "自動抽選の間隔", betAmount: "1枚あたりの賭け金", startBtn: "ゲーム開始", drawnLabel: "現在の数字", nextBtn: "次を引く", playText: "再開", pauseText: "停止", homeBtn: "ホーム", historyEmpty: "履歴はありません", kinhBtn: "上がり！", winMsg: "おめでとうございます！上がりです！", loseMsg: "まだ数字が揃っていません", walletLabel: "現在の残高", quitConfirm: "ゲームを終了してホームに戻りますか？", inviteBtn: "招待", inviteTitle: "ルームに招待", copyBtn: "URLをコピー", closeBtn: "閉じる", walletTitle: "ウォレット設定", opponentsLabel: "対戦相手の進捗", botWinMsg: "残念！Botが先に上がりました！", leftLabel: "マス", reachText: "リーチ！", winLabelShort: "勝利" },
-            en: { langName: "English", cur: "$", welcomeMsg: "Welcome to Lô Tô World", playerNameLabel: "Player Name", placeholderName: "Enter your name...", soloMode: "Solo Play", multiMode: "Multiplayer", setupTitle: "Game Setup", ticketCount: "Number of Tickets", botCountLabel: "Number of Bots", drawMethod: "Draw Method", speedLabel: "Auto Speed", betAmount: "Bet per Ticket", startBtn: "START GAME", drawnLabel: "Drawn Number", nextBtn: "Next Draw", playText: "Resume", pauseText: "Pause", homeBtn: "Home", historyEmpty: "No numbers drawn yet", kinhBtn: "KINH!", winMsg: "CONGRATULATIONS! YOU WIN!", loseMsg: "Not yet! Keep going!", walletLabel: "Balance", quitConfirm: "Quit and return to home?", inviteBtn: "Invite", inviteTitle: "Invite Friends", copyBtn: "Copy Link", closeBtn: "Close", walletTitle: "Wallet Setup", opponentsLabel: "Opponents Progress", botWinMsg: "Game Over! A Bot won the game!", leftLabel: "left", reachText: "REACH!", winLabelShort: "WIN" },
+            vi: {
+                langName: "Tiếng Việt",
+                cur: "₫",
+                welcomeMsg: "Chào mừng bạn đến với Lô Tô",
+                playerNameLabel: "Tên của bạn",
+                placeholderName: "Nhập tên...",
+                soloMode: "Chơi Đơn",
+                multiMode: "Chơi Nhiều Người",
+                setupTitle: "Thiết Lập Game",
+                ticketCount: "Số lượng vé",
+                botCountLabel: "Số lượng Bot đối thủ",
+                drawMethod: "Phương thức quay",
+                speedLabel: "Tốc độ tự động",
+                betAmount: "Mức cược mỗi vé",
+                startBtn: "BẮT ĐẦU NGAY",
+                drawnLabel: "Số vừa bốc",
+                nextBtn: "Số tiếp",
+                playText: "Tiếp tục",
+                pauseText: "Tạm dừng",
+                homeBtn: "Trang chủ",
+                historyEmpty: "Chưa có số nào được bốc",
+                kinhBtn: "KINH!",
+                winMsg: "CHÚC MỪNG! BẠN ĐÃ CHIẾN THẮNG!",
+                loseMsg: "Chưa đủ số để Kinh!",
+                walletLabel: "Số dư ví",
+                quitConfirm: "Bạn có chắc muốn thoát và hủy trận đấu này không?",
+                inviteBtn: "Mời bạn",
+                inviteTitle: "Mời Tham Gia",
+                copyBtn: "Sao chép link",
+                closeBtn: "Đóng",
+                walletTitle: "Quản lý ví",
+                opponentsLabel: "Tiến độ đối thủ",
+                botWinMsg: "Rất tiếc! Bot đã Kinh trước bạn!",
+                leftLabel: "số nữa",
+                reachText: "SẮP KINH!",
+                winLabelShort: "THẮNG"
+            },
+            ja: {
+                langName: "日本語",
+                cur: "¥",
+                welcomeMsg: "ロト・ワールドへようこそ",
+                playerNameLabel: "プレイヤー名",
+                placeholderName: "名前を入力してください...",
+                soloMode: "ソロプレイ",
+                multiMode: "マルチプレイ",
+                setupTitle: "ゲーム設定",
+                ticketCount: "チケット購入枚数",
+                botCountLabel: "対戦Botの数",
+                drawMethod: "抽選モード",
+                speedLabel: "自動抽選の間隔",
+                betAmount: "1枚あたりの賭け金",
+                startBtn: "ゲーム開始",
+                drawnLabel: "現在の数字",
+                nextBtn: "次を引く",
+                playText: "再開",
+                pauseText: "停止",
+                homeBtn: "ホーム",
+                historyEmpty: "履歴はありません",
+                kinhBtn: "上がり！",
+                winMsg: "おめでとうございます！上がりです！",
+                loseMsg: "まだ数字が揃っていません",
+                walletLabel: "現在の残高",
+                quitConfirm: "ゲームを終了してホームに戻りますか？",
+                inviteBtn: "招待",
+                inviteTitle: "ルームに招待",
+                copyBtn: "URLをコピー",
+                closeBtn: "閉じる",
+                walletTitle: "ウォレット設定",
+                opponentsLabel: "対戦相手の進捗",
+                botWinMsg: "残念！Botが先に上がりました！",
+                leftLabel: "マス",
+                reachText: "リーチ！",
+                winLabelShort: "勝利"
+            },
+            en: {
+                langName: "English",
+                cur: "$",
+                welcomeMsg: "Welcome to Lô Tô World",
+                playerNameLabel: "Player Name",
+                placeholderName: "Enter your name...",
+                soloMode: "Solo Play",
+                multiMode: "Multiplayer",
+                setupTitle: "Game Setup",
+                ticketCount: "Number of Tickets",
+                botCountLabel: "Number of Bots",
+                drawMethod: "Draw Method",
+                speedLabel: "Auto Speed",
+                betAmount: "Bet per Ticket",
+                startBtn: "START GAME",
+                drawnLabel: "Drawn Number",
+                nextBtn: "Next Draw",
+                playText: "Resume",
+                pauseText: "Pause",
+                homeBtn: "Home",
+                historyEmpty: "No numbers drawn yet",
+                kinhBtn: "KINH!",
+                winMsg: "CONGRATULATIONS! YOU WIN!",
+                loseMsg: "Not yet! Keep going!",
+                walletLabel: "Balance",
+                quitConfirm: "Quit and return to home?",
+                inviteBtn: "Invite",
+                inviteTitle: "Invite Friends",
+                copyBtn: "Copy Link",
+                closeBtn: "Close",
+                walletTitle: "Wallet Setup",
+                opponentsLabel: "Opponents Progress",
+                botWinMsg: "Game Over! A Bot won the game!",
+                leftLabel: "left",
+                reachText: "REACH!",
+                winLabelShort: "WIN"
+            },
             th: { langName: "ไทย", cur: "฿", welcomeMsg: "ยินดีต้อนรับสู่ Lô Tô", playerNameLabel: "ชื่อผู้เล่น", placeholderName: "กรุณาใส่ชื่อ...", soloMode: "เล่นคนเดียว", multiMode: "เล่นหลายคน", setupTitle: "ตั้งค่าเกม", ticketCount: "จำนวนตั๋ว", botCountLabel: "จำนวนบอท", drawMethod: "วิธีสุ่มเลข", speedLabel: "ความเร็ว", betAmount: "เงินเดิมพัน", startBtn: "เริ่มเกม", drawnLabel: "เลขที่ออก", nextBtn: "เลขถัดไป", playText: "เล่นต่อ", pauseText: "หยุด", homeBtn: "หน้าหลัก", historyEmpty: "ยังไม่มีการสุ่มเลข", kinhBtn: "กิน!", winMsg: "ยินดีด้วย! คุณชนะแล้ว!", loseMsg: "ยังไม่ชนะ! พยายามต่อไป!", walletLabel: "ยอดเงินคงเหลือ", quitConfirm: "ต้องการออกจากเกมหรือไม่?", inviteBtn: "เชิญเพื่อน", inviteTitle: "เชิญเข้าร่วม", copyBtn: "คัดลอกลิงก์", closeBtn: "ปิด", walletTitle: "จัดการกระเป๋าเงิน", opponentsLabel: "ความคืบหน้าคู่แข่ง", botWinMsg: "บอทชนะแล้ว!", leftLabel: "ที่เหลือ", reachText: "ใกล้แล้ว!", winLabelShort: "ชนะ" },
-            lo: { langName: "ລາວ", cur: "₭", welcomeMsg: "ຍິນດີຕ້ອນຮັບສູ່ Lô Tô", playerNameLabel: "ຊື່ຜູ້ຫຼິ້ນ", placeholderName: "ໃສ່ຊື່ຂອງທ່ານ...", soloMode: "ຫຼິ້ນຜູ້ດຽວ", multiMode: "ຫຼິ້ນຫຼາຍຄົນ", setupTitle: "ຕັ້ງຄ່າເກມ", ticketCount: "ຈຳນວນໃບ", botCountLabel: "ຈຳນວນ Bot", drawMethod: "ວິທີສຸ່ມເລກ", speedLabel: "ຄວາມໄວ", betAmount: "ເດີມພັນ", startBtn: "ເລີ່ມເກມ", drawnLabel: "ເລກທີ່ອອກ", nextBtn: "ເລກຕໍ່ໄປ", playText: "ຫຼິ້ນຕໍ່", pauseText: "ຢຸດ", homeBtn: "ໜ້າຫຼັກ", historyEmpty: "ຍັງບໍ່ມີເລກທີ່ອອກ", kinhBtn: "ກິນ!", winMsg: "ຍິນດີດ້ວຍ! ທ່ານຊະນະແລ້ວ!", loseMsg: "ຍັງບໍ່ຊະນະ!", walletLabel: "ຍອດເງິນ", quitConfirm: "ຕ້ອງການອອກຈາກເກມບໍ?", inviteBtn: "ເຊີນເພື່ອນ", inviteTitle: "ເຊີນເຂົ້າຮ່ວມ", copyBtn: "ຄັດລອກລິ້ງ", closeBtn: "ປິດ", walletTitle: "ຈັດການກະເປົາ", opponentsLabel: "ຄູ່ແຂ່ງ", botWinMsg: "Bot ຊະນະແລ້ວ!", leftLabel: "ທີ່ເຫຼືອ", reachText: "ໃກ້ແລ້ວ!", winLabelShort: "ຊະນະ" },
-            km: { langName: "ខ្មែរ", cur: "៛", welcomeMsg: "សូមស្វាគមន៍មកកាន់ Lô Tô", playerNameLabel: "ឈ្មោះអ្នកលេង", placeholderName: "បញ្ចូលឈ្មោះ...", soloMode: "លេងម្នាក់ឯង", multiMode: "លេងច្រើននាក់", setupTitle: "ការកំណត់ហ្គេម", ticketCount: "ចំនួនសន្លឹក", botCountLabel: "ចំនួន Bot", drawMethod: "វិធីចាប់លេខ", speedLabel: "ល្បឿន", betAmount: "ការភ្នាល់", startBtn: "ផ្ដើមហ្គេម", drawnLabel: "លេខដែលចេញ", nextBtn: "លេខបន្ទាប់", playText: "បន្ត", pauseText: "ឈប់", homeBtn: "ដើម", historyEmpty: "មិនទាន់មានលេខចេញ", kinhBtn: "គីន!", winMsg: "អបអរសាទរ! អ្នកឈ្នះហើយ!", loseMsg: "មិនទាន់គីនទេ!", walletLabel: "សមតុល្យ", quitConfirm: "តើអ្នកចង់ចាកចេញឬ?", inviteBtn: "អញ្ជើញ", inviteTitle: "អញ្ជើញចូលរួម", copyBtn: "ចម្លង", closeBtn: "បិទ", walletTitle: "កាបូបប្រាក់", opponentsLabel: "គូប្រជែង", botWinMsg: "Bot ឈ្នះហើយ!", leftLabel: "ទៀត", reachText: "ជិតហើយ!", winLabelShort: "ឈ្នះ" },
+            lo: { langName: "ລາວ", cur: "₭", welcomeMsg: "ຍິນດີຕ້ອນຮັບສູ່ Lô Tô", playerNameLabel: "ຊື່ຜູ້ຫຼິ້ນ", placeholderName: "ໃສ່ຊື່ຂອງທ່ານ...", soloMode: "ຫຼິ້ນຜູ້ດຽວ", multiMode: "ຫຼິ້ນຫຼາຍຄົນ", setupTitle: "ຕັ້ງຄ່າເກມ", ticketCount: "ຈຳນວນໃບ", botCountLabel: "ຈຳນວນ Bot", drawMethod: "ວິທີສຸ່ມເລກ", speedLabel: "ຄວາມໄວ", betAmount: "ເດີມພັນ", startBtn: "ເລີ່ມເກມ", drawnLabel: "ເລກທີ່ອອກ", nextBtn: "ເລກຕໍ່ໄປ", playText: "ຫຼິ້ນຕໍ່", pauseText: "ຢຸດ", homeBtn: "ໜ້າຫຼັກ", historyEmpty: "ຍັງບໍ່ມີເລກທີ່ອອກ", kinhBtn: "ກິນ!", winMsg: "ຊະນະແລ້ว!", loseMsg: "ຍັງບໍ່ຊະນະ!", walletLabel: "ຍອດເງິນ", quitConfirm: "ຕ້ອງການອອກຈາກເກມບໍ?", inviteBtn: "ເຊີນເພື່ອນ", inviteTitle: "ເຊີນເຂົ້າຮ່ວມ", copyBtn: "ຄັດລອກລິ້ງ", closeBtn: "ປິດ", walletTitle: "ຈັດການກະເປົາ", opponentsLabel: "ຄູ່ແຂ່ງ", botWinMsg: "Bot ຊະນະແລ້ວ!", leftLabel: "ທີ່ເຫຼືອ", reachText: "ໃກ້ແລ້ວ!", winLabelShort: "ຊະນະ" },
+            km: { langName: "ខ្មែរ", cur: "៛", welcomeMsg: "សូមស្វាគមន៍មកកាន់ Lô Tô", playerNameLabel: "ឈ្មោះអ្នកលេង", placeholderName: "បញ្ចូលឈ្មោះ...", soloMode: "លេងម្នាក់ឯង", multiMode: "លេងច្រើននាក់", setupTitle: "ការកំណត់ហ្គេម", ticketCount: "ចំនួនសន្លឹក", botCountLabel: "ចំនួន Bot", drawMethod: "វិធីចាប់លេខ", speedLabel: "ល្បឿន", betAmount: "ការភ្នាល់", startBtn: "ផ្ដើមហ្គេម", drawnLabel: "លេខដែលចេញ", nextBtn: "លេខបន្ទាប់", playText: "បន្ត", pauseText: "ឈប់", homeBtn: "ដើម", historyEmpty: "មិនទាន់មានលេខចេញ", kinhBtn: "គីន!", winMsg: "អ្នកឈ្នះ!", loseMsg: "មិនទាន់គីនទេ!", walletLabel: "សមតុល្យ", quitConfirm: "តើអ្នកចង់ចាកចេញឬ?", inviteBtn: "អញ្ជើញ", inviteTitle: "អញ្ជើញចូលរួម", copyBtn: "ចម្លង", closeBtn: "បិទ", walletTitle: "កាបូបប្រាក់", opponentsLabel: "គូប្រជែង", botWinMsg: "Bot ឈ្នះហើយ!", leftLabel: "ទៀត", reachText: "ជិតហើយ!", winLabelShort: "ឈ្នះ" },
             zh: { langName: "简体中文", cur: "¥", welcomeMsg: "欢迎来到 Lô Tô 世界", playerNameLabel: "玩家名称", placeholderName: "请输入您的名称...", soloMode: "单人竞技", multiMode: "多人对战", setupTitle: "游戏设置", ticketCount: "购买票数", botCountLabel: "人机对手数量", drawMethod: "抽取模式", speedLabel: "自动速度", betAmount: "单张赌注", startBtn: "立即开始", drawnLabel: "当前抽取", nextBtn: "抽取下一个", playText: "继续", pauseText: "暂停", homeBtn: "主页", historyEmpty: "暂无抽号历史", kinhBtn: "赢了!", winMsg: "恭喜你！获得胜利！", loseMsg: "还没中奖，请继续加油！", walletLabel: "钱包余额", quitConfirm: "确定要退出当前比赛吗？", inviteBtn: "邀请好友", inviteTitle: "房间邀请", copyBtn: "复制链接", closeBtn: "关闭", walletTitle: "钱包管理", opponentsLabel: "对手进度", botWinMsg: "太遗憾了！机器人先赢了！", leftLabel: "剩余", reachText: "听牌!", winLabelShort: "胜" },
             fr: { langName: "Français", cur: "€", welcomeMsg: "Bienvenue sur Lô Tô", playerNameLabel: "Nom du joueur", placeholderName: "Entrez votre nom...", soloMode: "Solo", multiMode: "Multijoueur", setupTitle: "Configuration", ticketCount: "Nombre de tickets", botCountLabel: "Nombre de Bots", drawMethod: "Méthode de tirage", speedLabel: "Vitesse Auto", betAmount: "Mise par ticket", startBtn: "COMMENCER", drawnLabel: "N° Tiré", nextBtn: "Suivant", playText: "Lire", pauseText: "Pause", homeBtn: "Accueil", historyEmpty: "Aucun tirage", kinhBtn: "KINH!", winMsg: "FÉLICITATIONS ! VOUS AVEZ GAGNÉ !", loseMsg: "Pas encore ! Continuez !", walletLabel: "Solde", quitConfirm: "Quitter la partie ?", inviteBtn: "Inviter", inviteTitle: "Invitation", copyBtn: "Copier le lien", closeBtn: "Fermer", walletTitle: "Paramètres Wallet", opponentsLabel: "Adversaires", botWinMsg: "Dommage ! Le Bot a gagné !", leftLabel: "restants", reachText: "REACH!", winLabelShort: "WIN" }
         };
 
         const { createApp, ref, reactive, computed, watch, onMounted } = Vue;
+        
         createApp({
             setup() {
-                // Reactive State
+                // 基本状態
                 const currentLang = ref(localStorage.getItem('loto_lang') || 'ja');
                 const t = computed(() => i18n[currentLang.value] || i18n.ja);
                 const gameState = ref('HOME');
@@ -307,12 +497,16 @@
                 const tempWallet = reactive({ amount: 0, currency: '' });
                 const showWalletModal = ref(false);
                 const showShareModal = ref(false);
+                
+                // ゲーム設定
                 const ticketCount = ref(1);
                 const botCount = ref(3);
                 const betAmount = ref(100);
                 const isAuto = ref(true);
                 const drawInterval = ref(4);
                 const isPaused = ref(false);
+                
+                // ゲーム進行データ
                 const myCards = ref([]);
                 const myMarks = ref([]);
                 const bots = ref([]);
@@ -323,18 +517,19 @@
                 const isMaster = ref(false);
                 let timer = null;
 
-                // Computed
+                // 自分の数字リスト
                 const myNumbers = computed(() => {
                     let nums = [];
                     myCards.value.forEach(card => card.forEach(row => row.forEach(n => { if(n !== 0) nums.push(n); })));
                     return nums;
                 });
 
-                // Methods
+                // 言語切り替え
                 const handleLangChange = () => {
                     localStorage.setItem('loto_lang', currentLang.value);
                 };
 
+                // セッション保存
                 const saveState = () => {
                     if (gameState.value === 'PLAYING') {
                         const data = { 
@@ -348,6 +543,7 @@
                     }
                 };
 
+                // チケット生成 (ユニークな数字)
                 const generateUniqueCards = (count, existingNums = new Set()) => {
                     const colBounds = [[1,9],[10,19],[20,29],[30,39],[40,49],[50,59],[60,69],[70,79],[80,90]];
                     return Array.from({length: count}, () => {
@@ -355,7 +551,8 @@
                         for(let r=0; r<3; r++){
                             let cols = [0,1,2,3,4,5,6,7,8].sort(()=>Math.random()-0.5).slice(0,5).sort();
                             cols.forEach(c => {
-                                let [min, max] = colBounds[c]; let n; let attempts = 0;
+                                let [min, max] = colBounds[c]; 
+                                let n; let attempts = 0;
                                 do { n = Math.floor(Math.random() * (max-min+1)) + min; attempts++; } 
                                 while((existingNums.has(n) || card[0][c]===n || card[1][c]===n || card[2][c]===n) && attempts < 100);
                                 card[r][c] = n;
@@ -366,8 +563,8 @@
                     });
                 };
 
+                // マークの同期とBotの進捗計算
                 const syncMarks = () => {
-                    // 自分のマークを抽選履歴に同期
                     myCards.value.forEach((card, cIdx) => {
                         card.forEach((row, rIdx) => {
                             row.forEach((num, nIdx) => {
@@ -378,29 +575,28 @@
                         });
                     });
                     
-                    // Botの進捗を同期
                     bots.value.forEach(bot => {
-                        let maxMarksOnOneRow = 0;
+                        let maxMarks = 0;
                         bot.cards.forEach(card => {
                             card.forEach(row => {
                                 let marks = row.filter(n => n !== 0 && drawnHistory.value.includes(n)).length;
-                                if(marks > maxMarksOnOneRow) maxMarksOnOneRow = marks;
+                                if(marks > maxMarks) maxMarks = marks;
                             });
                         });
-                        bot.remaining = 5 - maxMarksOnOneRow;
+                        bot.remaining = 5 - maxMarks;
                         if(bot.remaining === 0) {
                             setTimeout(() => { if(gameState.value === 'PLAYING') { alert(t.value.botWinMsg); exitToHome(); } }, 500);
                         }
                     });
 
-                    // Firebaseにリーチ状態を送信
                     if(mode.value === 'MULTI' && roomId.value) {
-                        const isReach = myMarks.value.some(card => card.some(row => row.filter((marked, i) => marked).length >= 4));
+                        const isReach = myMarks.value.some(card => card.some(row => row.filter((m, i) => m).length >= 4));
                         db.ref(`rooms/${roomId.value}/players/${playerName.value}`).update({ reach: isReach });
                     }
                     saveState();
                 };
 
+                // ゲームの初期化 (SOLO/MULTI選択)
                 const initGame = async (m) => {
                     mode.value = m;
                     playerName.value = playerName.value.trim().replace(/[.#$[\]]/g, "_") || 'Player_' + Math.floor(Math.random()*900+100);
@@ -419,6 +615,7 @@
                     gameState.value = 'SETUP';
                 };
 
+                // ゲーム開始
                 const startGame = () => {
                     const totalBet = betAmount.value * ticketCount.value;
                     if(wallet.amount < totalBet) return alert("Insufficient balance!");
@@ -481,7 +678,7 @@
                     
                     if(win) {
                         alert(t.value.winMsg);
-                        wallet.amount += (betAmount.value * 12); // Winner gets 12x
+                        wallet.amount += (betAmount.value * 12);
                         exitToHome();
                     } else {
                         alert(t.value.loseMsg);
@@ -510,7 +707,11 @@
                     syncMarks();
                 };
                 const isMarked = (cIdx, rIdx, nIdx) => myMarks.value[cIdx]?.[rIdx]?.[nIdx];
-                const openWalletModal = () => { tempWallet.amount = wallet.amount; tempWallet.currency = wallet.currency; showWalletModal.value = true; };
+                const openWalletModal = () => { 
+                    tempWallet.amount = wallet.amount; 
+                    tempWallet.currency = wallet.currency; 
+                    showWalletModal.value = true; 
+                };
                 const saveWallet = () => {
                     wallet.amount = tempWallet.amount;
                     wallet.currency = tempWallet.currency;
@@ -519,22 +720,20 @@
                 };
                 const copyLink = () => {
                     navigator.clipboard.writeText(window.location.href);
-                    alert("Room link copied to clipboard!");
+                    alert("Room link copied!");
                 };
 
-                // Watchers
                 watch(currentNumber, () => { if(isAuto.value) syncMarks(); });
                 watch(showShareModal, (v) => {
                     if(v) {
                         setTimeout(() => {
                             const qrEl = document.getElementById('qrcode');
                             qrEl.innerHTML = "";
-                            new QRCode(qrEl, { text: window.location.href, width: 200, height: 200, colorDark: "#000000", colorLight: "#ffffff" });
+                            new QRCode(qrEl, { text: window.location.href, width: 200, height: 200 });
                         }, 200);
                     }
                 });
 
-                // Lifecycle
                 onMounted(() => {
                     const saved = localStorage.getItem('loto_session');
                     if (saved) {
