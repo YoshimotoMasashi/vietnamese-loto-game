@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lô Tô Global - Full Specification Rev 14</title>
+    <title>Lô Tô Global - Rev 16</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -22,12 +22,14 @@
         
         .history-item { width: 36px; height: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #334155; font-weight: 800; font-size: 0.85rem; color: #cbd5e1; border: 1px solid #475569; transition: all 0.3s; }
         .history-latest { background: #ef4444; color: white; border-color: #ef4444; transform: scale(1.1); box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); z-index: 10; }
-        .history-match { background: #fbbf24 !important; color: #78350f !important; border-color: #f59e0b !important; animation: match-glow 1s infinite alternate; }
-        @keyframes match-glow { from { box-shadow: 0 0 5px #fbbf24; } to { box-shadow: 0 0 15px #fbbf24; } }
+        .history-match { background: #fbbf24 !important; color: #78350f !important; border-color: #f59e0b !important; }
 
         .opponent-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 12px; min-width: 100px; }
         .reach-pulse { animation: reach-glow 0.8s infinite alternate; color: #ef4444; }
         @keyframes reach-glow { from { opacity: 1; transform: scale(1); } to { opacity: 0.6; transform: scale(0.95); } }
+
+        .fixed-bottom-area { position: absolute; bottom: 0; left: 0; width: 100%; z-index: 50; background: linear-gradient(to top, rgba(255,255,255,1) 85%, rgba(255,255,255,0)); padding-bottom: 5px; }
+        .version-footer { font-size: 8px; text-align: center; color: #94a3b8; font-family: monospace; padding-bottom: 4px; }
     </style>
 </head>
 <body class="bg-slate-100 font-sans">
@@ -128,7 +130,7 @@
                 </button>
             </div>
 
-            <div v-else class="flex-grow flex flex-col h-full overflow-hidden bg-slate-50">
+            <div v-else class="flex-grow flex flex-col h-full overflow-hidden bg-slate-50 relative">
                 <div class="bg-slate-900 text-white p-5 shadow-2xl z-10 border-b-2 border-white/5">
                     <div class="flex justify-between items-center">
                         <div class="flex items-center space-x-4">
@@ -161,8 +163,7 @@
                     </div>
                 </div>
 
-                <div class="flex-grow overflow-y-auto p-4 space-y-4 no-scrollbar">
-                    
+                <div class="flex-grow overflow-y-auto p-4 space-y-4 no-scrollbar pb-40">
                     <div v-for="(card, cIdx) in myCards" :key="cIdx" class="bg-white p-3 rounded-2xl shadow-lg border-2 border-slate-200">
                         <div v-for="(row, rIdx) in card" :key="rIdx" class="grid grid-cols-9 gap-1 mb-1">
                             <div v-for="(num, nIdx) in row" :key="nIdx" 
@@ -183,30 +184,31 @@
                                     <i class="fas fa-user text-slate-500 text-xs"></i>
                                 </div>
                                 <span class="text-[9px] font-bold truncate w-16 text-center">{{ pName }}</span>
-                                <span class="text-[10px] font-black text-red-500">{{ pData.reach ? 'REACH!' : '' }}</span>
+                                <span class="text-[10px] font-black text-red-500">{{ pData.reach ? t.reachText : '' }}</span>
                             </div>
                             <div v-for="(bot, bIdx) in bots" :key="'bot-'+bIdx" class="opponent-card flex flex-col items-center justify-center bg-white shadow-sm">
                                 <div class="w-8 h-8 bg-blue-50 rounded-full flex items-center justify-center mb-1">
                                     <i class="fas fa-robot text-blue-500 text-xs"></i>
                                 </div>
                                 <span class="text-[9px] font-bold text-slate-400 uppercase">BOT {{ bIdx + 1 }}</span>
-                                <span class="text-[10px] font-black" :class="bot.remaining <= 2 ? 'reach-pulse' : 'text-slate-600'">
-                                    {{ bot.remaining }} left
+                                <span class="text-[10px] font-black" :class="bot.remaining <= 1 ? 'reach-pulse' : 'text-slate-600'">
+                                    {{ bot.remaining === 0 ? t.winLabelShort : (bot.remaining + ' ' + t.leftLabel) }}
                                 </span>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="pt-4 pb-20">
-                        <button @click="checkKinh" class="w-full bg-red-600 text-white py-8 rounded-[2.5rem] font-black text-4xl italic shadow-2xl active:scale-95 transition border-b-[10px] border-red-800 uppercase">
+                <div class="fixed-bottom-area">
+                    <div class="px-4 py-2">
+                        <button @click="checkKinh" class="w-full bg-red-600 text-white py-6 rounded-[2rem] font-black text-4xl italic shadow-2xl active:scale-95 transition border-b-[8px] border-red-800 uppercase">
                             {{ t.kinhBtn }}
                         </button>
                     </div>
+                    <div class="version-footer">
+                        REV: 16 | LAST UPDATED: 2026-02-09 15:50
+                    </div>
                 </div>
-            </div>
-
-            <div class="absolute bottom-1 right-2 pointer-events-none text-[8px] text-slate-300 font-mono">
-                Gemini 3 Flash / Rev: 14 (Bots + Opponent Tracking)
             </div>
         </main>
 
@@ -248,14 +250,9 @@
         const db = firebase.database();
 
         const i18n = {
-            vi: { langName: "Tiếng Việt", cur: "₫", welcomeMsg: "Chào mừng", playerNameLabel: "Tên người chơi", placeholderName: "Nhập tên...", soloMode: "Solo", multiMode: "Multiplayer", setupTitle: "Thiết lập", ticketCount: "Số vé", botCountLabel: "Số Bot", drawMethod: "Cách quay", speedLabel: "Tốc độ", betAmount: "Mức cược", startBtn: "BẮT ĐẦU", drawnLabel: "Số đã bốc", nextBtn: "Tiếp theo", playText: "Chạy", pauseText: "Dừng", homeBtn: "Home", historyEmpty: "Trống", kinhBtn: "KINH!", winMsg: "CHIẾN THẮNG!", loseMsg: "Chưa Kinh!", walletLabel: "Số dư", quitConfirm: "Thoát game?", inviteBtn: "Mời", inviteTitle: "Mời Tham Gia", copyBtn: "Copy", closeBtn: "Đóng", walletTitle: "Ví", opponentsLabel: "Đối thủ", botWinMsg: "Bot đã thắng! Bạn thua rồi." },
-            ja: { langName: "日本語", cur: "¥", welcomeMsg: "ようこそ", playerNameLabel: "プレイヤー名", placeholderName: "名前を入力...", soloMode: "ソロプレイ", multiMode: "マルチプレイ", setupTitle: "ゲーム設定", ticketCount: "チケット枚数", botCountLabel: "Botの数", drawMethod: "抽選方法", speedLabel: "自動の間隔", betAmount: "賭け金", startBtn: "開始", drawnLabel: "出た数字", nextBtn: "次を引く", playText: "再開", pauseText: "停止", homeBtn: "ホーム", historyEmpty: "履歴なし", kinhBtn: "上がり！", winMsg: "おめでとう！上がりです！", loseMsg: "まだ上がっていません", walletLabel: "残高", quitConfirm: "ホームに戻りますか？", inviteBtn: "招待", inviteTitle: "ルーム招待", copyBtn: "コピー", closeBtn: "閉じる", walletTitle: "ウォレット", opponentsLabel: "対戦相手の進捗", botWinMsg: "Botが先に上がりました！あなたの負けです。" },
-            en: { langName: "English", cur: "$", welcomeMsg: "Welcome", playerNameLabel: "Player Name", placeholderName: "Enter name...", soloMode: "Solo", multiMode: "Multi", setupTitle: "Setup", ticketCount: "Tickets", botCountLabel: "Bots", drawMethod: "Method", speedLabel: "Speed", betAmount: "Bet", startBtn: "START", drawnLabel: "Drawn", nextBtn: "Next", playText: "Play", pauseText: "Pause", homeBtn: "Home", historyEmpty: "Empty", kinhBtn: "KINH!", winMsg: "WINNER!", loseMsg: "Not yet!", walletLabel: "Wallet", quitConfirm: "Quit?", inviteBtn: "Invite", inviteTitle: "Invitation", copyBtn: "Copy", closeBtn: "Close", walletTitle: "Wallet", opponentsLabel: "Opponents", botWinMsg: "A Bot won! You lost." },
-            th: { langName: "ไทย", cur: "฿", welcomeMsg: "ยินดีต้อนรับ", botCountLabel: "จำนวนบอท", setupTitle: "ตั้งค่า", startBtn: "เริ่ม", kinhBtn: "คิน!", opponentsLabel: "คู่แข่ง", soloMode: "Solo", multiMode: "Multi" },
-            lo: { langName: "ລາວ", cur: "₭", welcomeMsg: "ຍິນດີຕ້ອນຮັບ", botCountLabel: "ຈຳນວນ Bot", setupTitle: "ຕັ້ງຄ່າ", startBtn: "ເລີ່ມ", kinhBtn: "ກິນ!", opponentsLabel: "ຄູ່ແຂ່ງ", soloMode: "Solo", multiMode: "Multi" },
-            km: { langName: "ខ្មែរ", cur: "៛", welcomeMsg: "សូមស្វាគមន៍", botCountLabel: "ចំនួន Bot", setupTitle: "ការកំណត់", startBtn: "ផ្ដើម", kinhBtn: "គីន!", opponentsLabel: "គូប្រជែង", soloMode: "ម្នាក់ឯង", multiMode: "ច្រើននាក់" },
-            zh: { langName: "简体中文", cur: "¥", welcomeMsg: "欢迎", botCountLabel: "机器人数量", setupTitle: "设置", startBtn: "开始", kinhBtn: "赢了!", opponentsLabel: "对手进度", soloMode: "单人", multiMode: "多人" },
-            fr: { langName: "Français", cur: "€", welcomeMsg: "Bienvenue", botCountLabel: "Nb Bots", setupTitle: "Réglage", startBtn: "JOUER", kinhBtn: "KINH!", opponentsLabel: "Adversaires", soloMode: "Solo", multiMode: "Multi" }
+            vi: { langName: "Tiếng Việt", cur: "₫", welcomeMsg: "Chào mừng", playerNameLabel: "Tên người chơi", placeholderName: "Nhập tên...", soloMode: "Solo", multiMode: "Multiplayer", setupTitle: "Thiết lập", ticketCount: "Số vé", botCountLabel: "Số Bot", drawMethod: "Cách quay", speedLabel: "Tốc độ", betAmount: "Mức cược", startBtn: "BẮT ĐẦU", drawnLabel: "Số đã bốc", nextBtn: "Tiếp theo", playText: "Chạy", pauseText: "Dừng", homeBtn: "Home", historyEmpty: "Trống", kinhBtn: "KINH!", winMsg: "CHIẾN THẮNG!", loseMsg: "Chưa Kinh!", walletLabel: "Số dư", quitConfirm: "Thoát game?", inviteBtn: "Mời", inviteTitle: "Mời Tham Gia", copyBtn: "Copy", closeBtn: "Đóng", walletTitle: "Ví", opponentsLabel: "Đối thủ", botWinMsg: "Bot đã thắng!", leftLabel: "còn lại", reachText: "SẮP KINH!", winLabelShort: "THẮNG" },
+            ja: { langName: "日本語", cur: "¥", welcomeMsg: "ようこそ", playerNameLabel: "プレイヤー名", placeholderName: "名前を入力...", soloMode: "ソロプレイ", multiMode: "マルチプレイ", setupTitle: "ゲーム設定", ticketCount: "チケット枚数", botCountLabel: "Botの数", drawMethod: "抽選方法", speedLabel: "自動の間隔", betAmount: "賭け金", startBtn: "開始", drawnLabel: "出た数字", nextBtn: "次を引く", playText: "再開", pauseText: "停止", homeBtn: "ホーム", historyEmpty: "履歴なし", kinhBtn: "上がり！", winMsg: "おめでとう！上がりです！", loseMsg: "まだ上がっていません", walletLabel: "残高", quitConfirm: "ホームに戻りますか？", inviteBtn: "招待", inviteTitle: "ルーム招待", copyBtn: "コピー", closeBtn: "閉じる", walletTitle: "ウォレット", opponentsLabel: "対戦相手の進捗", botWinMsg: "Botが先に上がりました！", leftLabel: "マス", reachText: "リーチ！", winLabelShort: "勝利" },
+            en: { langName: "English", cur: "$", welcomeMsg: "Welcome", playerNameLabel: "Player Name", placeholderName: "Enter name...", soloMode: "Solo", multiMode: "Multi", setupTitle: "Setup", ticketCount: "Tickets", botCountLabel: "Bots", drawMethod: "Method", speedLabel: "Speed", betAmount: "Bet", startBtn: "START", drawnLabel: "Drawn", nextBtn: "Next", playText: "Play", pauseText: "Pause", homeBtn: "Home", historyEmpty: "Empty", kinhBtn: "KINH!", winMsg: "WINNER!", loseMsg: "Not yet!", walletLabel: "Wallet", quitConfirm: "Quit?", inviteBtn: "Invite", inviteTitle: "Invitation", copyBtn: "Copy", closeBtn: "Close", walletTitle: "Wallet", opponentsLabel: "Opponents", botWinMsg: "A Bot won!", leftLabel: "left", reachText: "REACH!", winLabelShort: "WIN" }
         };
 
         const { createApp, ref, reactive, computed, watch, onMounted } = Vue;
@@ -294,36 +291,18 @@
 
                 const saveState = () => {
                     if (gameState.value === 'PLAYING') {
-                        const data = {
-                            gs: gameState.value, m: mode.value, c: myCards.value, mk: myMarks.value,
-                            tc: ticketCount.value, bc: botCount.value, ba: betAmount.value, ia: isAuto.value,
-                            di: drawInterval.value, ri: roomId.value, im: isMaster.value, wal: wallet.amount, 
-                            cur: wallet.currency, his: drawnHistory.value, bots: bots.value
-                        };
+                        const data = { gs: gameState.value, m: mode.value, c: myCards.value, mk: myMarks.value, tc: ticketCount.value, bc: botCount.value, ba: betAmount.value, ia: isAuto.value, di: drawInterval.value, ri: roomId.value, im: isMaster.value, wal: wallet.amount, cur: wallet.currency, his: drawnHistory.value, bots: bots.value };
                         localStorage.setItem('loto_session', JSON.stringify(data));
                     }
                 };
 
                 const syncMarks = () => {
-                    myCards.value.forEach((card, cIdx) => {
-                        card.forEach((row, rIdx) => {
-                            row.forEach((num, nIdx) => {
-                                if (num !== 0 && drawnHistory.value.includes(num)) myMarks.value[cIdx][rIdx][nIdx] = true;
-                            });
-                        });
-                    });
-                    // Botの同期
+                    myCards.value.forEach((card, cIdx) => { card.forEach((row, rIdx) => { row.forEach((num, nIdx) => { if (num !== 0 && drawnHistory.value.includes(num)) myMarks.value[cIdx][rIdx][nIdx] = true; }); }); });
                     bots.value.forEach(bot => {
-                        bot.remaining = 5; // シンプルなシミュレーション：1列5マス
-                        let maxMarksInAnyRow = 0;
-                        bot.cards.forEach(card => card.forEach(row => {
-                            let marks = row.filter(n => n !== 0 && drawnHistory.value.includes(n)).length;
-                            if(marks > maxMarksInAnyRow) maxMarksInAnyRow = marks;
-                        }));
-                        bot.remaining = 5 - maxMarksInAnyRow;
-                        if(bot.remaining === 0) botWin();
+                        let maxMarks = 0;
+                        bot.cards.forEach(card => card.forEach(row => { let marks = row.filter(n => n !== 0 && drawnHistory.value.includes(n)).length; if(marks > maxMarks) maxMarks = marks; }));
+                        bot.remaining = 5 - maxMarks; if(bot.remaining === 0) botWin();
                     });
-                    
                     if(mode.value === 'MULTI' && roomId.value) {
                         const isReach = myMarks.value.some(card => card.some(row => row.filter((n, i) => n!==0 && row[i]).length >= 4));
                         db.ref(`rooms/${roomId.value}/players/${playerName.value}`).update({ reach: isReach });
@@ -331,14 +310,8 @@
                     saveState();
                 };
 
-                const botWin = () => {
-                    if(gameState.value !== 'PLAYING') return;
-                    alert(t.value.botWinMsg);
-                    exitToHome();
-                };
-
+                const botWin = () => { if(gameState.value === 'PLAYING') { alert(t.value.botWinMsg); exitToHome(); } };
                 watch(currentNumber, () => { if(isAuto.value) syncMarks(); });
-
                 const handleLangChange = () => localStorage.setItem('loto_lang', currentLang.value);
 
                 const generateUniqueCards = (count, existingNums = new Set()) => {
@@ -348,10 +321,8 @@
                         for(let r=0; r<3; r++){
                             let cols = [0,1,2,3,4,5,6,7,8].sort(()=>Math.random()-0.5).slice(0,5).sort();
                             cols.forEach(c => {
-                                let [min, max] = colBounds[c];
-                                let n; let attempts = 0;
-                                do { n = Math.floor(Math.random() * (max-min+1)) + min; attempts++; } 
-                                while((existingNums.has(n) || card[0][c]===n || card[1][c]===n || card[2][c]===n) && attempts < 100);
+                                let [min, max] = colBounds[c]; let n; let attempts = 0;
+                                do { n = Math.floor(Math.random() * (max-min+1)) + min; attempts++; } while((existingNums.has(n) || card[0][c]===n || card[1][c]===n || card[2][c]===n) && attempts < 100);
                                 card[r][c] = n; existingNums.add(n);
                             });
                         }
@@ -360,8 +331,7 @@
                 };
 
                 const initGame = async (m) => {
-                    mode.value = m;
-                    playerName.value = playerName.value.trim().replace(/[.#$[\]]/g, "_") || 'Player_' + Math.floor(Math.random()*900+100);
+                    mode.value = m; playerName.value = playerName.value.trim().replace(/[.#$[\]]/g, "_") || 'Player_' + Math.floor(Math.random()*900+100);
                     localStorage.setItem('loto_player_name', playerName.value);
                     if(m === 'MULTI') {
                         if(!roomId.value) { roomId.value = Math.random().toString(36).substring(2, 7).toUpperCase(); isMaster.value = true; }
@@ -376,45 +346,26 @@
                         const totalBet = betAmount.value * ticketCount.value;
                         if(wallet.amount < totalBet) return alert("Low balance");
                         wallet.amount -= totalBet;
-                        let globalNums = new Set();
-                        myCards.value = generateUniqueCards(ticketCount.value, globalNums);
+                        let globalNums = new Set(); myCards.value = generateUniqueCards(ticketCount.value, globalNums);
                         myMarks.value = myCards.value.map(c => c.map(r => r.map(() => false)));
-                        // Initialize Bots
-                        bots.value = Array.from({length: botCount.value}, () => ({
-                            cards: generateUniqueCards(1, new Set()),
-                            remaining: 5
-                        }));
+                        bots.value = Array.from({length: botCount.value}, () => ({ cards: generateUniqueCards(1, new Set()), remaining: 5 }));
                         drawnHistory.value = []; currentNumber.value = null;
                     }
                     gameState.value = 'PLAYING';
                     if(mode.value === 'MULTI') {
                         db.ref(`rooms/${roomId.value}/players`).on('value', s => { players.value = s.val() || {}; });
-                        db.ref(`rooms/${roomId.value}`).on('value', s => {
-                            const d = s.val();
-                            if(d && d.his){ 
-                                drawnHistory.value = d.his; 
-                                currentNumber.value = d.his[d.his.length - 1]; 
-                                syncMarks(); 
-                            }
-                        });
+                        db.ref(`rooms/${roomId.value}`).on('value', s => { const d = s.val(); if(d && d.his){ drawnHistory.value = d.his; currentNumber.value = d.his[d.his.length - 1]; syncMarks(); } });
                     }
                     if(isAuto.value && (mode.value === 'SOLO' || isMaster.value)) startTimer();
                     saveState();
                 };
 
-                const startTimer = () => {
-                    if(timer) clearInterval(timer);
-                    timer = setInterval(() => { if(!isPaused.value && drawnHistory.value.length < 90) drawNext(); }, drawInterval.value * 1000);
-                };
-
+                const startTimer = () => { if(timer) clearInterval(timer); timer = setInterval(() => { if(!isPaused.value && drawnHistory.value.length < 90) drawNext(); }, drawInterval.value * 1000); };
                 const drawNext = () => {
                     if(drawnHistory.value.length >= 90) return;
                     let n; do { n = Math.floor(Math.random() * 90) + 1; } while(drawnHistory.value.includes(n));
-                    if(mode.value === 'SOLO') {
-                        drawnHistory.value.push(n); currentNumber.value = n; syncMarks();
-                    } else if(isMaster.value) {
-                        db.ref(`rooms/${roomId.value}`).update({ his: [...drawnHistory.value, n] });
-                    }
+                    if(mode.value === 'SOLO') { drawnHistory.value.push(n); currentNumber.value = n; syncMarks(); }
+                    else if(isMaster.value) { db.ref(`rooms/${roomId.value}`).update({ his: [...drawnHistory.value, n] }); }
                 };
 
                 const checkKinh = () => {
@@ -422,28 +373,19 @@
                         const marksInRow = myCards.value[cIdx][rIdx].filter((n, nIdx) => n !== 0 && row[nIdx]);
                         return marksInRow.length === 5 && marksInRow.every(n => drawnHistory.value.includes(n));
                     }));
-                    if(win) {
-                        alert(t.value.winMsg); wallet.amount += (betAmount.value * 10); exitToHome();
-                    } else alert(t.value.loseMsg);
+                    if(win) { alert(t.value.winMsg); wallet.amount += (betAmount.value * 10); exitToHome(); } else alert(t.value.loseMsg);
                 };
 
                 const exitToHome = async () => {
                     if(timer) clearInterval(timer); timer = null;
-                    if(mode.value === 'MULTI' && roomId.value) {
-                        db.ref(`rooms/${roomId.value}/players/${playerName.value}`).remove();
-                    }
-                    gameState.value = 'HOME';
-                    roomId.value = null; localStorage.removeItem('loto_session');
+                    if(mode.value === 'MULTI' && roomId.value) { db.ref(`rooms/${roomId.value}/players/${playerName.value}`).remove(); }
+                    gameState.value = 'HOME'; roomId.value = null; localStorage.removeItem('loto_session');
                     const url = new URL(window.location.href); url.searchParams.delete('room'); window.history.pushState({}, '', url);
                 };
 
                 const togglePause = () => isPaused.value = !isPaused.value;
                 const confirmQuit = () => { if(confirm(t.value.quitConfirm)) exitToHome(); };
-                const toggleMark = (cIdx, rIdx, nIdx) => {
-                    if (isAuto.value || myCards.value[cIdx][rIdx][nIdx] === 0) return; 
-                    myMarks.value[cIdx][rIdx][nIdx] = !myMarks.value[cIdx][rIdx][nIdx];
-                    syncMarks();
-                };
+                const toggleMark = (cIdx, rIdx, nIdx) => { if (isAuto.value || myCards.value[cIdx][rIdx][nIdx] === 0) return; myMarks.value[cIdx][rIdx][nIdx] = !myMarks.value[cIdx][rIdx][nIdx]; syncMarks(); };
                 const isMarked = (cIdx, rIdx, nIdx) => myMarks.value[cIdx]?.[rIdx]?.[nIdx];
                 const openWalletModal = () => { tempWallet.amount = wallet.amount; tempWallet.currency = wallet.currency; showWalletModal.value = true; };
                 const saveWallet = () => { wallet.amount = tempWallet.amount; wallet.currency = tempWallet.currency; showWalletModal.value = false; localStorage.setItem('loto_wallet', JSON.stringify(wallet)); };
@@ -466,12 +408,7 @@
                     const savedWal = localStorage.getItem('loto_wallet'); if(savedWal) Object.assign(wallet, JSON.parse(savedWal));
                 });
 
-                return {
-                    currentLang, t, i18n, gameState, mode, playerName, wallet, tempWallet, showWalletModal, showShareModal, 
-                    ticketCount, botCount, betAmount, isAuto, drawInterval, isPaused, myCards, bots, players, 
-                    currentNumber, drawnHistory, myNumbers, handleLangChange, initGame, startGame, drawNext, 
-                    checkKinh, confirmQuit, toggleMark, isMarked, openWalletModal, saveWallet, copyLink, togglePause
-                };
+                return { currentLang, t, i18n, gameState, mode, playerName, wallet, tempWallet, showWalletModal, showShareModal, ticketCount, botCount, betAmount, isAuto, drawInterval, isPaused, myCards, bots, players, currentNumber, drawnHistory, myNumbers, handleLangChange, initGame, startGame, drawNext, checkKinh, confirmQuit, toggleMark, isMarked, openWalletModal, saveWallet, copyLink, togglePause };
             }
         }).mount('#app');
     </script>
