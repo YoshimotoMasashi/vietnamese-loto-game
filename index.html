@@ -510,7 +510,7 @@
     </main>
 
     <div class="footer-info">
-        REV: 17 | UPDATED: 2026-02-14 | {{ currentTime }}
+        REV: 18 (FIXED) | UPDATED: 2026-02-14 | {{ currentTime }}
     </div>
 
 
@@ -603,14 +603,14 @@ const db = firebase.database();
  * Includes currency symbols and default values.
  */
 const i18nData = {
-    vi: { label: "Tiếng Việt", cur: "₫", defWallet: 500000, defBet: 10000, welcomeMsg: "Chào mừng", playerNameLabel: "TÊN CỦA BẠN", placeholderName: "Nhập tên...", modeSolo: "CHƠI ĐƠN", modeMulti: "CHƠI NHIỀU NGƯỜI", setupTitle: "CÀI ĐẶT", ticketCount: "SỐ VÉ", botCountLabel: "SỐ BOT", drawMethod: "CÁCH QUAY", speedLabel: "TỐC ĐỘ", betAmount: "MỨC CƯỢC", startBtn: "BẮT ĐẦU", drawnLabel: "SỐ ĐÃ BỐC", nextBtn: "TIẾP", kinhBtn: "KINH!", winMsg: "CHIẾN THẮNG!", loseMsg: "CHƯA ĐỦ SỐ!", walletLabel: "SỐ DƯ", quitConfirm: "Thoát game?", inviteBtn: "MỜI", inviteTitle: "MỜI BẠN BÈ", copyBtn: "SAO CHÉP", closeBtn: "ĐÓNG", walletTitle: "VÍ TIỀN", settingsTitle: "CÀI ĐẶT", historyLabel: "LỊCH SỬ", waitingMsg: "Đang chờ...", cancel: "Hủy", saveBtn: "Lưu", leftLabel: "số nữa" },
-    ja: { label: "日本語", cur: "¥", defWallet: 3000, defBet: 100, welcomeMsg: "ようこそ", playerNameLabel: "プレイヤー名", placeholderName: "名前を入力...", modeSolo: "ソロプレイ", modeMulti: "マルチプレイ", setupTitle: "ゲーム設定", ticketCount: "チケット枚数", botCountLabel: "Botの数", drawMethod: "抽選方法", speedLabel: "自動の間隔", betAmount: "賭け金", startBtn: "ゲーム開始", drawnLabel: "出た数字", nextBtn: "次へ", kinhBtn: "上がり！", winMsg: "おめでとうございます！", loseMsg: "まだ揃っていません", walletLabel: "残高", quitConfirm: "トップに戻りますか？", inviteBtn: "招待", inviteTitle: "ルーム招待", copyBtn: "コピー", closeBtn: "閉じる", walletTitle: "ウォレット", settingsTitle: "設定", historyLabel: "履歴", waitingMsg: "待機中...", cancel: "キャンセル", saveBtn: "保存", leftLabel: "マス" },
-    en: { label: "English", cur: "$", defWallet: 20, defBet: 1, welcomeMsg: "Welcome", playerNameLabel: "PLAYER NAME", placeholderName: "Enter name...", modeSolo: "SOLO MODE", modeMulti: "MULTIPLAYER", setupTitle: "GAME SETUP", ticketCount: "TICKETS", botCountLabel: "BOT COUNT", drawMethod: "DRAW METHOD", speedLabel: "SPEED", betAmount: "BET AMOUNT", startBtn: "START GAME", drawnLabel: "DRAWN", nextBtn: "NEXT", kinhBtn: "BINGO!", winMsg: "YOU WIN!", loseMsg: "NOT YET!", walletLabel: "BALANCE", quitConfirm: "Quit game?", inviteBtn: "INVITE", inviteTitle: "INVITATION", copyBtn: "COPY", closeBtn: "CLOSE", walletTitle: "WALLET", settingsTitle: "SETTINGS", historyLabel: "HISTORY", waitingMsg: "Waiting...", cancel: "Cancel", saveBtn: "Save", leftLabel: "left" },
-    th: { label: "ไทย", cur: "฿", defWallet: 500, defBet: 20, welcomeMsg: "ยินดีต้อนรับ", playerNameLabel: "ชื่อผู้เล่น", placeholderName: "กรอกชื่อ...", modeSolo: "เล่นคนเดียว", modeMulti: "เล่นหลายคน", setupTitle: "ตั้งค่าเกม", ticketCount: "จำนวนตั๋ว", botCountLabel: "จำนวนบอท", drawMethod: "วิธีจั่ว", speedLabel: "ความเร็ว", betAmount: "เงินเดิมพัน", startBtn: "เริ่มเกม", drawnLabel: "เลขที่ออก", nextBtn: "ถัดไป", kinhBtn: "บิงโก!", winMsg: "คุณชนะ!", loseMsg: "ยังไม่ครบ", walletLabel: "ยอดเงิน", quitConfirm: "ออกจากเกม?", inviteBtn: "เชิญ", inviteTitle: "เชิญเพื่อน", copyBtn: "คัดลอก", closeBtn: "ปิด", walletTitle: "กระเป๋าเงิน", settingsTitle: "การตั้งค่า", historyLabel: "ประวัติ", waitingMsg: "กำลังรอ...", cancel: "ยกเลิก", saveBtn: "บันทึก", leftLabel: "เหลือ" },
-    lo: { label: "ລາວ", cur: "₭", defWallet: 500000, defBet: 10000, welcomeMsg: "ຍິນດີຕ້ອນຮັບ", playerNameLabel: "ຊື່ຜູ້ຫຼິ້ນ", placeholderName: "ໃສ່ຊື່...", modeSolo: "ຫຼິ້ນຄົນດຽວ", modeMulti: "ຫຼິ້ນຫຼາຍຄົນ", setupTitle: "ຕັ້ງຄ່າ", ticketCount: "ຈຳນວນໃບ", botCountLabel: "Bot", drawMethod: "ວິທີ", speedLabel: "ຄວາມໄວ", betAmount: "ເດີມພັນ", startBtn: "ເລີ່ມ", drawnLabel: "ອອກແລ້ວ", nextBtn: "ຕໍ່ໄປ", kinhBtn: "ຊະນະ!", winMsg: "ຊະນະແລ້ວ!", loseMsg: "ຍັງ!", walletLabel: "ຍອດ", quitConfirm: "ອອກ?", inviteBtn: "ເຊີນ", inviteTitle: "ເຊີນ", copyBtn: "ກັອບປີ້", closeBtn: "ປິດ", walletTitle: "ກະເປົາ", settingsTitle: "ຕັ້ງຄ່າ", historyLabel: "ປະຫວັດ", waitingMsg: "ລໍຖ້າ...", cancel: "ຍົກເລີກ", saveBtn: "ບັນທຶກ", leftLabel: "ເຫຼືອ" },
-    km: { label: "ខ្មែរ", cur: "៛", defWallet: 80000, defBet: 2000, welcomeMsg: "សូមស្វាគមន៍", playerNameLabel: "ឈ្មោះ", placeholderName: "បញ្ចូល...", modeSolo: "ម្នាក់ឯង", modeMulti: "ច្រើននាក់", setupTitle: "កំណត់", ticketCount: "សន្លឹក", botCountLabel: "Bot", drawMethod: "វិធី", speedLabel: "ល្បឿន", betAmount: "ភ្នាល់", startBtn: "ចាប់ផ្ដើម", drawnLabel: "ចេញហើយ", nextBtn: "បន្ទាប់", kinhBtn: "ឈ្នះ!", winMsg: "អ្នកឈ្នះ!", loseMsg: "នៅ!", walletLabel: "សមតុល្យ", quitConfirm: "ចាកចេញ?", inviteBtn: "អញ្ជើញ", inviteTitle: "អញ្ជើញ", copyBtn: "ចម្លង", closeBtn: "បិទ", walletTitle: "កាបូប", settingsTitle: "ការកំណត់", historyLabel: "ប្រវត្តិ", waitingMsg: "រង់ចាំ...", cancel: "បោះបង់", saveBtn: "រក្សា", leftLabel: "ទៀត" },
-    zh: { label: "简体中文", cur: "¥", defWallet: 150, defBet: 5, welcomeMsg: "欢迎", playerNameLabel: "玩家名称", placeholderName: "输入...", modeSolo: "单人", modeMulti: "多人", setupTitle: "设置", ticketCount: "票数", botCountLabel: "机器人", drawMethod: "方式", speedLabel: "速度", betAmount: "下注", startBtn: "开始", drawnLabel: "已抽", nextBtn: "下个", kinhBtn: "胡了!", winMsg: "恭喜!", loseMsg: "未中!", walletLabel: "余额", quitConfirm: "退出?", inviteBtn: "邀请", inviteTitle: "邀请", copyBtn: "复制", closeBtn: "关闭", walletTitle: "钱包", settingsTitle: "设置", historyLabel: "历史", waitingMsg: "等待中...", cancel: "取消", saveBtn: "保存", leftLabel: "剩余" },
-    fr: { label: "Français", cur: "€", defWallet: 20, defBet: 1, welcomeMsg: "Bienvenue", playerNameLabel: "Nom", placeholderName: "Entrez...", modeSolo: "Solo", modeMulti: "Multi", setupTitle: "Réglages", ticketCount: "Tickets", botCountLabel: "Bots", drawMethod: "Méthode", speedLabel: "Vitesse", betAmount: "Mise", startBtn: "JOUER", drawnLabel: "Tirés", nextBtn: "Suiv.", kinhBtn: "GAGNÉ!", winMsg: "Bravo!", loseMsg: "Non!", walletLabel: "Solde", quitConfirm: "Quitter?", inviteBtn: "Inviter", inviteTitle: "Invitation", copyBtn: "Copier", closeBtn: "Fermer", walletTitle: "Portefeuille", settingsTitle: "Options", historyLabel: "Historique", waitingMsg: "Attente...", cancel: "Annuler", saveBtn: "Sauver", leftLabel: "restant" }
+    vi: { label: "Tiếng Việt", cur: "₫", defWallet: 500000, defBet: 10000, welcomeMsg: "Chào mừng", playerNameLabel: "TÊN CỦA BẠN", placeholderName: "Nhập tên...", modeSolo: "CHƠI ĐƠN", modeMulti: "CHƠI NHIỀU NGƯỜI", setupTitle: "CÀI ĐẶT", ticketQtyLabel: "SỐ VÉ", opponentsLabel: "SỐ BOT", drawMethod: "CÁCH QUAY", speedLabel: "TỐC ĐỘ", betLabel: "MỨC CƯỢC", startBtn: "BẮT ĐẦU", drawnLabel: "SỐ ĐÃ BỐC", nextBtn: "TIẾP", kinhBtn: "KINH!", winMsg: "CHIẾN THẮNG!", loseMsg: "CHƯA ĐỦ SỐ!", walletLabel: "SỐ DƯ", quitConfirm: "Thoát game?", inviteBtn: "MỜI", inviteTitle: "MỜI BẠN BÈ", copyBtn: "SAO CHÉP", closeBtn: "ĐÓNG", walletTitle: "VÍ TIỀN", settingsTitle: "CÀI ĐẶT", historyLabel: "LỊCH SỬ", waitingMsg: "Đang chờ...", cancel: "Hủy", saveBtn: "Lưu", leftLabel: "số nữa", welcomeTitle: "LÔ TÔ ONLINE", welcomeSubtitle: "TRÒ CHƠI DÂN GIAN" },
+    ja: { label: "日本語", cur: "¥", defWallet: 3000, defBet: 100, welcomeMsg: "ようこそ", playerNameLabel: "プレイヤー名", placeholderName: "名前を入力...", modeSolo: "ソロプレイ", modeMulti: "マルチプレイ", setupTitle: "ゲーム設定", ticketQtyLabel: "チケット枚数", opponentsLabel: "Botの数", drawMethod: "抽選方法", speedLabel: "自動の間隔", betLabel: "賭け金", startBtn: "ゲーム開始", drawnLabel: "出た数字", nextBtn: "次へ", kinhBtn: "上がり！", winMsg: "おめでとうございます！", loseMsg: "まだ揃っていません", walletLabel: "残高", quitConfirm: "トップに戻りますか？", inviteBtn: "招待", inviteTitle: "ルーム招待", copyBtn: "コピー", closeBtn: "閉じる", walletTitle: "ウォレット", settingsTitle: "設定", historyLabel: "履歴", waitingMsg: "待機中...", cancel: "キャンセル", saveBtn: "保存", leftLabel: "マス", welcomeTitle: "LOTO ONLINE", welcomeSubtitle: "究極の運試し" },
+    en: { label: "English", cur: "$", defWallet: 20, defBet: 1, welcomeMsg: "Welcome", playerNameLabel: "PLAYER NAME", placeholderName: "Enter name...", modeSolo: "SOLO MODE", modeMulti: "MULTIPLAYER", setupTitle: "GAME SETUP", ticketQtyLabel: "TICKETS", opponentsLabel: "BOT COUNT", drawMethod: "DRAW METHOD", speedLabel: "SPEED", betLabel: "BET AMOUNT", startBtn: "START GAME", drawnLabel: "DRAWN", nextBtn: "NEXT", kinhBtn: "BINGO!", winMsg: "YOU WIN!", loseMsg: "NOT YET!", walletLabel: "BALANCE", quitConfirm: "Quit game?", inviteBtn: "INVITE", inviteTitle: "INVITATION", copyBtn: "COPY", closeBtn: "CLOSE", walletTitle: "WALLET", settingsTitle: "SETTINGS", historyLabel: "HISTORY", waitingMsg: "Waiting...", cancel: "Cancel", saveBtn: "Save", leftLabel: "left", welcomeTitle: "LOTO ONLINE", welcomeSubtitle: "CLASSIC GAME" },
+    th: { label: "ไทย", cur: "฿", defWallet: 500, defBet: 20, welcomeMsg: "ยินดีต้อนรับ", playerNameLabel: "ชื่อผู้เล่น", placeholderName: "กรอกชื่อ...", modeSolo: "เล่นคนเดียว", modeMulti: "เล่นหลายคน", setupTitle: "ตั้งค่าเกม", ticketQtyLabel: "จำนวนตั๋ว", opponentsLabel: "จำนวนบอท", drawMethod: "วิธีจั่ว", speedLabel: "ความเร็ว", betLabel: "เงินเดิมพัน", startBtn: "เริ่มเกม", drawnLabel: "เลขที่ออก", nextBtn: "ถัดไป", kinhBtn: "บิงโก!", winMsg: "คุณชนะ!", loseMsg: "ยังไม่ครบ", walletLabel: "ยอดเงิน", quitConfirm: "ออกจากเกม?", inviteBtn: "เชิญ", inviteTitle: "เชิญเพื่อน", copyBtn: "คัดลอก", closeBtn: "ปิด", walletTitle: "กระเป๋าเงิน", settingsTitle: "การตั้งค่า", historyLabel: "ประวัติ", waitingMsg: "กำลังรอ...", cancel: "ยกเลิก", saveBtn: "บันทึก", leftLabel: "เหลือ", welcomeTitle: "โลโต้ ออนไลน์", welcomeSubtitle: "เกมคลาสสิค" },
+    lo: { label: "ລາວ", cur: "₭", defWallet: 500000, defBet: 10000, welcomeMsg: "ຍິນດີຕ້ອນຮັບ", playerNameLabel: "ຊື່ຜູ້ຫຼິ້ນ", placeholderName: "ໃສ່ຊື່...", modeSolo: "ຫຼິ້ນຄົນດຽວ", modeMulti: "ຫຼິ້ນຫຼາຍຄົນ", setupTitle: "ຕັ້ງຄ່າ", ticketQtyLabel: "ຈຳນວນໃບ", opponentsLabel: "Bot", drawMethod: "ວິທີ", speedLabel: "ຄວາມໄວ", betLabel: "ເດີມພັນ", startBtn: "ເລີ່ມ", drawnLabel: "ອອກແລ້ວ", nextBtn: "ຕໍ່ໄປ", kinhBtn: "ຊະນະ!", winMsg: "ຊະນະແລ້ວ!", loseMsg: "ຍັງ!", walletLabel: "ຍອດ", quitConfirm: "ອອກ?", inviteBtn: "ເຊີນ", inviteTitle: "ເຊີນ", copyBtn: "ກັອບປີ້", closeBtn: "ປິດ", walletTitle: "ກະເປົາ", settingsTitle: "ຕັ້ງຄ່າ", historyLabel: "ປະຫວັດ", waitingMsg: "ລໍຖ້າ...", cancel: "ຍົກເລີກ", saveBtn: "ບັນທຶກ", leftLabel: "ເຫຼືອ", welcomeTitle: "ໂລໂຕ ອອນລາຍ", welcomeSubtitle: "ເກມພື້ນເມືອງ" },
+    km: { label: "ខ្មែរ", cur: "៛", defWallet: 80000, defBet: 2000, welcomeMsg: "សូមស្វាគមន៍", playerNameLabel: "ឈ្មោះ", placeholderName: "បញ្ចូល...", modeSolo: "ម្នាក់ឯង", modeMulti: "ច្រើននាក់", setupTitle: "កំណត់", ticketQtyLabel: "សន្លឹក", opponentsLabel: "Bot", drawMethod: "វិធី", speedLabel: "ល្បឿន", betLabel: "ភ្នាល់", startBtn: "ចាប់ផ្ដើម", drawnLabel: "ចេញហើយ", nextBtn: "បន្ទាប់", kinhBtn: "ឈ្នះ!", winMsg: "អ្នកឈ្នះ!", loseMsg: "នៅ!", walletLabel: "សមតុល្យ", quitConfirm: "ចាកចេញ?", inviteBtn: "អញ្ជើញ", inviteTitle: "អញ្ជើញ", copyBtn: "ចម្លង", closeBtn: "បិទ", walletTitle: "កាបូប", settingsTitle: "ការកំណត់", historyLabel: "ប្រវត្តិ", waitingMsg: "រង់ចាំ...", cancel: "បោះបង់", saveBtn: "រក្សា", leftLabel: "ទៀត", welcomeTitle: "ឡូតូ អនឡាញ", welcomeSubtitle: "ល្បែងប្រជាប្រិយ" },
+    zh: { label: "简体中文", cur: "¥", defWallet: 150, defBet: 5, welcomeMsg: "欢迎", playerNameLabel: "玩家名称", placeholderName: "输入...", modeSolo: "单人", modeMulti: "多人", setupTitle: "设置", ticketQtyLabel: "票数", opponentsLabel: "机器人", drawMethod: "方式", speedLabel: "速度", betLabel: "下注", startBtn: "开始", drawnLabel: "已抽", nextBtn: "下个", kinhBtn: "胡了!", winMsg: "恭喜!", loseMsg: "未中!", walletLabel: "余额", quitConfirm: "退出?", inviteBtn: "邀请", inviteTitle: "邀请", copyBtn: "复制", closeBtn: "关闭", walletTitle: "钱包", settingsTitle: "设置", historyLabel: "历史", waitingMsg: "等待中...", cancel: "取消", saveBtn: "保存", leftLabel: "剩余", welcomeTitle: "乐透在线", welcomeSubtitle: "经典游戏" },
+    fr: { label: "Français", cur: "€", defWallet: 20, defBet: 1, welcomeMsg: "Bienvenue", playerNameLabel: "Nom", placeholderName: "Entrez...", modeSolo: "Solo", modeMulti: "Multi", setupTitle: "Réglages", ticketQtyLabel: "Tickets", opponentsLabel: "Bots", drawMethod: "Méthode", speedLabel: "Vitesse", betLabel: "Mise", startBtn: "JOUER", drawnLabel: "Tirés", nextBtn: "Suiv.", kinhBtn: "GAGNÉ!", winMsg: "Bravo!", loseMsg: "Non!", walletLabel: "Solde", quitConfirm: "Quitter?", inviteBtn: "Inviter", inviteTitle: "Invitation", copyBtn: "Copier", closeBtn: "Fermer", walletTitle: "Portefeuille", settingsTitle: "Options", historyLabel: "Historique", waitingMsg: "Attente...", cancel: "Annuler", saveBtn: "Sauver", leftLabel: "restant", welcomeTitle: "LOTO EN LIGNE", welcomeSubtitle: "JEU CLASSIQUE" }
 };
 
 const { createApp, ref, reactive, computed, watch, onMounted, onUnmounted } = Vue;
@@ -620,6 +620,7 @@ createApp({
         // --- STATE ---
         const currentLang = ref(localStorage.getItem('loto_lang') || 'ja');
         const t = computed(() => i18nData[currentLang.value]);
+        // FIXED: Renamed to i18nData to avoid ReferenceError
         const languages = computed(() => i18nData);
 
         const gameState = ref('HOME');
@@ -629,19 +630,20 @@ createApp({
         const tempWallet = reactive({ amount: 0, currency: '' });
 
         // Settings
-        const ticketCount = ref(1);
+        const ticketQty = ref(1); // Renamed to match template
         const botCount = ref(3);
         const betAmount = ref(100);
         const isAutoMode = ref(true);
         const drawInterval = ref(4);
+        const isPaused = ref(false); // Missing ref added
         
         // Game Data
         const myCards = ref([]);
         const myMarks = ref([]);
         const currentNumber = ref(null);
         const drawnHistory = ref([]);
-        const bots = ref([]); // Bot Logic
-        const opponentStatus = ref([]); // For UI display
+        const bots = ref([]); 
+        const opponentStatus = ref([]); 
         
         // Multiplayer
         const roomId = ref(new URLSearchParams(window.location.search).get('room'));
@@ -655,17 +657,18 @@ createApp({
         const showShareModal = ref(false);
 
         let timer = null;
-        let clockTimer = null;
 
         // --- COMPUTED HELPERS ---
         const myNumbers = computed(() => {
             let nums = [];
-            myCards.value.forEach(card => card.forEach(row => row.forEach(n => { if(n!==0) nums.push(n); })));
+            if(myCards.value) {
+                myCards.value.forEach(card => card.forEach(row => row.forEach(n => { if(n!==0) nums.push(n); })));
+            }
             return nums;
         });
 
         const activeOpponentsCount = computed(() => {
-            return (bots.value.length) + (mode.value === 'MULTI' ? 1 : 0); // Simplified
+            return (bots.value.length) + (mode.value === 'MULTI' ? 1 : 0);
         });
 
         // --- METHODS ---
@@ -673,7 +676,6 @@ createApp({
         const setLang = (key) => {
             currentLang.value = key;
             localStorage.setItem('loto_lang', key);
-            // Update default currency if not set
             const config = i18nData[key];
             if(gameState.value === 'HOME') {
                 wallet.currency = config.cur;
@@ -682,7 +684,6 @@ createApp({
             }
         };
 
-        // --- UNIQUE CARD GENERATION (Global Uniqueness across all tickets) ---
         const generateUniqueCards = (count) => {
             const colBounds = [[1,9],[10,19],[20,29],[30,39],[40,49],[50,59],[60,69],[70,79],[80,90]];
             let usedGlobal = new Set();
@@ -699,10 +700,7 @@ createApp({
                             n = Math.floor(Math.random() * (max - min + 1)) + min;
                             attempts++;
                         } while((usedGlobal.has(n) || card[0][c]===n || card[1][c]===n || card[2][c]===n) && attempts < 200);
-                        
-                        // Fallback if stuck (rare)
-                        if(attempts >= 200) n = min; // Simple fallback
-                        
+                        if(attempts >= 200) n = min;
                         card[r][c] = n;
                         usedGlobal.add(n);
                     });
@@ -711,14 +709,12 @@ createApp({
             });
         };
 
-        // --- BOT LOGIC ---
         const initBots = () => {
             bots.value = Array.from({length: botCount.value}, (_, i) => ({
                 id: i,
                 name: `Bot ${i+1}`,
-                // Each bot gets 1 card for simplicity logic
                 card: generateUniqueCards(1)[0], 
-                remaining: 5 // Assuming 1 row to win
+                remaining: 5
             }));
             updateOpponentStatus();
         };
@@ -751,7 +747,6 @@ createApp({
             }));
         };
 
-        // --- GAME CONTROL ---
         const initGame = (m) => {
             mode.value = m;
             if(!playerName.value) playerName.value = 'User'+Math.floor(Math.random()*1000);
@@ -768,17 +763,17 @@ createApp({
         };
 
         const startGame = () => {
-            const cost = betAmount.value * ticketCount.value;
+            const cost = betAmount.value * ticketQty.value;
             if(wallet.amount < cost) return alert("No money!");
             wallet.amount -= cost;
 
-            myCards.value = generateUniqueCards(ticketCount.value);
+            myCards.value = generateUniqueCards(ticketQty.value);
             myMarks.value = myCards.value.map(c => c.map(r => r.map(() => false)));
             
             drawnHistory.value = [];
             currentNumber.value = null;
             
-            initBots(); // Initialize bots
+            initBots(); 
 
             gameState.value = 'PLAYING';
             saveState();
@@ -794,7 +789,6 @@ createApp({
 
         const setupMultiplayer = () => {
              const roomRef = db.ref(`rooms/${roomId.value}`);
-             // If master, reset room
              if(isMaster.value) {
                  roomRef.set({
                      history: [],
@@ -802,14 +796,11 @@ createApp({
                      msg: "Game Started"
                  });
              }
-             // Listen
              roomRef.on('value', s => {
                  const d = s.val();
                  if(d) {
                      if(d.history) drawnHistory.value = d.history;
                      if(d.current) currentNumber.value = d.current;
-                     // In multi, we also need to check bots/other players logic here ideally
-                     // For now, syncing drawn numbers is key
                      saveState();
                  }
              });
@@ -831,13 +822,10 @@ createApp({
             if(mode.value === 'SOLO') {
                 currentNumber.value = n;
                 drawnHistory.value.push(n);
-                // Update Bots in Solo
                 updateBots(n);
-                // Auto Mark User
                 if(isAutoMode.value) performAutoMark(n);
                 saveState();
             } else if(isMaster.value) {
-                // Master pushes to DB
                 db.ref(`rooms/${roomId.value}`).update({
                     current: n,
                     history: [...drawnHistory.value, n]
@@ -845,11 +833,10 @@ createApp({
             }
         };
 
-        // Watch for changes in Multi to trigger auto-actions
         watch(currentNumber, (val) => {
             if(val && mode.value === 'MULTI') {
                 if(isAutoMode.value) performAutoMark(val);
-                updateBots(val); // Simulate bots locally for everyone
+                updateBots(val); 
             }
         });
 
@@ -863,8 +850,8 @@ createApp({
             });
         };
 
-        const toggleMark = (ci, ri, ni) => {
-            if(isAutoMode.value) return; // Lock in auto mode
+        const handleManualMark = (ci, ri, ni) => {
+            if(isAutoMode.value) return; 
             const val = myCards.value[ci][ri][ni];
             if(val !== 0) {
                  myMarks.value[ci][ri][ni] = !myMarks.value[ci][ri][ni];
@@ -875,20 +862,17 @@ createApp({
         const isMarked = (ci, ri, ni) => myMarks.value[ci]?.[ri]?.[ni];
         
         const checkWinReady = (ci) => {
-            // Check if any row has 5 marks
+            if(!myMarks.value[ci]) return false;
             return myMarks.value[ci].some(row => row.filter(m => m).length === 5);
         };
 
         const checkKinh = () => {
-            // Validate Win
             let validWin = false;
             myMarks.value.forEach((cardMarks, ci) => {
                 cardMarks.forEach((rowMarks, ri) => {
-                    // Get numbers and marks for this row
                     const nums = myCards.value[ci][ri].filter(n => n!==0);
                     const marks = rowMarks.filter((m, i) => m && myCards.value[ci][ri][i]!==0);
                     
-                    // Logic: 5 numbers in row, all marked, all drawn
                     if(nums.length === 5 && marks.length === 5) {
                          const allDrawn = nums.every(n => drawnHistory.value.includes(n));
                          if(allDrawn) validWin = true;
@@ -898,7 +882,7 @@ createApp({
 
             if(validWin) {
                 alert(t.value.winMsg);
-                wallet.amount += betAmount.value * 10; // Reward
+                wallet.amount += betAmount.value * 10; 
                 exitToHome();
             } else {
                 alert(t.value.loseMsg);
@@ -908,7 +892,6 @@ createApp({
         const handleBack = () => {
             if(confirm(t.value.quitConfirm)) exitToHome();
         };
-        const confirmQuit = handleBack;
 
         const exitToHome = () => {
             stopGame();
@@ -925,6 +908,19 @@ createApp({
         const stopGame = () => {
             if(timer) clearInterval(timer);
             if(mode.value === 'MULTI' && roomId.value) db.ref(`rooms/${roomId.value}`).off();
+        };
+
+        // --- STATE PERSISTENCE ---
+        const saveState = () => {
+            if(gameState.value === 'PLAYING') {
+                const state = {
+                    gs: gameState.value, m: mode.value, c: myCards.value, mk: myMarks.value,
+                    tc: ticketQty.value, ba: betAmount.value, ia: isAutoMode.value, di: drawInterval.value,
+                    ri: roomId.value, im: isMaster.value, wal: wallet.amount, cur: wallet.currency,
+                    his: drawnHistory.value, bots: bots.value
+                };
+                localStorage.setItem('loto_session', JSON.stringify(state));
+            }
         };
 
         // --- UTILS ---
@@ -945,20 +941,17 @@ createApp({
         onMounted(() => {
             setInterval(updateClock, 1000);
             
-            // Restore Wallet
             const w = localStorage.getItem('loto_wallet');
             if(w) Object.assign(wallet, JSON.parse(w));
             
-            // Restore Session
             const s = localStorage.getItem('loto_session');
             if(s) {
                 const d = JSON.parse(s);
-                // Restore logic
                 gameState.value = d.gs;
                 mode.value = d.m;
                 myCards.value = d.c;
                 myMarks.value = d.mk;
-                ticketCount.value = d.tc;
+                ticketQty.value = d.tc;
                 betAmount.value = d.ba;
                 isAutoMode.value = d.ia;
                 drawInterval.value = d.di;
@@ -969,27 +962,27 @@ createApp({
                 drawnHistory.value = d.his || [];
                 bots.value = d.bots || [];
                 
-                // If Playing, resume
                 if(gameState.value === 'PLAYING') {
                     if(drawnHistory.value.length > 0) currentNumber.value = drawnHistory.value[drawnHistory.value.length - 1];
-                    updateOpponentStatus(); // Restore bots display
+                    updateOpponentStatus(); 
                     if(mode.value === 'MULTI') setupMultiplayer();
                     if(isAutoMode.value && (mode.value === 'SOLO' || isMaster.value)) startTimer();
                 }
             } else {
-                // If URL has room, jump to setup
                 if(roomId.value) initGame('MULTI');
             }
         });
 
+        // FIXED RETURN STATEMENT
         return {
-            i18n, currentLang, t, languages: i18n,
+            i18nData, // Corrected from i18n
+            currentLang, t, languages: i18nData, // Corrected reference
             gameState, mode, playerName, wallet, tempWallet,
-            ticketCount, botCount, betAmount, isAutoMode, drawInterval, isPaused,
+            ticketQty, botCount, betAmount, isAutoMode, drawInterval, isPaused,
             myCards, myMarks, drawnHistory, currentNumber, bots, opponentStatus, activeOpponentsCount,
             roomId, isMaster, showWalletModal, showShareModal, showSettingsModal, currentTime, logs: [],
             setLang, initGame, startGame, drawNextNumber, togglePause, 
-            toggleMark, isMarked, checkWinReady, checkKinh, confirmQuit, handleBack,
+            handleManualMark, isMarked, checkWinReady, checkKinh, handleBack,
             openWalletModal, saveWallet, copyLink
         };
     }
