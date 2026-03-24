@@ -1801,48 +1801,16 @@ localStorage.setItem('loto_session', JSON.stringify(state));
 
   
 
-// --- UTILS ---
+                // --- UTILS ---
+                const openWalletModal = () => { tempWallet.amount = wallet.amount; tempWallet.currency = wallet.currency; showWalletModal.value = true; };
+                const saveWallet = () => { wallet.amount = Number(tempWallet.amount) || 0; wallet.currency = tempWallet.currency; showWalletModal.value = false; localStorage.setItem('loto_wallet', JSON.stringify({amount: wallet.amount, currency: wallet.currency})); };
+                const copyLink = () => { navigator.clipboard.writeText(window.location.href); alert("Copied!"); };
+                const togglePause = () => isPaused.value = !isPaused.value;
+                const updateClock = () => { currentTime.value = new Date().toLocaleString(); };
 
-        const openWalletModal = () => { 
-            tempWallet.amount = wallet.amount; 
-            tempWallet.currency = wallet.currency; 
-            showWalletModal.value = true; 
-        };
+                watch(showShareModal, (v) => { if(v) setTimeout(() => { document.getElementById('qrcode').innerHTML=""; new QRCode(document.getElementById('qrcode'), {text:window.location.href, width:150, height:150}); }, 100); });
+                watch(drawInterval, () => { if(gameState.value === 'PLAYING' && isAutoMode.value && !isPaused.value && (mode.value==='SOLO' || isMaster.value)) startTimer(); });
 
-        const saveWallet = () => { 
-            // 数値であることを保証
-            const finalAmount = Number(tempWallet.amount) || 0;
-            wallet.amount = finalAmount; 
-            wallet.currency = tempWallet.currency; 
-            showWalletModal.value = false; 
-            
-            // ローカルストレージに即時反映
-            localStorage.setItem('loto_wallet', JSON.stringify({
-                amount: wallet.amount,
-                currency: wallet.currency
-            })); 
-        };
-
-
-const copyLink = () => { navigator.clipboard.writeText(window.location.href); alert("Copied!"); };
-
-const togglePause = () => isPaused.value = !isPaused.value;
-
-  
-
-const updateClock = () => { currentTime.value = new Date().toLocaleString(); };
-
-  
-
-watch(showShareModal, (v) => { if(v) setTimeout(() => { document.getElementById('qrcode').innerHTML=""; new QRCode(document.getElementById('qrcode'), {text:window.location.href, width:150, height:150}); }, 100); });
-
-watch(drawInterval, () => {
-
-if(gameState.value === 'PLAYING' && isAutoMode.value && !isPaused.value && (mode.value==='SOLO' || isMaster.value)) startTimer();
-
-});
-
-  
 
 // --- RESTORE ---
 
