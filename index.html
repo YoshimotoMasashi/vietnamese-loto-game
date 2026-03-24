@@ -451,14 +451,24 @@
             </div>
 
             <div class="scroll-content playing-content bg-slate-100">
-                <div v-if="opponentStatus.length > 0" class="mb-4 flex gap-2 overflow-x-auto no-scrollbar pb-2">
-                    <div v-for="(opp, idx) in opponentStatus" :key="idx" class="bg-white px-3 py-2 rounded-lg shadow-sm border border-slate-200 flex-shrink-0 min-w-[100px]">
-                        <div class="text-[9px] font-black text-slate-400 uppercase truncate">{{ opp.name }}</div>
-                        <div class="text-xs font-bold" :class="opp.remaining <= 1 ? 'text-red-500 animate-pulse' : 'text-slate-700'">
-                            {{ opp.remaining === 0 ? t.winLabelShort : (opp.remaining + ' ' + t.leftLabel) }}
-                        </div>
-                    </div>
-                </div>
+<div class="mb-4 flex gap-2 overflow-x-auto no-scrollbar pb-2">
+    <div v-for="p in players.filter(pl => pl.name !== playerName)" :key="p.name" 
+         class="bg-white px-3 py-2 rounded-lg shadow-sm border border-slate-200 flex-shrink-0 min-w-[100px] relative">
+        <div class="text-[9px] font-black text-blue-500 uppercase truncate">{{ p.name }}</div>
+        <div class="text-xs font-bold" :class="p.remaining <= 1 ? 'text-red-500 animate-pulse' : 'text-slate-700'">
+            {{ p.remaining === 0 ? t.winLabelShort : (p.remaining + ' ' + t.leftLabel) }}
+        </div>
+        <div v-if="p.remaining <= 1" class="absolute -top-1 -right-1 bg-red-500 text-[7px] text-white px-1 rounded-full font-black">REACH</div>
+    </div>
+
+    <div v-for="bot in bots" :key="bot.id" 
+         class="bg-white px-3 py-2 rounded-lg shadow-sm border border-slate-200 flex-shrink-0 min-w-[100px] opacity-80">
+        <div class="text-[9px] font-black text-slate-400 uppercase truncate">{{ bot.name }} (Bot)</div>
+        <div class="text-xs font-bold" :class="bot.remaining <= 1 ? 'text-red-500' : 'text-slate-700'">
+            {{ bot.remaining === 0 ? t.winLabelShort : (bot.remaining + ' ' + t.leftLabel) }}
+        </div>
+    </div>
+</div>
 
                 <div v-for="(card, cIdx) in myCards" :key="cIdx" class="loto-ticket">
                     <div class="flex justify-between items-center mb-2 px-1">
@@ -484,11 +494,47 @@
             </div>
 
             <div class="sticky-action-container">
-                <button @click="checkKinh" class="btn-kinh">
-                    {{ t.kinhBtn }}
-                </button>
+<button @click="checkKinh" 
+        :disabled="gameState !== 'PLAYING'"
+        :class="gameState !== 'PLAYING' ? 'opacity-50 grayscale cursor-not-allowed shadow-none' : ''"
+        class="btn-kinh">
+    {{ t.kinhBtn }}
+</button>
+
             </div>
         </div>
+    <div v-if="gameState === 'FINISHED'" class="fixed inset-0 z-[2000] bg-slate-900/95 backdrop-blur-md flex items-center justify-center p-6">
+        <div class="modal-content text-center border-4 border-yellow-400">
+            <div class="text-6xl mb-4">🏆</div>
+            <h2 class="text-3xl font-black text-slate-800 mb-2 italic">GAME OVER</h2>
+            
+            <div class="bg-slate-50 rounded-2xl p-6 mb-6 border border-slate-200">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Winner</p>
+                <p class="text-2xl font-black text-slate-800">{{ winnerInfo?.name || '---' }}</p>
+                
+                <hr class="my-4 border-slate-200">
+                
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Payout</p>
+                <div v-if="winnerInfo?.name === playerName" class="text-3xl font-black text-green-600">
+                    +{{ (betAmount * (players.length + bots.length)).toLocaleString() }} {{ wallet.currency }}
+                </div>
+                <div v-else class="text-3xl font-black text-red-500">
+                    -{{ betAmount.toLocaleString() }} {{ wallet.currency }}
+                </div>
+            </div>
+
+            <button @click="confirmNextGame" 
+                    :disabled="readyPlayers[playerName]"
+                    :class="readyPlayers[playerName] ? 'bg-slate-200 text-slate-400' : 'bg-red-600 text-white shadow-xl shadow-red-200'"
+                    class="w-full py-4 rounded-2xl font-black text-lg transition-all active:scale-95">
+                {{ readyPlayers[playerName] ? 'WAITING OTHERS...' : 'NEXT GAME' }}
+            </button>
+            
+            <p class="text-[10px] text-slate-400 mt-4 font-bold">
+                READY: {{ Object.keys(readyPlayers).length }} / {{ players.length }}
+            </p>
+        </div>
+    </div>
 
     </main>
 
@@ -527,14 +573,30 @@
             
             <div class="mb-6">
                 <label class="text-xs font-black text-slate-400 uppercase mb-2 block">Language</label>
-                <div class="grid grid-cols-2 gap-2">
-                    <button v-for="(l, key) in languages" :key="key" 
-                        @click="setLang(key)"
-                        :class="currentLang === key ? 'bg-red-50 border-red-500 text-red-700' : 'bg-white border-slate-200 text-slate-600'"
-                        class="py-3 border-2 rounded-xl font-bold text-xs transition">
-                        {{ l.label }}
-                    </button>
+                        <div class="grid grid-cols-2 gap-2">
+            <div v-for="p in players.filter(pl => pl.name !== playerName)" :key="p.name" 
+                 class="bg-white/20 p-2 rounded-lg border border-white/30 relative">
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-bold truncate w-20">{{ p.name }}</span>
+                    <span class="text-[8px] bg-black/30 px-1 rounded">PLAYER</span>
                 </div>
+                <div class="text-[10px] mt-1">
+                    {{ t.left || 'Left' }}: <span class="text-yellow-300 font-bold">{{ p.remaining }}</span>
+                </div>
+                <div v-if="p.remaining <= 1" class="absolute -top-1 -right-1 bg-red-500 text-[8px] px-1 rounded animate-bounce">REACH!</div>
+            </div>
+
+            <div v-for="bot in bots" :key="bot.id" class="bg-white/10 p-2 rounded-lg border border-white/10">
+                <div class="flex justify-between text-[10px] opacity-70">
+                    <span class="truncate w-16">{{ bot.name }}</span>
+                    <span>Bot</span>
+                </div>
+                <div class="text-[10px] mt-1">
+                    {{ t.left || 'Left' }}: <span class="text-yellow-300">{{ bot.remaining }}</span>
+                </div>
+            </div>
+        </div>
+
             </div>
 
             <div class="flex gap-3">
@@ -638,6 +700,10 @@ createApp({
         const roomId = ref(new URLSearchParams(window.location.search).get('room'));
         const isMaster = ref(false);
         const logs = ref([]);
+        const players = ref([]); // 追加：参加者リスト
+        const winnerInfo = ref(null); // 追加：勝者情報
+        const readyPlayers = ref({}); // 追加：準備完了状態
+
         const currentTime = ref('');
 
         const showWalletModal = ref(false);
@@ -776,23 +842,45 @@ createApp({
         };
 
         const setupMultiplayer = () => {
-             const roomRef = db.ref(`rooms/${roomId.value}`);
-             if(isMaster.value) {
-                 roomRef.set({
-                     history: [],
-                     current: null,
-                     msg: "Game Started"
-                 });
-             }
-             roomRef.on('value', s => {
-                 const d = s.val();
-                 if(d) {
-                     if(d.history) drawnHistory.value = d.history;
-                     if(d.current) currentNumber.value = d.current;
-                     saveState();
-                 }
-             });
+            const roomRef = db.ref(`rooms/${roomId.value}`);
+            const myPresenceRef = db.ref(`rooms/${roomId.value}/presence/${playerId.value || playerName.value}`);
+
+            // 自分の状態（名前と残りマス数）を定期更新
+            watch([playerName, opponentStatus], () => {
+                myPresenceRef.update({
+                    name: playerName.value,
+                    remaining: myCards.value.length > 0 ? Math.min(...bots.value.map(b => b.remaining)) : 5, // 自分の最小残りマス
+                    ready: gameState.value !== 'FINISHED'
+                });
+            }, { deep: true });
+
+            // 全員の状況と勝者、数字を監視
+            roomRef.on('value', s => {
+                const d = s.val();
+                if(!d) return;
+                if(d.history) drawnHistory.value = d.history;
+                if(d.current) currentNumber.value = d.current;
+                if(d.presence) players.value = Object.values(d.presence);
+                if(d.ready) readyPlayers.value = d.ready;
+                
+                // ③ Botを含め、誰かが勝った情報をホストから受け取ったら全員終了
+                if(d.winner && gameState.value !== 'FINISHED') {
+                    winnerInfo.value = d.winner;
+                    finishGame(d.winner);
+                }
+
+                // ④ 全員が準備完了したらホストがゲームをリセット
+                if(isMaster.value && d.ready && Object.keys(d.ready).length >= players.value.length && players.value.length > 0) {
+                    db.ref(`rooms/${roomId.value}/winner`).remove();
+                    db.ref(`rooms/${roomId.value}/ready`).remove();
+                    db.ref(`rooms/${roomId.value}/current`).set(null);
+                    db.ref(`rooms/${roomId.value}/history`).set([]);
+                    gameState.value = 'SETUP';
+                }
+            });
         };
+
+
 
         const startTimer = () => {
             if(timer) clearInterval(timer);
@@ -956,20 +1044,18 @@ createApp({
             }
         });
 
-        // --- 差し替えここから ---
+
         return {
             i18nData, currentLang, t, languages: i18nData,
-            gameState, mode, playerName, playerId, wallet, tempWallet,
+            gameState, mode, playerName, wallet, tempWallet,
             ticketQty, botCount, betAmount, isAutoMode, drawInterval, isPaused,
-            myCards, myMarks, drawnHistory, currentNumber, bots, opponentStatus, activeOpponentsCount,
-            roomId, isMaster, showWalletModal, showShareModal, showSettingsModal, currentTime,
-            myNumbers, // ← フリーズの原因：これの return 漏れでした
+            myCards, myMarks, drawnHistory, currentNumber, bots, opponentStatus, 
+            players, winnerInfo, readyPlayers, // 追加
+            activeOpponentsCount, roomId, isMaster, showWalletModal, showShareModal, showSettingsModal, currentTime,
             setLang, initGame, startGame, drawNextNumber, togglePause, 
-            handleManualMark, isMarked, checkWinReady, checkKinh, handleBack, confirmQuit: handleBack,
-            openWalletModal, saveWallet, copyLink
+            handleManualMark, isMarked, checkWinReady, checkKinh, handleBack,
+            openWalletModal, saveWallet, copyLink, confirmNextGame // 追加
         };
-        // --- 差し替えここまで ---
-
     }
 }).mount('#app');
 </script>
