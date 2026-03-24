@@ -595,7 +595,29 @@ createApp({
 
         const gameState = ref('HOME');
         const mode = ref('SOLO');
-        const playerName = ref(localStorage.getItem('loto_player_name') || '');
+        const generateRandomString = (length) => {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        };
+
+        // 一意の12桁IDを生成・保存
+        const playerId = ref(localStorage.getItem('loto_player_id'));
+        if (!playerId.value) {
+            playerId.value = generateRandomString(12);
+            localStorage.setItem('loto_player_id', playerId.value);
+        }
+
+        // デフォルト名（Player + ランダム6桁）を生成・保存
+        const playerName = ref(localStorage.getItem('loto_player_name'));
+        if (!playerName.value) {
+            playerName.value = 'Player' + generateRandomString(6);
+            localStorage.setItem('loto_player_name', playerName.value);
+        }
+
         const wallet = reactive({ amount: 3000, currency: '¥' });
         const tempWallet = reactive({ amount: 0, currency: '' });
 
@@ -710,13 +732,15 @@ createApp({
             }));
         };
 
+        // --- 差し替えここから ---
         const initGame = (m) => {
             mode.value = m;
-            if(!playerName.value) playerName.value = 'User'+Math.floor(Math.random()*1000);
+            // 空欄の場合はランダムな名前に再設定
+            playerName.value = playerName.value.trim() || ('Player' + generateRandomString(6));
             localStorage.setItem('loto_player_name', playerName.value);
             
             if(m === 'MULTI') {
-                if(!roomId.value) roomId.value = Math.random().toString(36).substring(2, 7).toUpperCase();
+                if(!roomId.value) roomId.value = generateRandomString(6).toUpperCase();
                 const url = new URL(window.location);
                 url.searchParams.set('room', roomId.value);
                 window.history.pushState({}, '', url);
@@ -724,6 +748,7 @@ createApp({
             }
             gameState.value = 'SETUP';
         };
+        // --- 差し替えここまで ---
 
         const startGame = () => {
             const cost = betAmount.value * ticketQty.value;
@@ -931,16 +956,20 @@ createApp({
             }
         });
 
+        // --- 差し替えここから ---
         return {
             i18nData, currentLang, t, languages: i18nData,
-            gameState, mode, playerName, wallet, tempWallet,
+            gameState, mode, playerName, playerId, wallet, tempWallet,
             ticketQty, botCount, betAmount, isAutoMode, drawInterval, isPaused,
             myCards, myMarks, drawnHistory, currentNumber, bots, opponentStatus, activeOpponentsCount,
-            roomId, isMaster, showWalletModal, showShareModal, showSettingsModal, currentTime, logs: [],
+            roomId, isMaster, showWalletModal, showShareModal, showSettingsModal, currentTime,
+            myNumbers, // ← フリーズの原因：これの return 漏れでした
             setLang, initGame, startGame, drawNextNumber, togglePause, 
             handleManualMark, isMarked, checkWinReady, checkKinh, handleBack, confirmQuit: handleBack,
             openWalletModal, saveWallet, copyLink
         };
+        // --- 差し替えここまで ---
+
     }
 }).mount('#app');
 </script>
