@@ -19,8 +19,8 @@
     :root { 
         --primary-red: #dc2626; 
         --bg-light: #f8fafc;
-        --header-height: 70px;
-        --action-height: 100px;
+        --header-height: 54px;
+        --action-height: 76px;
         --safe-bottom: env(safe-area-inset-bottom, 20px);
     }
 
@@ -192,30 +192,30 @@
     .caller-dashboard {
         background: #1e293b;
         color: white;
-        padding: 16px;
-        border-bottom: 4px solid #ef4444;
+        padding: 10px 14px;
+        border-bottom: 3px solid #ef4444;
         flex-shrink: 0;
         z-index: 40;
     }
     .current-ball {
-        width: 80px; height: 80px;
+        width: 62px; height: 62px;
         background: white;
-        border-radius: 20px;
+        border-radius: 14px;
         display: flex; flex-direction: column;
         align-items: center; justify-content: center;
         color: #1e293b;
-        border: 4px solid #ef4444;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        border: 3px solid #ef4444;
+        box-shadow: 0 6px 10px -3px rgba(0, 0, 0, 0.3);
     }
     .history-ribbon {
-        display: flex; gap: 6px; overflow-x: auto; padding: 8px 0;
+        display: flex; gap: 5px; overflow-x: auto; padding: 5px 0;
     }
     .history-pill {
-        width: 36px; height: 36px;
+        width: 28px; height: 28px;
         border-radius: 50%;
         background: #334155;
         display: flex; align-items: center; justify-content: center;
-        font-weight: bold; font-size: 0.8rem;
+        font-weight: bold; font-size: 0.7rem;
         flex-shrink: 0;
         border: 1px solid #475569;
     }
@@ -228,8 +228,8 @@
         position: absolute;
         bottom: 0; left: 0; right: 0;
         background: linear-gradient(to top, rgba(255,255,255,1) 85%, rgba(255,255,255,0));
-        padding: 20px;
-        padding-bottom: calc(20px + var(--safe-bottom));
+        padding: 12px 16px;
+        padding-bottom: calc(12px + var(--safe-bottom));
         z-index: 100;
         display: flex;
         gap: 10px;
@@ -237,14 +237,14 @@
     
     .btn-kinh {
         flex-grow: 1;
-        height: 70px;
+        height: 52px;
         background: linear-gradient(135deg, #dc2626, #b91c1c);
         color: white;
-        border-radius: 20px;
+        border-radius: 16px;
         font-weight: 900;
-        font-size: 2rem;
+        font-size: 1.5rem;
         font-style: italic;
-        box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.5);
+        box-shadow: 0 8px 20px -5px rgba(220, 38, 38, 0.5);
         transition: all 0.1s;
     }
     .btn-kinh:active { transform: scale(0.97); }
@@ -411,10 +411,10 @@
 
     <div v-if="gameState === 'PLAYING'" class="flex-grow flex flex-col h-full bg-slate-50">
         <div class="caller-dashboard">
-            <div class="flex gap-4 items-center mb-4">
+            <div class="flex gap-3 items-center mb-2">
                 <div class="current-ball">
-                    <span class="text-[9px] font-black text-slate-400 uppercase mb-1">Current</span>
-                    <span class="text-4xl font-black text-slate-900">{{ currentNumber || '--' }}</span>
+                    <span class="text-[8px] font-black text-slate-400 uppercase mb-0.5">Current</span>
+                    <span class="text-3xl font-black text-slate-900">{{ currentNumber || '--' }}</span>
                 </div>
                 
                 <div class="flex-grow overflow-hidden">
@@ -675,7 +675,7 @@ createApp({
         const wallet = reactive({ amount: 3000, currency: '¥' });
         const tempWallet = reactive({ amount: 0, currency: '' });
 
-        const ticketQty = ref(4);
+        const ticketQty = ref(4); 
         const botCount = ref(3);
         const betAmount = ref(100);
         const isAutoMode = ref(true);
@@ -720,8 +720,8 @@ createApp({
             currentLang.value = key;
             localStorage.setItem('loto_lang', key);
             const config = i18nData[key];
+            wallet.currency = config.cur;
             if(gameState.value === 'HOME') {
-                wallet.currency = config.cur;
                 wallet.amount = config.defWallet;
                 betAmount.value = config.defBet;
             }
@@ -1034,7 +1034,12 @@ createApp({
             setInterval(updateClock, 1000);
             
             const w = localStorage.getItem('loto_wallet');
-            if(w) Object.assign(wallet, JSON.parse(w));
+            if(w) {
+                const parsed = JSON.parse(w);
+                wallet.amount = parsed.amount ?? wallet.amount;
+                // Currency is always derived from language setting, not stored value
+            }
+            wallet.currency = i18nData[currentLang.value]?.cur || '¥';
             
             const s = localStorage.getItem('loto_session');
             if(s) {
@@ -1072,4 +1077,4 @@ createApp({
 </script>
 
 </body>
-</html></html>
+</html></html></html>
