@@ -790,14 +790,13 @@ createApp({
             }));
         };
 
-        // FIX #3: Implement finishGame function (was called but never defined)
+        // FIX #3: Implement finishGame function
         const finishGame = (winner) => {
             stopGame();
             winnerInfo.value = winner;
-            if (winner.name !== playerName.value) {
-                // Deduct bet if player lost
-            } else {
+            if (winner.name === playerName.value) {
                 wallet.amount += betAmount.value * (players.value.length + bots.value.length);
+                saveWallet();
             }
             gameState.value = 'FINISHED';
         };
