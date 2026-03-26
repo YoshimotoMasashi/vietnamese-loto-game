@@ -841,17 +841,25 @@ createApp({
             }
         };
 
+//マルチプレイモードの設定
         const setupMultiplayer = () => {
             const roomRef = db.ref(`rooms/${roomId.value}`);
             const myPresenceRef = db.ref(`rooms/${roomId.value}/presence/${playerId.value || playerName.value}`);
 
-            watch([playerName, opponentStatus], () => {
+            // 自分の残りマス数を計算して送信
+            watch([playerName, myMarks], () => {
+                let minRemaining = 5;
+                myMarks.value.forEach(card => card.forEach(row => {
+                    const marks = row.filter(m => m).length;
+                    if(5 - marks < minRemaining) minRemaining = 5 - marks;
+                }));
                 myPresenceRef.update({
                     name: playerName.value,
-                    remaining: myCards.value.length > 0 ? Math.min(...bots.value.map(b => b.remaining)) : 5,
+                    id: playerId.value || playerName.value,
+                    remaining: minRemaining,
                     ready: gameState.value !== 'FINISHED'
                 });
-            }, { deep: true });
+            }, { deep: true, immediate: true });
 
             roomRef.on('value', s => {
                 const d = s.val();
@@ -859,21 +867,32 @@ createApp({
                 if(d.history) drawnHistory.value = d.history;
                 if(d.current) currentNumber.value = d.current;
                 if(d.presence) players.value = Object.values(d.presence);
-                if(d.ready) readyPlayers.value = d.ready;
                 
+                if(d.ready) readyPlayers.value = d.ready;
+                else readyPlayers.value = {};
+                
+                // 誰かが勝った場合
                 if(d.winner && gameState.value !== 'FINISHED') {
                     finishGame(d.winner);
                 }
 
+                // ホストが次ゲームに進んだ（winnerデータが消えた）場合、全員SETUPへ
+                if(gameState.value === 'FINISHED' && !d.winner) {
+                    winnerInfo.value = null;
+                    readyPlayers.value = {};
+                    gameState.value = 'SETUP';
+                }
+
+                // ホストの処理：全員がREADYになったらリセット
                 if(isMaster.value && d.ready && Object.keys(d.ready).length >= players.value.length && players.value.length > 0) {
                     db.ref(`rooms/${roomId.value}/winner`).remove();
                     db.ref(`rooms/${roomId.value}/ready`).remove();
                     db.ref(`rooms/${roomId.value}/current`).set(null);
                     db.ref(`rooms/${roomId.value}/history`).set([]);
-                    gameState.value = 'SETUP';
                 }
             });
         };
+
 
         const startTimer = () => {
             if(timer) clearInterval(timer);
