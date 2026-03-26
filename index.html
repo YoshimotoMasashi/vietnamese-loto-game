@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>LOTO ONLINE - β-TEST</title>
 
-```
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -60,13 +59,11 @@
     @keyframes modalUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     .footer-info { position: absolute; bottom: 4px; width: 100%; text-align: center; font-size: 9px; color: #94a3b8; font-family: monospace; z-index: 10; pointer-events: none; }
 </style>
-```
 
 </head>
 <body>
 <div id="app" v-cloak class="app-shell">
 
-```
 <header class="app-header">
     <div>
         <button v-if="gameState !== 'HOME'" @click="handleBack" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-50 text-slate-400 transition">
@@ -340,7 +337,6 @@
         </div>
     </div>
 </div>
-```
 
 </div>
 
@@ -395,7 +391,7 @@ createApp({
 
         const ticketQty = ref(4);
         const botCount = ref(3);
-        const betAmount = ref(100);
+        const betAmount = ref(100000);
         const isAutoMode = ref(true);
         const drawInterval = ref(4);
         const isPaused = ref(false);
