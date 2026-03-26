@@ -578,17 +578,17 @@
     <div class="modal-content overflow-y-auto max-h-[80vh]">
         <h3 class="text-xl font-black mb-4 text-slate-800">{{ t.settingsTitle }}</h3>
         
-        <div class="mb-6">
-            <label class="text-xs font-black text-slate-400 uppercase mb-2 block">Language</label>
-            <div class="grid grid-cols-2 gap-2">
-                <button v-for="(cfg, key) in i18nData" :key="key"
-                    @click="setLang(key)"
-                    :class="currentLang === key ? 'bg-red-600 text-white' : 'bg-slate-100 text-slate-700'"
-                    class="py-2 px-3 rounded-xl font-bold text-sm transition">
-                    {{ cfg.label }}
-                </button>
+            <div class="mb-6">
+                <label class="text-xs font-black text-slate-400 uppercase mb-2 block">Language</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button v-for="(cfg, key) in i18nData" :key="key"
+                        @click="setLang(key)"
+                        :class="currentLang === key ? 'bg-red-600 text-white' : 'bg-slate-100 text-slate-700'"
+                        class="py-2 px-3 rounded-xl font-bold text-sm transition">
+                        {{ cfg.label }}
+                    </button>
+                </div>
             </div>
-        </div>
 
         <div class="flex gap-3">
             <button @click="showSettingsModal = false" class="flex-1 bg-slate-900 text-white py-3 rounded-xl font-bold text-sm">{{ t.closeBtn }}</button>
