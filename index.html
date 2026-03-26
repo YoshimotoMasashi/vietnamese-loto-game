@@ -951,10 +951,7 @@ createApp({
         
         const checkWinReady = (ci) => {
             if(!myMarks.value[ci]) return false;
-            return myMarks.value[ci].some(row => row.filter(m => m).length === 5);
-        };
-
-        const checkKinh = () => {
+            return myMarks.value[ci].some(row =>         const checkKinh = () => {
             let validWin = false;
             myMarks.value.forEach((cardMarks, ci) => {
                 cardMarks.forEach((rowMarks, ri) => {
@@ -968,28 +965,27 @@ createApp({
             });
 
             if(validWin) {
-                if(mode.value === 'MULTI' && isMaster.value) {
-                    db.ref(`rooms/${roomId.value}/winner`).set({ name: playerName.value });
+                const winData = { name: playerName.value, id: playerId.value || playerName.value };
+                if(mode.value === 'MULTI') {
+                    db.ref(`rooms/${roomId.value}/winner`).set(winData);
                 } else {
-                    alert(t.value.winMsg);
-                    wallet.amount += betAmount.value * (1 + bots.value.length);
-                    exitToHome();
+                    finishGame(winData);
                 }
             } else {
                 alert(t.value.loseMsg);
             }
         };
 
-        // FIX #2: Implement confirmNextGame (was returned & called but never defined)
+        // FIX #2: Implement confirmNextGame
         const confirmNextGame = () => {
             if(mode.value === 'MULTI' && roomId.value) {
                 const id = playerId.value || playerName.value;
                 db.ref(`rooms/${roomId.value}/ready/${id}`).set(true);
-                readyPlayers.value[playerName.value] = true;
             } else {
-                exitToHome();
+                gameState.value = 'SETUP';
             }
         };
+
 
         const handleBack = () => {
             if(confirm(t.value.quitConfirm)) exitToHome();
