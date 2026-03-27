@@ -193,22 +193,25 @@
                     </div>
                 </div>
             </div>
-            <div class="flex items-center justify-between bg-slate-800/50 p-2 rounded-xl">
-                <div class="flex items-center gap-3 px-2">
-                    <i class="fas fa-robot text-slate-400"></i>
-                    <div class="text-xs font-bold text-slate-300">{{ t.opponentsLabel }}: <span class="text-white">{{ activeOpponentsCount }}</span></div>
+            <div class="flex items-center justify-between bg-slate-800/50 px-3 py-1.5 rounded-xl gap-3">
+                <div class="text-xs font-bold text-slate-300 whitespace-nowrap">
+                    {{ t.opponentsLabel }}: <span class="text-white">{{ activeOpponentsCount }}</span>
                 </div>
-                <div class="flex gap-2">
-                    <button v-if="isAutoMode" @click="togglePause" class="w-10 h-10 rounded-lg bg-white text-slate-900 flex items-center justify-center font-bold">
+                
+                <div v-if="isAutoMode" class="flex-grow flex items-center mx-1">
+                    <input type="range" v-model.number="drawInterval" min="1" max="8" class="range-slider h-1 bg-slate-600 w-full cursor-pointer">
+                </div>
+                
+                <div class="flex gap-2 flex-shrink-0">
+                    <button v-if="isAutoMode" @click="togglePause" class="w-8 h-8 rounded-lg bg-white text-slate-900 flex items-center justify-center font-bold hover:bg-slate-200 transition">
                         <i :class="isPaused ? 'fas fa-play' : 'fas fa-pause'"></i>
                     </button>
-                    <button v-if="!isAutoMode" @click="drawNextNumber" class="px-4 h-10 rounded-lg bg-red-600 text-white font-bold text-xs uppercase shadow-lg">{{ t.nextBtn }}</button>
+                    <button v-if="!isAutoMode" @click="drawNextNumber" class="px-3 h-8 rounded-lg bg-red-600 text-white font-bold text-xs uppercase shadow-lg hover:bg-red-500 transition">
+                        {{ t.nextBtn }}
+                    </button>
                 </div>
             </div>
-            <div v-if="isAutoMode" class="mt-2 flex items-center gap-2 px-1">
-                <i class="fas fa-gauge-high text-[10px] text-slate-500"></i>
-                <input type="range" v-model.number="drawInterval" min="1" max="8" class="range-slider h-1 bg-slate-700">
-            </div>
+
         </div>
 
         <div class="scroll-content playing-content bg-slate-100">
