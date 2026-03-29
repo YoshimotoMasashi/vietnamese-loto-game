@@ -277,7 +277,7 @@
         </div>
     </div>
 
-```
+
 <!-- ⑤ AFK バナー (ゲストにのみ表示) -->
 <div v-if="masterIsAfk && !isMaster && mode === 'MULTI'" class="afk-banner">
     <div class="flex items-center gap-2">
@@ -329,7 +329,7 @@
 <div class="sticky-action-container">
     <button @click="checkKinh" class="btn-kinh">{{ t.kinhBtn }}</button>
 </div>
-```
+
 
 </div>
 
@@ -538,13 +538,30 @@ const firebaseConfig = {
     messagingSenderId: "403754138736",
     appId: "1:403754138736:web:9e8927bf43a86f299bc8b5"
 };
-try { firebase.initializeApp(firebaseConfig); } catch(e) { console.error(e); }
-const db = firebase.database();
-
+let db = null;
+try {
+    if (typeof firebase !== 'undefined') {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+    }
+} catch(e) {
+    console.warn('Firebase unavailable:', e);
+}
+const dbRef = (path) => {
+    if (!db) return {
+        on: () => {}, off: () => {},
+        set: () => Promise.resolve(),
+        update: () => Promise.resolve(),
+        remove: () => Promise.resolve(),
+        transaction: (fn, cb) => { if (cb) cb(null, false); },
+        onDisconnect: () => ({ update: () => {}, cancel: () => {}, set: () => {} })
+    };
+    return db.ref(path);
+};
 // ① 通貨リスト (言語と独立)
 const CURRENCIES = [
-{ code: ‘¥’ }, { code: ‘$’ }, { code: ‘€’ },
-{ code: ‘฿’ }, { code: ‘₫’ }, { code: ‘₭’ }, { code: ‘៛’ }
+    { code: '¥' }, { code: '$' }, { code: '€' },
+    { code: '฿' }, { code: '₫' }, { code: '₭' }, { code: '៛' }
 ];
 
 const i18nData = {
@@ -693,7 +710,7 @@ setup() {
 const currentLang = ref(localStorage.getItem(‘loto_lang’) || ‘ja’);
 const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
 
-```
+
     const gameState = ref('HOME');
     const mode = ref('SOLO');
     const isGameOver = ref(false);
@@ -872,13 +889,13 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
         if (botWinner && gameState.value === 'PLAYING') {
             const winData = { name: botWinner.name, id: 'bot_' + botWinner.id };
             if (mode.value === 'MULTI') {
-                db.ref('rooms/' + roomId.value + '/winner').set(winData);
+                dbRef('rooms/' + roomId.value + '/winner').set(winData);
             } else {
                 setTimeout(() => { if (gameState.value === 'PLAYING' && !isGameOver.value) finishGame(winData); }, 500);
             }
         }
         if (mode.value === 'MULTI' && isMaster.value) {
-            db.ref('rooms/' + roomId.value + '/bots').set(
+            dbRef('rooms/' + roomId.value + '/bots').set(
                 bots.value.map(b => ({ id: b.id, name: b.name, remaining: b.remaining, card: b.card, betCurrency: b.betCurrency, betAmount: b.betAmount }))
             );
         }
@@ -992,7 +1009,7 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
 
         if (mode.value === 'MULTI') {
             if (isMaster.value) {
-                db.ref('rooms/' + roomId.value).update({
+                dbRef('rooms/' + roomId.value).update({
                     history: [], current: null, winner: null,
                     bots: bots.value.map(b => ({ id: b.id, name: b.name, remaining: b.remaining, card: b.card, betCurrency: b.betCurrency, betAmount: b.betAmount }))
                 });
@@ -1006,7 +1023,7 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
     // ⑥ マスタープレゼンス設定
     const setupMasterPresence = () => {
         if (!roomId.value) return;
-        const masterRef = db.ref('rooms/' + roomId.value + '/masterInfo');
+        const masterRef = dbRef('rooms/' + roomId.value + '/masterInfo');
         masterRef.onDisconnect().update({ online: false, afkSince: Date.now() });
         masterRef.set({ playerId: playerId.value, name: playerName.value, lastSeen: Date.now(), online: true, afkSince: null });
         if (heartbeatTimer) clearInterval(heartbeatTimer);
@@ -1017,16 +1034,16 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
 
     const sendHeartbeat = () => {
         if (!isMaster.value || !roomId.value) return;
-        db.ref('rooms/' + roomId.value + '/masterInfo').update({ lastSeen: Date.now(), online: true });
+        dbRef('rooms/' + roomId.value + '/masterInfo').update({ lastSeen: Date.now(), online: true });
     };
 
     const handleVisibilityChange = () => {
         if (!isMaster.value || !roomId.value) return;
         if (document.hidden) {
-            db.ref('rooms/' + roomId.value + '/masterInfo').update({ online: false, afkSince: Date.now() });
+            dbRef('rooms/' + roomId.value + '/masterInfo').update({ online: false, afkSince: Date.now() });
             if (timer) { clearInterval(timer); timer = null; }
         } else {
-            db.ref('rooms/' + roomId.value + '/masterInfo').update({ online: true, lastSeen: Date.now(), afkSince: null });
+            dbRef('rooms/' + roomId.value + '/masterInfo').update({ online: true, lastSeen: Date.now(), afkSince: null });
             if (isAutoMode.value && gameState.value === 'PLAYING' && !isPaused.value) startTimer();
         }
     };
@@ -1074,7 +1091,7 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
         const target = guests[0];
         if (target.id !== playerId.value) return;
 
-        const masterRef = db.ref('rooms/' + roomId.value + '/masterInfo');
+        const masterRef = dbRef('rooms/' + roomId.value + '/masterInfo');
         masterRef.transaction(current => {
             if (!current || current.online) return undefined;
             return { playerId: target.id, name: target.name, lastSeen: Date.now(), online: true, afkSince: null };
@@ -1087,11 +1104,11 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
 
     // ⑥ 手動委譲
     const transferMasterTo = (targetPlayer) => {
-        db.ref('rooms/' + roomId.value + '/masterInfo').set({
+        dbRef('rooms/' + roomId.value + '/masterInfo').set({
             playerId: targetPlayer.id, name: targetPlayer.name,
             lastSeen: Date.now(), online: true, afkSince: null
         });
-        db.ref('rooms/' + roomId.value + '/masterInfo').onDisconnect().cancel();
+        dbRef('rooms/' + roomId.value + '/masterInfo').onDisconnect().cancel();
         if (heartbeatTimer) { clearInterval(heartbeatTimer); heartbeatTimer = null; }
         document.removeEventListener('visibilitychange', handleVisibilityChange);
         if (timer) { clearInterval(timer); timer = null; }
@@ -1112,12 +1129,12 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
 
     // ⑥ マルチプレイヤー同期
     const setupMultiplayer = () => {
-        const roomRef = db.ref('rooms/' + roomId.value);
+        const roomRef = dbRef('rooms/' + roomId.value);
         const myJoinedAtKey = 'loto_joined_' + roomId.value;
         let myJoinedAt = parseInt(localStorage.getItem(myJoinedAtKey) || '0');
         if (!myJoinedAt) { myJoinedAt = Date.now(); localStorage.setItem(myJoinedAtKey, myJoinedAt.toString()); }
 
-        const myPresenceRef = db.ref('rooms/' + roomId.value + '/presence/' + playerId.value);
+        const myPresenceRef = dbRef('rooms/' + roomId.value + '/presence/' + playerId.value);
 
         watch([playerName, myMarks], () => {
             let minRemaining = 5;
@@ -1178,10 +1195,10 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
 
             // 全員READY → masterがリセット
             if (isMaster.value && d.ready && players.value.length > 0 && Object.keys(d.ready).length >= players.value.length) {
-                db.ref('rooms/' + roomId.value + '/winner').remove();
-                db.ref('rooms/' + roomId.value + '/ready').remove();
-                db.ref('rooms/' + roomId.value + '/current').set(null);
-                db.ref('rooms/' + roomId.value + '/history').set([]);
+                dbRef('rooms/' + roomId.value + '/winner').remove();
+                dbRef('rooms/' + roomId.value + '/ready').remove();
+                dbRef('rooms/' + roomId.value + '/current').set(null);
+                dbRef('rooms/' + roomId.value + '/history').set([]);
             }
         });
     };
@@ -1204,7 +1221,7 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
             updateBots();
             saveState();
         } else if (isMaster.value) {
-            db.ref('rooms/' + roomId.value).update({ current: n, history: [...drawnHistory.value, n] });
+            dbRef('rooms/' + roomId.value).update({ current: n, history: [...drawnHistory.value, n] });
         }
     };
 
@@ -1244,7 +1261,7 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
         });
         if (validWin) {
             const winData = { name: playerName.value, id: playerId.value };
-            if (mode.value === 'MULTI') db.ref('rooms/' + roomId.value + '/winner').set(winData);
+            if (mode.value === 'MULTI') dbRef('rooms/' + roomId.value + '/winner').set(winData);
             else finishGame(winData);
         } else {
             alert(t.value.loseMsg);
@@ -1253,7 +1270,7 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
 
     const confirmNextGame = () => {
         if (mode.value === 'MULTI' && roomId.value) {
-            db.ref('rooms/' + roomId.value + '/ready/' + playerId.value).set(true);
+            dbRef('rooms/' + roomId.value + '/ready/' + playerId.value).set(true);
         } else {
             winnerInfo.value = null; isGameOver.value = false; gameState.value = 'SETUP';
         }
@@ -1279,7 +1296,7 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
         if (timer) { clearInterval(timer); timer = null; }
         if (heartbeatTimer) { clearInterval(heartbeatTimer); heartbeatTimer = null; }
         document.removeEventListener('visibilitychange', handleVisibilityChange);
-        if (mode.value === 'MULTI' && roomId.value) db.ref('rooms/' + roomId.value).off('value');
+        if (mode.value === 'MULTI' && roomId.value) dbRef('rooms/' + roomId.value).off('value');
     };
 
     const saveWalletToStorage = () => {
@@ -1388,10 +1405,10 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
         currentTempBalance, setCurrentTempBalance, walletAdd, walletSub
     };
 }
-```
+
 
 }).mount(’#app’);
 </script>
 
 </body>
-</html></html></html></html></html></html></html></html>
+</html></html></html></html></html></html></html></html></html>
