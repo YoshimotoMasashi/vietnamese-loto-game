@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>LOTO ONLINE - (β-TEST)</title>
-<script src="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.16/cdn.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -704,11 +704,6 @@ settingsTitle: “Options”, leftLabel: “restant”, reachText: “REACH”, 
 };
 
 const { createApp, ref, reactive, computed, watch, onMounted, onUnmounted } = Vue;
-
-if (typeof Vue === ‘undefined’ || typeof createApp === ‘undefined’) {
-document.getElementById(‘app’).removeAttribute(‘v-cloak’);
-document.getElementById(‘app’).innerHTML = ‘<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;flex-direction:column;gap:16px;color:#334155;padding:24px;text-align:center"><div style="font-size:3rem">⚠️</div><p style="font-weight:900;font-size:1.2rem">ネットワークエラー</p><p style="font-size:0.85rem;color:#94a3b8">ページを再読み込みしてください</p><button onclick="location.reload()" style="margin-top:8px;padding:12px 28px;background:#dc2626;color:white;border:none;border-radius:12px;font-weight:900;font-size:1rem;cursor:pointer">再読み込み</button></div>’;
-} else {
 
 createApp({
 setup() {
@@ -1413,8 +1408,7 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
 ```
 
 }).mount(’#app’);
-}
 </script>
 
 </body>
-</html></html></html></html></html></html></html></html></html></html>
+</html></html></html></html></html></html></html></html></html></html></html>
