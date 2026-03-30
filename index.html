@@ -277,7 +277,7 @@
         </div>
     </div>
 
-
+```
 <!-- ⑤ AFK バナー (ゲストにのみ表示) -->
 <div v-if="masterIsAfk && !isMaster && mode === 'MULTI'" class="afk-banner">
     <div class="flex items-center gap-2">
@@ -329,7 +329,7 @@
 <div class="sticky-action-container">
     <button @click="checkKinh" class="btn-kinh">{{ t.kinhBtn }}</button>
 </div>
-
+```
 
 </div>
 
@@ -566,140 +566,140 @@ const CURRENCIES = [
 
 const i18nData = {
 vi: {
-label: "Tiếng Việt", cur: "₫", defWallet: 200000,
-sessionBtn: "Thống kê", roundsLabel: " Ván", netLabel: "Tổng P&L", perPersonLabel: "(Tiền cược mỗi người)",
-masterAfk: "Host đang AFK  -  Chuyển quyền sau", afkAutoTransfer: "Chuyển sau",
-transferBtn: "Chuyển", transferTitle: "Chuyển quyền Host", transferDesc: "Chọn người nhận quyền Host",
-masterTransferred: "đã nhận quyền Host",
-welcomeTitle: "LÔ TÔ ONLINE", welcomeSubtitle: "TRÒ CHƠI DÂN GIAN", welcomeMsg: "Chào mừng",
-playerNameLabel: "TÊN CỦA BẠN", placeholderName: "Nhập tên…", modeSolo: "CHƠI ĐƠN", modeMulti: "CHƠI NHIỀU NGƯỜI",
-setupTitle: "CÀI ĐẶT", ticketQtyLabel: "SỐ VÉ", opponentsLabel: "SỐ BOT", drawMethod: "CÁCH QUAY",
-speedLabel: "TỐC ĐỘ", betLabel: "MỨC CƯỢC", startBtn: "BẮT ĐẦU",
-historyLabel: "LỊCH SỬ", waitingMsg: "Đang chờ…", playText: "Tiếp", pauseText: "Dừng",
-nextBtn: "Tiếp", kinhBtn: "KINH!", winMsg: "CHIẾN THẮNG!", loseMsg: "Chưa đủ số!",
-homeBtn: "Trang chủ", walletTitle: "VÍ TIỀN",
-cancel: "Hủy", saveBtn: "Lưu", quitConfirm: "Thoát game?",
-inviteBtn: "MỜI", inviteTitle: "MỜI BẠN BÈ", copyBtn: "Sao chép", closeBtn: "Đóng",
-settingsTitle: "CÀI ĐẶT", leftLabel: "số nữa", reachText: "SẮP KINH!", winLabelShort: "THẮNG", fullMsg: "Phòng đầy"
+label: “Tiếng Việt”, cur: “₫”, defWallet: 200000,
+sessionBtn: “Thống kê”, roundsLabel: “ Ván”, netLabel: “Tổng P&L”, perPersonLabel: “(Tiền cược mỗi người)”,
+masterAfk: “Host đang AFK  -  Chuyển quyền sau”, afkAutoTransfer: “Chuyển sau”,
+transferBtn: “Chuyển”, transferTitle: “Chuyển quyền Host”, transferDesc: “Chọn người nhận quyền Host”,
+masterTransferred: “đã nhận quyền Host”,
+welcomeTitle: “LÔ TÔ ONLINE”, welcomeSubtitle: “TRÒ CHƠI DÂN GIAN”, welcomeMsg: “Chào mừng”,
+playerNameLabel: “TÊN CỦA BẠN”, placeholderName: “Nhập tên…”, modeSolo: “CHƠI ĐƠN”, modeMulti: “CHƠI NHIỀU NGƯỜI”,
+setupTitle: “CÀI ĐẶT”, ticketQtyLabel: “SỐ VÉ”, opponentsLabel: “SỐ BOT”, drawMethod: “CÁCH QUAY”,
+speedLabel: “TỐC ĐỘ”, betLabel: “MỨC CƯỢC”, startBtn: “BẮT ĐẦU”,
+historyLabel: “LỊCH SỬ”, waitingMsg: “Đang chờ…”, playText: “Tiếp”, pauseText: “Dừng”,
+nextBtn: “Tiếp”, kinhBtn: “KINH!”, winMsg: “CHIẾN THẮNG!”, loseMsg: “Chưa đủ số!”,
+homeBtn: “Trang chủ”, walletTitle: “VÍ TIỀN”,
+cancel: “Hủy”, saveBtn: “Lưu”, quitConfirm: “Thoát game?”,
+inviteBtn: “MỜI”, inviteTitle: “MỜI BẠN BÈ”, copyBtn: “Sao chép”, closeBtn: “Đóng”,
+settingsTitle: “CÀI ĐẶT”, leftLabel: “số nữa”, reachText: “SẮP KINH!”, winLabelShort: “THẮNG”, fullMsg: “Phòng đầy”
 },
 ja: {
-label: "日本語", cur: "¥", defWallet: 5000,
-sessionBtn: "セッション統計", roundsLabel: "戦", netLabel: "累計損益", perPersonLabel: "（一人あたりの掛け金）",
-masterAfk: "ホスト離席中  -  委譲まで", afkAutoTransfer: "委譲まで",
-transferBtn: "委譲", transferTitle: "マスター権限の委譲", transferDesc: "権限を渡すプレイヤーを選んでください",
-masterTransferred: "がマスターになりました",
-welcomeTitle: "LOTO ONLINE", welcomeSubtitle: "究極の運試し", welcomeMsg: "ようこそ",
-playerNameLabel: "プレイヤー名", placeholderName: "名前を入力…", modeSolo: "ソロプレイ", modeMulti: "マルチプレイ",
-setupTitle: "ゲーム設定", ticketQtyLabel: "チケット枚数", opponentsLabel: "Botの数", drawMethod: "抽選方法",
-speedLabel: "自動間隔", betLabel: "賭け金", startBtn: "ゲーム開始",
-historyLabel: "履歴", waitingMsg: "待機中…", playText: "再開", pauseText: "停止",
-nextBtn: "次へ", kinhBtn: "上がり！", winMsg: "おめでとうございます！",
-loseMsg: "まだ揃っていません", homeBtn: "ホーム", walletTitle: "ウォレット",
-cancel: "キャンセル", saveBtn: "保存", quitConfirm: "トップに戻りますか？",
-inviteBtn: "招待", inviteTitle: "ルーム招待", copyBtn: "コピー", closeBtn: "閉じる",
-settingsTitle: "設定", leftLabel: "マス", reachText: "リーチ！", winLabelShort: "勝利", fullMsg: "満員です"
+label: “日本語”, cur: “¥”, defWallet: 5000,
+sessionBtn: “セッション統計”, roundsLabel: “戦”, netLabel: “累計損益”, perPersonLabel: “（一人あたりの掛け金）”,
+masterAfk: “ホスト離席中  -  委譲まで”, afkAutoTransfer: “委譲まで”,
+transferBtn: “委譲”, transferTitle: “マスター権限の委譲”, transferDesc: “権限を渡すプレイヤーを選んでください”,
+masterTransferred: “がマスターになりました”,
+welcomeTitle: “LOTO ONLINE”, welcomeSubtitle: “究極の運試し”, welcomeMsg: “ようこそ”,
+playerNameLabel: “プレイヤー名”, placeholderName: “名前を入力…”, modeSolo: “ソロプレイ”, modeMulti: “マルチプレイ”,
+setupTitle: “ゲーム設定”, ticketQtyLabel: “チケット枚数”, opponentsLabel: “Botの数”, drawMethod: “抽選方法”,
+speedLabel: “自動間隔”, betLabel: “賭け金”, startBtn: “ゲーム開始”,
+historyLabel: “履歴”, waitingMsg: “待機中…”, playText: “再開”, pauseText: “停止”,
+nextBtn: “次へ”, kinhBtn: “上がり！”, winMsg: “おめでとうございます！”,
+loseMsg: “まだ揃っていません”, homeBtn: “ホーム”, walletTitle: “ウォレット”,
+cancel: “キャンセル”, saveBtn: “保存”, quitConfirm: “トップに戻りますか？”,
+inviteBtn: “招待”, inviteTitle: “ルーム招待”, copyBtn: “コピー”, closeBtn: “閉じる”,
+settingsTitle: “設定”, leftLabel: “マス”, reachText: “リーチ！”, winLabelShort: “勝利”, fullMsg: “満員です”
 },
 en: {
-label: "English", cur: "$", defWallet: 50,
-sessionBtn: "Session Stats", roundsLabel: " Rounds", netLabel: "Net P&L", perPersonLabel: "(per player bet)",
-masterAfk: "Host is AFK  -  Transfer in", afkAutoTransfer: "Transfer in",
-transferBtn: "Transfer", transferTitle: "Transfer Master", transferDesc: "Choose player to receive master role",
-masterTransferred: "is now master",
-welcomeTitle: "LOTO ONLINE", welcomeSubtitle: "CLASSIC GAME", welcomeMsg: "Welcome",
-playerNameLabel: "PLAYER NAME", placeholderName: "Enter name…", modeSolo: "SOLO MODE", modeMulti: "MULTIPLAYER",
-setupTitle: "GAME SETUP", ticketQtyLabel: "TICKETS", opponentsLabel: "BOT COUNT", drawMethod: "DRAW METHOD",
-speedLabel: "SPEED", betLabel: "BET AMOUNT", startBtn: "START GAME",
-historyLabel: "HISTORY", waitingMsg: "Waiting…", playText: "Play", pauseText: "Pause",
-nextBtn: "Next", kinhBtn: "BINGO!", winMsg: "YOU WIN!", loseMsg: "Not yet!",
-homeBtn: "Home", walletTitle: "WALLET",
-cancel: "Cancel", saveBtn: "Save", quitConfirm: "Quit game?",
-inviteBtn: "INVITE", inviteTitle: "INVITATION", copyBtn: "COPY", closeBtn: "CLOSE",
-settingsTitle: "SETTINGS", leftLabel: "left", reachText: "REACH!", winLabelShort: "WIN", fullMsg: "Room is full"
+label: “English”, cur: “$”, defWallet: 50,
+sessionBtn: “Session Stats”, roundsLabel: “ Rounds”, netLabel: “Net P&L”, perPersonLabel: “(per player bet)”,
+masterAfk: “Host is AFK  -  Transfer in”, afkAutoTransfer: “Transfer in”,
+transferBtn: “Transfer”, transferTitle: “Transfer Master”, transferDesc: “Choose player to receive master role”,
+masterTransferred: “is now master”,
+welcomeTitle: “LOTO ONLINE”, welcomeSubtitle: “CLASSIC GAME”, welcomeMsg: “Welcome”,
+playerNameLabel: “PLAYER NAME”, placeholderName: “Enter name…”, modeSolo: “SOLO MODE”, modeMulti: “MULTIPLAYER”,
+setupTitle: “GAME SETUP”, ticketQtyLabel: “TICKETS”, opponentsLabel: “BOT COUNT”, drawMethod: “DRAW METHOD”,
+speedLabel: “SPEED”, betLabel: “BET AMOUNT”, startBtn: “START GAME”,
+historyLabel: “HISTORY”, waitingMsg: “Waiting…”, playText: “Play”, pauseText: “Pause”,
+nextBtn: “Next”, kinhBtn: “BINGO!”, winMsg: “YOU WIN!”, loseMsg: “Not yet!”,
+homeBtn: “Home”, walletTitle: “WALLET”,
+cancel: “Cancel”, saveBtn: “Save”, quitConfirm: “Quit game?”,
+inviteBtn: “INVITE”, inviteTitle: “INVITATION”, copyBtn: “COPY”, closeBtn: “CLOSE”,
+settingsTitle: “SETTINGS”, leftLabel: “left”, reachText: “REACH!”, winLabelShort: “WIN”, fullMsg: “Room is full”
 },
 th: {
-label: "ไทย", cur: "฿", defWallet: 2000,
-sessionBtn: "สถิติ", roundsLabel: " รอบ", netLabel: "ผลรวม", perPersonLabel: "(เดิมพันต่อคน)",
-masterAfk: "โฮสต์ไม่อยู่  -  โอนสิทธิ์ใน", afkAutoTransfer: "โอนใน",
-transferBtn: "โอน", transferTitle: "โอนสิทธิ์", transferDesc: "เลือกผู้เล่นที่จะรับสิทธิ์",
-masterTransferred: "ได้รับสิทธิ์แล้ว",
-welcomeTitle: "โลโต้ ออนไลน์", welcomeSubtitle: "เกมคลาสสิค", welcomeMsg: "ยินดีต้อนรับ",
-playerNameLabel: "ชื่อผู้เล่น", placeholderName: "กรอกชื่อ…", modeSolo: "เล่นคนเดียว", modeMulti: "เล่นหลายคน",
-setupTitle: "ตั้งค่าเกม", ticketQtyLabel: "จำนวนตั๋ว", opponentsLabel: "จำนวนบอท", drawMethod: "วิธีจั่ว",
-speedLabel: "ความเร็ว", betLabel: "เงินเดิมพัน", startBtn: "เริ่มเกม",
-historyLabel: "ประวัติ", waitingMsg: "กำลังรอ…", playText: "เล่นต่อ", pauseText: "หยุด",
-nextBtn: "ถัดไป", kinhBtn: "บิงโก!", winMsg: "คุณชนะ!", loseMsg: "ยังไม่ครบ",
-homeBtn: "หน้าหลัก", walletTitle: "กระเป๋าเงิน",
-cancel: "ยกเลิก", saveBtn: "บันทึก", quitConfirm: "ออกจากเกม?",
-inviteBtn: "เชิญ", inviteTitle: "เชิญเพื่อน", copyBtn: "คัดลอก", closeBtn: "ปิด",
-settingsTitle: "การตั้งค่า", leftLabel: "เหลือ", reachText: "ใกล้แล้ว!", winLabelShort: "ชนะ", fullMsg: "ห้องเต็ม"
+label: “ไทย”, cur: “฿”, defWallet: 2000,
+sessionBtn: “สถิติ”, roundsLabel: “ รอบ”, netLabel: “ผลรวม”, perPersonLabel: “(เดิมพันต่อคน)”,
+masterAfk: “โฮสต์ไม่อยู่  -  โอนสิทธิ์ใน”, afkAutoTransfer: “โอนใน”,
+transferBtn: “โอน”, transferTitle: “โอนสิทธิ์”, transferDesc: “เลือกผู้เล่นที่จะรับสิทธิ์”,
+masterTransferred: “ได้รับสิทธิ์แล้ว”,
+welcomeTitle: “โลโต้ ออนไลน์”, welcomeSubtitle: “เกมคลาสสิค”, welcomeMsg: “ยินดีต้อนรับ”,
+playerNameLabel: “ชื่อผู้เล่น”, placeholderName: “กรอกชื่อ…”, modeSolo: “เล่นคนเดียว”, modeMulti: “เล่นหลายคน”,
+setupTitle: “ตั้งค่าเกม”, ticketQtyLabel: “จำนวนตั๋ว”, opponentsLabel: “จำนวนบอท”, drawMethod: “วิธีจั่ว”,
+speedLabel: “ความเร็ว”, betLabel: “เงินเดิมพัน”, startBtn: “เริ่มเกม”,
+historyLabel: “ประวัติ”, waitingMsg: “กำลังรอ…”, playText: “เล่นต่อ”, pauseText: “หยุด”,
+nextBtn: “ถัดไป”, kinhBtn: “บิงโก!”, winMsg: “คุณชนะ!”, loseMsg: “ยังไม่ครบ”,
+homeBtn: “หน้าหลัก”, walletTitle: “กระเป๋าเงิน”,
+cancel: “ยกเลิก”, saveBtn: “บันทึก”, quitConfirm: “ออกจากเกม?”,
+inviteBtn: “เชิญ”, inviteTitle: “เชิญเพื่อน”, copyBtn: “คัดลอก”, closeBtn: “ปิด”,
+settingsTitle: “การตั้งค่า”, leftLabel: “เหลือ”, reachText: “ใกล้แล้ว!”, winLabelShort: “ชนะ”, fullMsg: “ห้องเต็ม”
 },
 lo: {
-label: "ລາວ", cur: "₭", defWallet: 500000,
-sessionBtn: "ສະຖິຕິ", roundsLabel: " ຮອບ", netLabel: "ລວມ", perPersonLabel: "(ເດີມພັນຕໍ່ຄົນ)",
-masterAfk: "Host ຫ່າງ  -  ໂອນສິດໃນ", afkAutoTransfer: "ໂອນໃນ",
-transferBtn: "ໂອນ", transferTitle: "ໂອນສິດ", transferDesc: "ເລືອກຜູ້ຫຼິ້ນທີ່ຈະໄດ້ຮັບສິດ",
-masterTransferred: "ໄດ້ຮັບສິດແລ້ວ",
-welcomeTitle: "ໂລໂຕ ອອນລາຍ", welcomeSubtitle: "ເກມພື້ນເມືອງ", welcomeMsg: "ຍິນດີຕ້ອນຮັບ",
-playerNameLabel: "ຊື່ຜູ້ຫຼິ້ນ", placeholderName: "ໃສ່ຊື່…", modeSolo: "ຫຼິ້ນຄົນດຽວ", modeMulti: "ຫຼິ້ນຫຼາຍຄົນ",
-setupTitle: "ຕັ້ງຄ່າ", ticketQtyLabel: "ຈຳນວນໃບ", opponentsLabel: "Bot", drawMethod: "ວິທີ",
-speedLabel: "ຄວາມໄວ", betLabel: "ເດີມພັນ", startBtn: "ເລີ່ມ",
-historyLabel: "ປະຫວັດ", waitingMsg: "ລໍຖ້າ…", playText: "ຫຼິ້ນ", pauseText: "ຢຸດ",
-nextBtn: "ຕໍ່ໄປ", kinhBtn: "ຊະນະ!", winMsg: "ຊະນະແລ້ວ!", loseMsg: "ຍັງ!",
-homeBtn: "ໜ້າຫຼັກ", walletTitle: "ກະເປົາ",
-cancel: "ຍົກເລີກ", saveBtn: "ບັນທຶກ", quitConfirm: "ອອກ?",
-inviteBtn: "ເຊີນ", inviteTitle: "ເຊີນ", copyBtn: "ກັອບປີ້", closeBtn: "ປິດ",
-settingsTitle: "ຕັ້ງຄ່າ", leftLabel: "ເຫຼືອ", reachText: "ໃກ້ແລ້ວ!", winLabelShort: "ຊະນະ", fullMsg: "ເຕັມ"
+label: “ລາວ”, cur: “₭”, defWallet: 500000,
+sessionBtn: “ສະຖິຕິ”, roundsLabel: “ ຮອບ”, netLabel: “ລວມ”, perPersonLabel: “(ເດີມພັນຕໍ່ຄົນ)”,
+masterAfk: “Host ຫ່າງ  -  ໂອນສິດໃນ”, afkAutoTransfer: “ໂອນໃນ”,
+transferBtn: “ໂອນ”, transferTitle: “ໂອນສິດ”, transferDesc: “ເລືອກຜູ້ຫຼິ້ນທີ່ຈະໄດ້ຮັບສິດ”,
+masterTransferred: “ໄດ້ຮັບສິດແລ້ວ”,
+welcomeTitle: “ໂລໂຕ ອອນລາຍ”, welcomeSubtitle: “ເກມພື້ນເມືອງ”, welcomeMsg: “ຍິນດີຕ້ອນຮັບ”,
+playerNameLabel: “ຊື່ຜູ້ຫຼິ້ນ”, placeholderName: “ໃສ່ຊື່…”, modeSolo: “ຫຼິ້ນຄົນດຽວ”, modeMulti: “ຫຼິ້ນຫຼາຍຄົນ”,
+setupTitle: “ຕັ້ງຄ່າ”, ticketQtyLabel: “ຈຳນວນໃບ”, opponentsLabel: “Bot”, drawMethod: “ວິທີ”,
+speedLabel: “ຄວາມໄວ”, betLabel: “ເດີມພັນ”, startBtn: “ເລີ່ມ”,
+historyLabel: “ປະຫວັດ”, waitingMsg: “ລໍຖ້າ…”, playText: “ຫຼິ້ນ”, pauseText: “ຢຸດ”,
+nextBtn: “ຕໍ່ໄປ”, kinhBtn: “ຊະນະ!”, winMsg: “ຊະນະແລ້ວ!”, loseMsg: “ຍັງ!”,
+homeBtn: “ໜ້າຫຼັກ”, walletTitle: “ກະເປົາ”,
+cancel: “ຍົກເລີກ”, saveBtn: “ບັນທຶກ”, quitConfirm: “ອອກ?”,
+inviteBtn: “ເຊີນ”, inviteTitle: “ເຊີນ”, copyBtn: “ກັອບປີ້”, closeBtn: “ປິດ”,
+settingsTitle: “ຕັ້ງຄ່າ”, leftLabel: “ເຫຼືອ”, reachText: “ໃກ້ແລ້ວ!”, winLabelShort: “ຊະນະ”, fullMsg: “ເຕັມ”
 },
 km: {
-label: "ខ្មែរ", cur: "៛", defWallet: 200000,
-sessionBtn: "ស្ថិតិ", roundsLabel: " វគ្គ", netLabel: "សរុប", perPersonLabel: "(ភ្នាល់ក្នុងម្នាក់)",
-masterAfk: "ម្ចាស់ host អវត្ដមាន  -  ផ្ទេរក្នុង", afkAutoTransfer: "ផ្ទេរក្នុង",
-transferBtn: "ផ្ទេរ", transferTitle: "ផ្ទេរអំណាច", transferDesc: "ជ្រើសរើសអ្នកលេង",
-masterTransferred: "បានទទួលអំណាច",
-welcomeTitle: "ឡូតូ អនឡាញ", welcomeSubtitle: "ល្បែងប្រជាប្រិយ", welcomeMsg: "សូមស្វាគមន៍",
-playerNameLabel: "ឈ្មោះ", placeholderName: "បញ្ចូល…", modeSolo: "ម្នាក់ឯង", modeMulti: "ច្រើននាក់",
-setupTitle: "កំណត់", ticketQtyLabel: "សន្លឹក", opponentsLabel: "Bot", drawMethod: "វិធី",
-speedLabel: "ល្បឿន", betLabel: "ភ្នាល់", startBtn: "ចាប់ផ្ដើម",
-historyLabel: "ប្រវត្តិ", waitingMsg: "រង់ចាំ…", playText: "បន្ត", pauseText: "ឈប់",
-nextBtn: "បន្ទាប់", kinhBtn: "ឈ្នះ!", winMsg: "អ្នកឈ្នះ!", loseMsg: "នៅ!",
-homeBtn: "ដើម", walletTitle: "កាបូប",
-cancel: "បោះបង់", saveBtn: "រក្សា", quitConfirm: "ចាកចេញ?",
-inviteBtn: "អញ្ជើញ", inviteTitle: "អញ្ជើញ", copyBtn: "ចម្លង", closeBtn: "បិទ",
-settingsTitle: "ការកំណត់", leftLabel: "ទៀត", reachText: "ជិតហើយ!", winLabelShort: "ឈ្នះ", fullMsg: "ពេញ"
+label: “ខ្មែរ”, cur: “៛”, defWallet: 200000,
+sessionBtn: “ស្ថិតិ”, roundsLabel: “ វគ្គ”, netLabel: “សរុប”, perPersonLabel: “(ភ្នាល់ក្នុងម្នាក់)”,
+masterAfk: “ម្ចាស់ host អវត្ដមាន  -  ផ្ទេរក្នុង”, afkAutoTransfer: “ផ្ទេរក្នុង”,
+transferBtn: “ផ្ទេរ”, transferTitle: “ផ្ទេរអំណាច”, transferDesc: “ជ្រើសរើសអ្នកលេង”,
+masterTransferred: “បានទទួលអំណាច”,
+welcomeTitle: “ឡូតូ អនឡាញ”, welcomeSubtitle: “ល្បែងប្រជាប្រិយ”, welcomeMsg: “សូមស្វាគមន៍”,
+playerNameLabel: “ឈ្មោះ”, placeholderName: “បញ្ចូល…”, modeSolo: “ម្នាក់ឯង”, modeMulti: “ច្រើននាក់”,
+setupTitle: “កំណត់”, ticketQtyLabel: “សន្លឹក”, opponentsLabel: “Bot”, drawMethod: “វិធី”,
+speedLabel: “ល្បឿន”, betLabel: “ភ្នាល់”, startBtn: “ចាប់ផ្ដើម”,
+historyLabel: “ប្រវត្តិ”, waitingMsg: “រង់ចាំ…”, playText: “បន្ត”, pauseText: “ឈប់”,
+nextBtn: “បន្ទាប់”, kinhBtn: “ឈ្នះ!”, winMsg: “អ្នកឈ្នះ!”, loseMsg: “នៅ!”,
+homeBtn: “ដើម”, walletTitle: “កាបូប”,
+cancel: “បោះបង់”, saveBtn: “រក្សា”, quitConfirm: “ចាកចេញ?”,
+inviteBtn: “អញ្ជើញ”, inviteTitle: “អញ្ជើញ”, copyBtn: “ចម្លង”, closeBtn: “បិទ”,
+settingsTitle: “ការកំណត់”, leftLabel: “ទៀត”, reachText: “ជិតហើយ!”, winLabelShort: “ឈ្នះ”, fullMsg: “ពេញ”
 },
 zh: {
-label: "简体中文", cur: "¥", defWallet: 300,
-sessionBtn: "统计", roundsLabel: "局", netLabel: "累计损益", perPersonLabel: "（每人下注金额）",
-masterAfk: "房主离开中  -  转让倒计时", afkAutoTransfer: "转让倒计时",
-transferBtn: "转让", transferTitle: "转让房主", transferDesc: "选择接收房主权限的玩家",
-masterTransferred: "成为新房主",
-welcomeTitle: "乐透在线", welcomeSubtitle: "经典游戏", welcomeMsg: "欢迎",
-playerNameLabel: "玩家名称", placeholderName: "输入…", modeSolo: "单人", modeMulti: "多人",
-setupTitle: "设置", ticketQtyLabel: "票数", opponentsLabel: "机器人", drawMethod: "方式",
-speedLabel: "速度", betLabel: "下注", startBtn: "开始",
-historyLabel: "历史", waitingMsg: "等待中…", playText: "继续", pauseText: "暂停",
-nextBtn: "下个", kinhBtn: "赢了!", winMsg: "恭喜!", loseMsg: "未中!",
-homeBtn: "主页", walletTitle: "钱包",
-cancel: "取消", saveBtn: "保存", quitConfirm: "退出?",
-inviteBtn: "邀请", inviteTitle: "邀请", copyBtn: "复制", closeBtn: "关闭",
-settingsTitle: "设置", leftLabel: "剩余", reachText: "听牌!", winLabelShort: "胜", fullMsg: "满员"
+label: “简体中文”, cur: “¥”, defWallet: 300,
+sessionBtn: “统计”, roundsLabel: “局”, netLabel: “累计损益”, perPersonLabel: “（每人下注金额）”,
+masterAfk: “房主离开中  -  转让倒计时”, afkAutoTransfer: “转让倒计时”,
+transferBtn: “转让”, transferTitle: “转让房主”, transferDesc: “选择接收房主权限的玩家”,
+masterTransferred: “成为新房主”,
+welcomeTitle: “乐透在线”, welcomeSubtitle: “经典游戏”, welcomeMsg: “欢迎”,
+playerNameLabel: “玩家名称”, placeholderName: “输入…”, modeSolo: “单人”, modeMulti: “多人”,
+setupTitle: “设置”, ticketQtyLabel: “票数”, opponentsLabel: “机器人”, drawMethod: “方式”,
+speedLabel: “速度”, betLabel: “下注”, startBtn: “开始”,
+historyLabel: “历史”, waitingMsg: “等待中…”, playText: “继续”, pauseText: “暂停”,
+nextBtn: “下个”, kinhBtn: “赢了!”, winMsg: “恭喜!”, loseMsg: “未中!”,
+homeBtn: “主页”, walletTitle: “钱包”,
+cancel: “取消”, saveBtn: “保存”, quitConfirm: “退出?”,
+inviteBtn: “邀请”, inviteTitle: “邀请”, copyBtn: “复制”, closeBtn: “关闭”,
+settingsTitle: “设置”, leftLabel: “剩余”, reachText: “听牌!”, winLabelShort: “胜”, fullMsg: “满员”
 },
 fr: {
-label: "Français", cur: "€", defWallet: 50,
-sessionBtn: "Statistiques", roundsLabel: " Parties", netLabel: "Net P&L", perPersonLabel: "(mise par joueur)",
-masterAfk: "Hôte AFK  -  Transfert dans", afkAutoTransfer: "Transfert dans",
-transferBtn: "Transférer", transferTitle: "Transfert du maître", transferDesc: "Choisir le nouveau maître",
-masterTransferred: "est maintenant maître",
-welcomeTitle: "LOTO EN LIGNE", welcomeSubtitle: "JEU CLASSIQUE", welcomeMsg: "Bienvenue",
-playerNameLabel: "Nom", placeholderName: "Entrez…", modeSolo: "Solo", modeMulti: "Multi",
-setupTitle: "Réglages", ticketQtyLabel: "Tickets", opponentsLabel: "Bots", drawMethod: "Méthode",
-speedLabel: "Vitesse", betLabel: "Mise", startBtn: "JOUER",
-historyLabel: "Historique", waitingMsg: "Attente…", playText: "Play", pauseText: "Pause",
-nextBtn: "Suiv.", kinhBtn: "KINH!", winMsg: "Gagné!", loseMsg: "Non!",
-homeBtn: "Home", walletTitle: "Portefeuille",
-cancel: "Annuler", saveBtn: "Sauver", quitConfirm: "Quitter?",
-inviteBtn: "Inviter", inviteTitle: "Invitation", copyBtn: "Copier", closeBtn: "Fermer",
-settingsTitle: "Options", leftLabel: "restant", reachText: "REACH", winLabelShort: "WIN", fullMsg: "Plein"
+label: “Français”, cur: “€”, defWallet: 50,
+sessionBtn: “Statistiques”, roundsLabel: “ Parties”, netLabel: “Net P&L”, perPersonLabel: “(mise par joueur)”,
+masterAfk: “Hôte AFK  -  Transfert dans”, afkAutoTransfer: “Transfert dans”,
+transferBtn: “Transférer”, transferTitle: “Transfert du maître”, transferDesc: “Choisir le nouveau maître”,
+masterTransferred: “est maintenant maître”,
+welcomeTitle: “LOTO EN LIGNE”, welcomeSubtitle: “JEU CLASSIQUE”, welcomeMsg: “Bienvenue”,
+playerNameLabel: “Nom”, placeholderName: “Entrez…”, modeSolo: “Solo”, modeMulti: “Multi”,
+setupTitle: “Réglages”, ticketQtyLabel: “Tickets”, opponentsLabel: “Bots”, drawMethod: “Méthode”,
+speedLabel: “Vitesse”, betLabel: “Mise”, startBtn: “JOUER”,
+historyLabel: “Historique”, waitingMsg: “Attente…”, playText: “Play”, pauseText: “Pause”,
+nextBtn: “Suiv.”, kinhBtn: “KINH!”, winMsg: “Gagné!”, loseMsg: “Non!”,
+homeBtn: “Home”, walletTitle: “Portefeuille”,
+cancel: “Annuler”, saveBtn: “Sauver”, quitConfirm: “Quitter?”,
+inviteBtn: “Inviter”, inviteTitle: “Invitation”, copyBtn: “Copier”, closeBtn: “Fermer”,
+settingsTitle: “Options”, leftLabel: “restant”, reachText: “REACH”, winLabelShort: “WIN”, fullMsg: “Plein”
 }
 };
 
@@ -710,7 +710,7 @@ setup() {
 const currentLang = ref(localStorage.getItem(‘loto_lang’) || ‘ja’);
 const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
 
-
+```
     const gameState = ref('HOME');
     const mode = ref('SOLO');
     const isGameOver = ref(false);
@@ -1405,10 +1405,10 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
         currentTempBalance, setCurrentTempBalance, walletAdd, walletSub
     };
 }
-
+```
 
 }).mount(’#app’);
 </script>
 
 </body>
-</html></html></html></html>
+</html></html></html></html></html>
