@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -59,16 +58,12 @@
     .result-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; border-radius: 12px; margin-bottom: 6px; }
     .result-winner { background: #fefce8; border: 1.5px solid #fbbf24; }
     .result-loser { background: #f8fafc; border: 1px solid #e2e8f0; }
-    /* ② PAUSE/PLAY button states */
     .btn-playing-state { background: #475569; color: white; }
     .btn-paused-state { background: #16a34a; color: white; animation: pausedPulse 2s ease-in-out infinite; }
     @keyframes pausedPulse { 0%,100% { box-shadow: 0 0 8px rgba(22,163,74,0.4); } 50% { box-shadow: 0 0 18px rgba(22,163,74,0.7); } }
-    /* range-slider dark variant for caller-dashboard */
     .range-slider-dark { -webkit-appearance: none; width: 100%; height: 4px; background: #475569; border-radius: 2px; outline: none; }
     .range-slider-dark::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: #ef4444; border-radius: 50%; cursor: pointer; border: 2px solid #1e293b; }
-    /* ⑤ AFK banner */
     .afk-banner { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 7px 14px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; z-index: 39; }
-    /* toast system */
     .toast-wrap { position: fixed; top: 62px; left: 50%; transform: translateX(-50%); z-index: 8000; width: calc(100% - 32px); max-width: 448px; pointer-events: none; }
     .toast-item { padding: 10px 14px; border-radius: 14px; font-weight: 700; font-size: 0.78rem; margin-bottom: 7px; display: flex; align-items: center; gap: 8px; animation: toastIn 0.3s ease; box-shadow: 0 4px 14px rgba(0,0,0,0.18); }
     .toast-info { background: #1e293b; color: white; }
@@ -76,26 +71,21 @@
     .toast-error { background: #dc2626; color: white; }
     .toast-success { background: #16a34a; color: white; }
     @keyframes toastIn { from { transform: translateY(-8px) scale(0.96); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
-    /* ① currency selector pills */
     .cur-pill { flex-shrink: 0; padding: 5px 12px; border-radius: 10px; font-weight: 900; font-size: 0.85rem; transition: all 0.15s; cursor: pointer; }
     .cur-pill-active { background: #ef4444; color: white; }
     .cur-pill-inactive { background: #334155; color: #94a3b8; }
-    /* wallet modal currency tabs */
     .wcur-tab { flex-shrink: 0; padding: 6px 10px; border-radius: 10px; font-weight: 900; font-size: 0.8rem; transition: all 0.15s; cursor: pointer; border: none; }
     .wcur-tab-active { background: #1e293b; color: white; }
     .wcur-tab-inactive { background: #f1f5f9; color: #64748b; }
 </style>
 
 <script>
-// Fallback: remove v-cloak after 6 seconds in case Vue mount fails
 setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribute('v-cloak');},6000);
 </script>
 
 </head>
 <body>
 <div id="app" v-cloak class="app-shell">
-
-<!-- Toast notifications -->
 
 <div class="toast-wrap">
     <div v-for="toast in toasts" :key="toast.id" class="toast-item" :class="'toast-' + toast.type">
@@ -117,7 +107,7 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
     <div class="flex items-center justify-end gap-2">
         <div @click="openWalletModal" class="wallet-display">
             <i class="fas fa-coins text-yellow-500 text-xs"></i>
-            <div class="wallet-text">{{ wallet.currency }}{{ (wallet.amount || 0).toLocaleString() }}</div>
+            <div class="wallet-text">{{ wallet.currency }} {{ (wallet.amount || 0).toLocaleString() }}</div>
         </div>
         <button @click="showSettingsModal = true" class="w-9 h-9 flex items-center justify-center rounded-full bg-slate-50 text-slate-400">
             <i class="fas fa-cog"></i>
@@ -126,8 +116,6 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
 </header>
 
 <main class="flex-grow relative flex flex-col overflow-hidden">
-
-<!-- HOME -->
 
 <div v-if="gameState === 'HOME'" class="scroll-content flex flex-col justify-center items-center space-y-8">
     <div class="text-center space-y-4">
@@ -155,8 +143,6 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
         </button>
     </div>
 </div>
-
-<!-- SETUP -->
 
 <div v-if="gameState === 'SETUP'" class="scroll-content space-y-6 bg-slate-50">
     <h3 class="text-3xl font-black text-slate-800 italic">{{ t.setupTitle }}</h3>
@@ -199,10 +185,8 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
             <input type="range" v-model.number="drawInterval" min="2" max="8" class="range-slider">
         </div>
     </div>
-    <!-- ① ② 賭け金カード: 通貨セレクター付き、視認性修正済み -->
     <div class="setup-card bg-slate-900 border-none">
         <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">{{ t.betLabel }}</label>
-        <!-- ① 通貨セレクター (言語と独立) -->
         <div class="flex gap-2 mb-3 overflow-x-auto no-scrollbar pb-1">
             <button v-for="cur in CURRENCIES" :key="cur.code"
                 @click="setBetCurrency(cur.code)"
@@ -225,11 +209,8 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
     </div>
 </div>
 
-<!-- PLAYING -->
-
 <div v-if="gameState === 'PLAYING'" class="flex-grow flex flex-col h-full bg-slate-50">
     <div class="caller-dashboard">
-        <!-- 上段: 現在の番号 + 履歴 -->
         <div class="flex gap-3 items-center mb-2">
             <div class="current-ball">
                 <span class="text-[8px] font-black text-slate-400 uppercase mb-0.5">Current</span>
@@ -247,9 +228,7 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
                 </div>
             </div>
         </div>
-        <!-- ② 下段: 対戦者数 + 速度スライダー(ラベル付き) + 停止/再開ボタン(テキスト+色変化付き) -->
         <div class="flex items-center bg-slate-800/50 px-3 py-2 rounded-xl gap-2">
-            <!-- 対戦者数 + ⑥ マスター委譲ボタン -->
             <div class="flex items-center gap-1.5 flex-shrink-0">
                 <span class="text-[11px] font-bold text-slate-300">
                     {{ t.opponentsLabel }}: <span class="text-white">{{ activeOpponentsCount }}</span>
@@ -261,7 +240,6 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
                     <span>{{ t.transferBtn }}</span>
                 </button>
             </div>
-            <!-- ② 速度スライダー (ラベル・値表示付き) -->
             <div v-if="isAutoMode" class="flex-grow flex flex-col min-w-0 mx-1">
                 <div class="flex justify-between mb-0.5">
                     <span class="text-[9px] font-black text-slate-500 uppercase tracking-wider">{{ t.speedLabel }}</span>
@@ -269,7 +247,6 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
                 </div>
                 <input type="range" v-model.number="drawInterval" min="1" max="8" class="range-slider-dark">
             </div>
-            <!-- ② 停止/再開ボタン: テキスト + 色変化 + エフェクト -->
             <button v-if="isAutoMode" @click="togglePause"
                 :class="isPaused ? 'btn-paused-state' : 'btn-playing-state'"
                 class="flex-shrink-0 h-8 px-2.5 rounded-lg font-bold text-[11px] flex items-center gap-1.5 transition-all">
@@ -283,8 +260,6 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
         </div>
     </div>
 
-
-<!-- ⑤ AFK バナー (ゲストにのみ表示) -->
 <div v-if="masterIsAfk && !isMaster && mode === 'MULTI'" class="afk-banner">
     <div class="flex items-center gap-2">
         <i class="fas fa-clock animate-pulse text-sm"></i>
@@ -294,7 +269,6 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
 </div>
 
 <div class="scroll-content playing-content bg-slate-100">
-    <!-- 他プレイヤーカード -->
     <div class="mb-4 flex gap-2 overflow-x-auto no-scrollbar pb-2">
         <div v-for="p in players.filter(pl => pl.name !== playerName)" :key="p.name"
              class="bg-white px-3 py-2 rounded-lg shadow-sm border border-slate-200 flex-shrink-0 min-w-[100px] relative">
@@ -313,7 +287,6 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
         </div>
     </div>
 
-    <!-- チケット -->
     <div v-for="(card, cIdx) in myCards" :key="cIdx" class="loto-ticket">
         <div class="flex justify-between items-center mb-2 px-1">
             <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">TICKET #{{ cIdx + 1 }}</span>
@@ -336,10 +309,7 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
     <button @click="checkKinh" class="btn-kinh">{{ t.kinhBtn }}</button>
 </div>
 
-
 </div>
-
-<!-- FINISHED -->
 
 <div v-if="gameState === 'FINISHED'" class="fixed inset-0 z-[2000] bg-slate-900/95 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-white rounded-[32px] p-6 w-full max-w-sm border-4 border-yellow-400 max-h-[92vh] overflow-y-auto" style="animation: modalUp 0.3s cubic-bezier(0.16,1,0.3,1)">
@@ -348,7 +318,6 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
             <h2 class="text-2xl font-black text-slate-800 italic">GAME OVER</h2>
             <p class="text-lg font-black text-yellow-500 mt-1">{{ winnerInfo ? winnerInfo.name : '---' }}</p>
         </div>
-        <!-- ① ③ 参加者ごとの損益一覧 (通貨別) -->
         <div class="mb-4">
             <div v-for="p in gameResult.participants" :key="p.name"
                  class="result-row" :class="p.isWinner ? 'result-winner' : 'result-loser'">
@@ -359,33 +328,27 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
                     </span>
                 </div>
                 <div class="flex flex-col items-end flex-shrink-0 ml-2">
-                    <!-- 勝者: 自通貨利益 -->
                     <span v-if="p.isWinner && p.ownCurrencyProfit > 0" class="font-black text-sm text-green-600">
-                        +{{ p.ownCurrencyProfit.toLocaleString() }}{{ p.betCurrency }}
+                        +{{ p.ownCurrencyProfit.toLocaleString() }} {{ p.betCurrency }}
                     </span>
-                    <!-- 勝者: 他通貨利益 -->
                     <span v-for="fg in (p.foreignGains || [])" :key="fg.currency" class="font-black text-xs text-green-500">
-                        +{{ fg.amount.toLocaleString() }}{{ fg.currency }}
+                        +{{ fg.amount.toLocaleString() }} {{ fg.currency }}
                     </span>
-                    <!-- 勝者: 全員同通貨の場合 -->
                     <span v-if="p.isWinner && p.ownCurrencyProfit === 0 && (p.foreignGains || []).length === 0" class="font-black text-sm text-green-600">
-                        +{{ (p.betAmount * (gameResult.participants.length - 1)).toLocaleString() }}{{ p.betCurrency }}
+                        +{{ (p.betAmount * (gameResult.participants.length - 1)).toLocaleString() }} {{ p.betCurrency }}
                     </span>
-                    <!-- 敗者 -->
                     <span v-if="!p.isWinner" class="font-black text-sm text-red-500">
-                        -{{ p.betAmount.toLocaleString() }}{{ p.betCurrency }}
+                        -{{ p.betAmount.toLocaleString() }} {{ p.betCurrency }}
                     </span>
                 </div>
             </div>
         </div>
-        <!-- セッション統計ボタン -->
         <button @click="showSessionModal = true"
                 class="w-full py-2 mb-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2 active:bg-slate-200 transition">
             <span>📊</span>
             <span>{{ t.sessionBtn }}</span>
-            <span class="bg-slate-200 px-2 py-0.5 rounded-full text-slate-500 font-black">{{ sessionStats.rounds }}{{ t.roundsLabel }}</span>
+            <span class="bg-slate-200 px-2 py-0.5 rounded-full text-slate-500 font-black">{{ sessionStats.rounds }} {{ t.roundsLabel }}</span>
         </button>
-        <!-- NEXT GAME -->
         <button @click="confirmNextGame"
                 :class="readyPlayers[playerName] ? 'bg-slate-200 text-slate-400' : 'bg-red-600 text-white shadow-xl shadow-red-200'"
                 class="w-full py-3 rounded-2xl font-black text-lg transition-all active:scale-95 mb-2">
@@ -394,7 +357,6 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
         <p v-if="mode === 'MULTI'" class="text-[10px] text-slate-400 text-center mb-3 font-bold">
             READY: {{ Object.keys(readyPlayers).length }} / {{ players.length }}
         </p>
-        <!-- ホームボタン -->
         <button @click="exitToHome"
                 class="w-full py-2 rounded-xl font-bold text-sm bg-slate-100 text-slate-500 active:bg-slate-200 transition">
             ← {{ t.homeBtn }}
@@ -406,12 +368,9 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
 
 <div class="footer-info">REV: 2026-03-27 | STABLE | {{ currentTime }}</div>
 
-<!-- ① Wallet Modal (多通貨対応) -->
-
 <div v-if="showWalletModal" class="modal-backdrop">
     <div class="modal-content">
         <h3 class="text-xl font-black mb-4 text-center text-slate-800">{{ t.walletTitle }}</h3>
-        <!-- 通貨タブ -->
         <div class="flex gap-1.5 mb-4 overflow-x-auto no-scrollbar pb-1">
             <button v-for="cur in CURRENCIES" :key="cur.code"
                 @click="selectWalletCurrency(cur.code)"
@@ -419,7 +378,6 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
                 {{ cur.code }}
             </button>
         </div>
-        <!-- 選択通貨の残高 -->
         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 mb-4 text-center">
             <p class="text-xs text-slate-400 font-bold mb-1">{{ selectedWalletCurrency }}</p>
             <input type="number" :value="currentTempBalance" @input="setCurrentTempBalance($event.target.value)" class="w-full bg-transparent text-4xl font-black text-center outline-none text-slate-800">
@@ -439,8 +397,6 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
     </div>
 </div>
 
-<!-- Settings Modal -->
-
 <div v-if="showSettingsModal" class="modal-backdrop">
     <div class="modal-content overflow-y-auto max-h-[80vh]">
         <h3 class="text-xl font-black mb-4 text-slate-800">{{ t.settingsTitle }}</h3>
@@ -453,19 +409,16 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
                     class="py-2 px-3 rounded-xl font-bold text-sm transition">{{ cfg.label }}</button>
             </div>
         </div>
-        <!-- ⑥ AFKタイムアウト設定 -->
         <div class="mb-5 p-4 bg-slate-50 rounded-2xl border border-slate-200">
             <div class="flex justify-between items-center mb-2">
                 <label class="text-xs font-black text-slate-400 uppercase tracking-widest">AFK Transfer Delay</label>
-                <span class="text-sm font-black text-red-600">{{ Math.floor(afkTransferDelay / 60) }}min</span>
+                <span class="text-sm font-black text-red-600">{{ Math.floor(afkTransferDelay / 60) }} min</span>
             </div>
             <input type="range" v-model.number="afkTransferDelay" min="60" max="600" step="60" class="range-slider">
         </div>
         <button @click="showSettingsModal = false" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold text-sm">{{ t.closeBtn }}</button>
     </div>
 </div>
-
-<!-- Share Modal -->
 
 <div v-if="showShareModal" class="modal-backdrop">
     <div class="modal-content text-center">
@@ -481,8 +434,6 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
     </div>
 </div>
 
-<!-- Session Stats Modal -->
-
 <div v-if="showSessionModal" class="modal-backdrop">
     <div class="modal-content overflow-y-auto max-h-[80vh]">
         <h3 class="text-xl font-black mb-4 text-slate-800 text-center">📊 {{ t.sessionBtn }}</h3>
@@ -494,7 +445,7 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
             <div class="flex justify-between items-center">
                 <span class="text-sm text-slate-500 font-bold">{{ t.netLabel }}</span>
                 <span class="font-black text-xl" :class="sessionStats.netChange >= 0 ? 'text-green-600' : 'text-red-500'">
-                    {{ sessionStats.netChange >= 0 ? '+' : '' }}{{ sessionStats.netChange.toLocaleString() }}{{ wallet.currency }}
+                    {{ sessionStats.netChange >= 0 ? '+' : '' }} {{ sessionStats.netChange.toLocaleString() }} {{ wallet.currency }}
                 </span>
             </div>
         </div>
@@ -506,7 +457,7 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
                     <span class="text-slate-600 text-xs truncate max-w-[120px]">{{ h.winner }}</span>
                 </div>
                 <span :class="h.change >= 0 ? 'text-green-600' : 'text-red-500'" class="font-black text-sm flex-shrink-0">
-                    {{ h.change >= 0 ? '+' : '' }}{{ h.change.toLocaleString() }}{{ h.currency }}
+                    {{ h.change >= 0 ? '+' : '' }} {{ h.change.toLocaleString() }} {{ h.currency }}
                 </span>
             </div>
         </div>
@@ -514,8 +465,6 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
         <button @click="showSessionModal = false" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold text-sm">{{ t.closeBtn }}</button>
     </div>
 </div>
-
-<!-- ⑥ Master Transfer Modal -->
 
 <div v-if="showTransferModal" class="modal-backdrop">
     <div class="modal-content">
@@ -564,873 +513,839 @@ const dbRef = (path) => {
     };
     return db.ref(path);
 };
-// ① 通貨リスト (言語と独立)
+
 const CURRENCIES = [
     { code: '¥' }, { code: '$' }, { code: '€' },
     { code: '฿' }, { code: '₫' }, { code: '₭' }, { code: '៛' }
 ];
 
 const i18nData = {
-vi: {
-label: “Tiếng Việt”, cur: “₫”, defWallet: 200000,
-sessionBtn: “Thống kê”, roundsLabel: “ Ván”, netLabel: “Tổng P&L”, perPersonLabel: “(Tiền cược mỗi người)”,
-masterAfk: “Host đang AFK  -  Chuyển quyền sau”, afkAutoTransfer: “Chuyển sau”,
-transferBtn: “Chuyển”, transferTitle: “Chuyển quyền Host”, transferDesc: “Chọn người nhận quyền Host”,
-masterTransferred: “đã nhận quyền Host”,
-welcomeTitle: “LÔ TÔ ONLINE”, welcomeSubtitle: “TRÒ CHƠI DÂN GIAN”, welcomeMsg: “Chào mừng”,
-playerNameLabel: “TÊN CỦA BẠN”, placeholderName: “Nhập tên…”, modeSolo: “CHƠI ĐƠN”, modeMulti: “CHƠI NHIỀU NGƯỜI”,
-setupTitle: “CÀI ĐẶT”, ticketQtyLabel: “SỐ VÉ”, opponentsLabel: “SỐ BOT”, drawMethod: “CÁCH QUAY”,
-speedLabel: “TỐC ĐỘ”, betLabel: “MỨC CƯỢC”, startBtn: “BẮT ĐẦU”,
-historyLabel: “LỊCH SỬ”, waitingMsg: “Đang chờ…”, playText: “Tiếp”, pauseText: “Dừng”,
-nextBtn: “Tiếp”, kinhBtn: “KINH!”, winMsg: “CHIẾN THẮNG!”, loseMsg: “Chưa đủ số!”,
-homeBtn: “Trang chủ”, walletTitle: “VÍ TIỀN”,
-cancel: “Hủy”, saveBtn: “Lưu”, quitConfirm: “Thoát game?”,
-inviteBtn: “MỜI”, inviteTitle: “MỜI BẠN BÈ”, copyBtn: “Sao chép”, closeBtn: “Đóng”,
-settingsTitle: “CÀI ĐẶT”, leftLabel: “số nữa”, reachText: “SẮP KINH!”, winLabelShort: “THẮNG”, fullMsg: “Phòng đầy”
-},
-ja: {
-label: “日本語”, cur: “¥”, defWallet: 5000,
-sessionBtn: “セッション統計”, roundsLabel: “戦”, netLabel: “累計損益”, perPersonLabel: “（一人あたりの掛け金）”,
-masterAfk: “ホスト離席中  -  委譲まで”, afkAutoTransfer: “委譲まで”,
-transferBtn: “委譲”, transferTitle: “マスター権限の委譲”, transferDesc: “権限を渡すプレイヤーを選んでください”,
-masterTransferred: “がマスターになりました”,
-welcomeTitle: “LOTO ONLINE”, welcomeSubtitle: “究極の運試し”, welcomeMsg: “ようこそ”,
-playerNameLabel: “プレイヤー名”, placeholderName: “名前を入力…”, modeSolo: “ソロプレイ”, modeMulti: “マルチプレイ”,
-setupTitle: “ゲーム設定”, ticketQtyLabel: “チケット枚数”, opponentsLabel: “Botの数”, drawMethod: “抽選方法”,
-speedLabel: “自動間隔”, betLabel: “賭け金”, startBtn: “ゲーム開始”,
-historyLabel: “履歴”, waitingMsg: “待機中…”, playText: “再開”, pauseText: “停止”,
-nextBtn: “次へ”, kinhBtn: “上がり！”, winMsg: “おめでとうございます！”,
-loseMsg: “まだ揃っていません”, homeBtn: “ホーム”, walletTitle: “ウォレット”,
-cancel: “キャンセル”, saveBtn: “保存”, quitConfirm: “トップに戻りますか？”,
-inviteBtn: “招待”, inviteTitle: “ルーム招待”, copyBtn: “コピー”, closeBtn: “閉じる”,
-settingsTitle: “設定”, leftLabel: “マス”, reachText: “リーチ！”, winLabelShort: “勝利”, fullMsg: “満員です”
-},
-en: {
-label: “English”, cur: “$”, defWallet: 50,
-sessionBtn: “Session Stats”, roundsLabel: “ Rounds”, netLabel: “Net P&L”, perPersonLabel: “(per player bet)”,
-masterAfk: “Host is AFK  -  Transfer in”, afkAutoTransfer: “Transfer in”,
-transferBtn: “Transfer”, transferTitle: “Transfer Master”, transferDesc: “Choose player to receive master role”,
-masterTransferred: “is now master”,
-welcomeTitle: “LOTO ONLINE”, welcomeSubtitle: “CLASSIC GAME”, welcomeMsg: “Welcome”,
-playerNameLabel: “PLAYER NAME”, placeholderName: “Enter name…”, modeSolo: “SOLO MODE”, modeMulti: “MULTIPLAYER”,
-setupTitle: “GAME SETUP”, ticketQtyLabel: “TICKETS”, opponentsLabel: “BOT COUNT”, drawMethod: “DRAW METHOD”,
-speedLabel: “SPEED”, betLabel: “BET AMOUNT”, startBtn: “START GAME”,
-historyLabel: “HISTORY”, waitingMsg: “Waiting…”, playText: “Play”, pauseText: “Pause”,
-nextBtn: “Next”, kinhBtn: “BINGO!”, winMsg: “YOU WIN!”, loseMsg: “Not yet!”,
-homeBtn: “Home”, walletTitle: “WALLET”,
-cancel: “Cancel”, saveBtn: “Save”, quitConfirm: “Quit game?”,
-inviteBtn: “INVITE”, inviteTitle: “INVITATION”, copyBtn: “COPY”, closeBtn: “CLOSE”,
-settingsTitle: “SETTINGS”, leftLabel: “left”, reachText: “REACH!”, winLabelShort: “WIN”, fullMsg: “Room is full”
-},
-th: {
-label: “ไทย”, cur: “฿”, defWallet: 2000,
-sessionBtn: “สถิติ”, roundsLabel: “ รอบ”, netLabel: “ผลรวม”, perPersonLabel: “(เดิมพันต่อคน)”,
-masterAfk: “โฮสต์ไม่อยู่  -  โอนสิทธิ์ใน”, afkAutoTransfer: “โอนใน”,
-transferBtn: “โอน”, transferTitle: “โอนสิทธิ์”, transferDesc: “เลือกผู้เล่นที่จะรับสิทธิ์”,
-masterTransferred: “ได้รับสิทธิ์แล้ว”,
-welcomeTitle: “โลโต้ ออนไลน์”, welcomeSubtitle: “เกมคลาสสิค”, welcomeMsg: “ยินดีต้อนรับ”,
-playerNameLabel: “ชื่อผู้เล่น”, placeholderName: “กรอกชื่อ…”, modeSolo: “เล่นคนเดียว”, modeMulti: “เล่นหลายคน”,
-setupTitle: “ตั้งค่าเกม”, ticketQtyLabel: “จำนวนตั๋ว”, opponentsLabel: “จำนวนบอท”, drawMethod: “วิธีจั่ว”,
-speedLabel: “ความเร็ว”, betLabel: “เงินเดิมพัน”, startBtn: “เริ่มเกม”,
-historyLabel: “ประวัติ”, waitingMsg: “กำลังรอ…”, playText: “เล่นต่อ”, pauseText: “หยุด”,
-nextBtn: “ถัดไป”, kinhBtn: “บิงโก!”, winMsg: “คุณชนะ!”, loseMsg: “ยังไม่ครบ”,
-homeBtn: “หน้าหลัก”, walletTitle: “กระเป๋าเงิน”,
-cancel: “ยกเลิก”, saveBtn: “บันทึก”, quitConfirm: “ออกจากเกม?”,
-inviteBtn: “เชิญ”, inviteTitle: “เชิญเพื่อน”, copyBtn: “คัดลอก”, closeBtn: “ปิด”,
-settingsTitle: “การตั้งค่า”, leftLabel: “เหลือ”, reachText: “ใกล้แล้ว!”, winLabelShort: “ชนะ”, fullMsg: “ห้องเต็ม”
-},
-lo: {
-label: “ລາວ”, cur: “₭”, defWallet: 500000,
-sessionBtn: “ສະຖິຕິ”, roundsLabel: “ ຮອບ”, netLabel: “ລວມ”, perPersonLabel: “(ເດີມພັນຕໍ່ຄົນ)”,
-masterAfk: “Host ຫ່າງ  -  ໂອນສິດໃນ”, afkAutoTransfer: “ໂອນໃນ”,
-transferBtn: “ໂອນ”, transferTitle: “ໂອນສິດ”, transferDesc: “ເລືອກຜູ້ຫຼິ້ນທີ່ຈະໄດ້ຮັບສິດ”,
-masterTransferred: “ໄດ້ຮັບສິດແລ້ວ”,
-welcomeTitle: “ໂລໂຕ ອອນລາຍ”, welcomeSubtitle: “ເກມພື້ນເມືອງ”, welcomeMsg: “ຍິນດີຕ້ອນຮັບ”,
-playerNameLabel: “ຊື່ຜູ້ຫຼິ້ນ”, placeholderName: “ໃສ່ຊື່…”, modeSolo: “ຫຼິ້ນຄົນດຽວ”, modeMulti: “ຫຼິ້ນຫຼາຍຄົນ”,
-setupTitle: “ຕັ້ງຄ່າ”, ticketQtyLabel: “ຈຳນວນໃບ”, opponentsLabel: “Bot”, drawMethod: “ວິທີ”,
-speedLabel: “ຄວາມໄວ”, betLabel: “ເດີມພັນ”, startBtn: “ເລີ່ມ”,
-historyLabel: “ປະຫວັດ”, waitingMsg: “ລໍຖ້າ…”, playText: “ຫຼິ້ນ”, pauseText: “ຢຸດ”,
-nextBtn: “ຕໍ່ໄປ”, kinhBtn: “ຊະນະ!”, winMsg: “ຊະນະແລ້ວ!”, loseMsg: “ຍັງ!”,
-homeBtn: “ໜ້າຫຼັກ”, walletTitle: “ກະເປົາ”,
-cancel: “ຍົກເລີກ”, saveBtn: “ບັນທຶກ”, quitConfirm: “ອອກ?”,
-inviteBtn: “ເຊີນ”, inviteTitle: “ເຊີນ”, copyBtn: “ກັອບປີ້”, closeBtn: “ປິດ”,
-settingsTitle: “ຕັ້ງຄ່າ”, leftLabel: “ເຫຼືອ”, reachText: “ໃກ້ແລ້ວ!”, winLabelShort: “ຊະນະ”, fullMsg: “ເຕັມ”
-},
-km: {
-label: “ខ្មែរ”, cur: “៛”, defWallet: 200000,
-sessionBtn: “ស្ថិតិ”, roundsLabel: “ វគ្គ”, netLabel: “សរុប”, perPersonLabel: “(ភ្នាល់ក្នុងម្នាក់)”,
-masterAfk: “ម្ចាស់ host អវត្ដមាន  -  ផ្ទេរក្នុង”, afkAutoTransfer: “ផ្ទេរក្នុង”,
-transferBtn: “ផ្ទេរ”, transferTitle: “ផ្ទេរអំណាច”, transferDesc: “ជ្រើសរើសអ្នកលេង”,
-masterTransferred: “បានទទួលអំណាច”,
-welcomeTitle: “ឡូតូ អនឡាញ”, welcomeSubtitle: “ល្បែងប្រជាប្រិយ”, welcomeMsg: “សូមស្វាគមន៍”,
-playerNameLabel: “ឈ្មោះ”, placeholderName: “បញ្ចូល…”, modeSolo: “ម្នាក់ឯង”, modeMulti: “ច្រើននាក់”,
-setupTitle: “កំណត់”, ticketQtyLabel: “សន្លឹក”, opponentsLabel: “Bot”, drawMethod: “វិធី”,
-speedLabel: “ល្បឿន”, betLabel: “ភ្នាល់”, startBtn: “ចាប់ផ្ដើម”,
-historyLabel: “ប្រវត្តិ”, waitingMsg: “រង់ចាំ…”, playText: “បន្ត”, pauseText: “ឈប់”,
-nextBtn: “បន្ទាប់”, kinhBtn: “ឈ្នះ!”, winMsg: “អ្នកឈ្នះ!”, loseMsg: “នៅ!”,
-homeBtn: “ដើម”, walletTitle: “កាបូប”,
-cancel: “បោះបង់”, saveBtn: “រក្សា”, quitConfirm: “ចាកចេញ?”,
-inviteBtn: “អញ្ជើញ”, inviteTitle: “អញ្ជើញ”, copyBtn: “ចម្លង”, closeBtn: “បិទ”,
-settingsTitle: “ការកំណត់”, leftLabel: “ទៀត”, reachText: “ជិតហើយ!”, winLabelShort: “ឈ្នះ”, fullMsg: “ពេញ”
-},
-zh: {
-label: “简体中文”, cur: “¥”, defWallet: 300,
-sessionBtn: “统计”, roundsLabel: “局”, netLabel: “累计损益”, perPersonLabel: “（每人下注金额）”,
-masterAfk: “房主离开中  -  转让倒计时”, afkAutoTransfer: “转让倒计时”,
-transferBtn: “转让”, transferTitle: “转让房主”, transferDesc: “选择接收房主权限的玩家”,
-masterTransferred: “成为新房主”,
-welcomeTitle: “乐透在线”, welcomeSubtitle: “经典游戏”, welcomeMsg: “欢迎”,
-playerNameLabel: “玩家名称”, placeholderName: “输入…”, modeSolo: “单人”, modeMulti: “多人”,
-setupTitle: “设置”, ticketQtyLabel: “票数”, opponentsLabel: “机器人”, drawMethod: “方式”,
-speedLabel: “速度”, betLabel: “下注”, startBtn: “开始”,
-historyLabel: “历史”, waitingMsg: “等待中…”, playText: “继续”, pauseText: “暂停”,
-nextBtn: “下个”, kinhBtn: “赢了!”, winMsg: “恭喜!”, loseMsg: “未中!”,
-homeBtn: “主页”, walletTitle: “钱包”,
-cancel: “取消”, saveBtn: “保存”, quitConfirm: “退出?”,
-inviteBtn: “邀请”, inviteTitle: “邀请”, copyBtn: “复制”, closeBtn: “关闭”,
-settingsTitle: “设置”, leftLabel: “剩余”, reachText: “听牌!”, winLabelShort: “胜”, fullMsg: “满员”
-},
-fr: {
-label: “Français”, cur: “€”, defWallet: 50,
-sessionBtn: “Statistiques”, roundsLabel: “ Parties”, netLabel: “Net P&L”, perPersonLabel: “(mise par joueur)”,
-masterAfk: “Hôte AFK  -  Transfert dans”, afkAutoTransfer: “Transfert dans”,
-transferBtn: “Transférer”, transferTitle: “Transfert du maître”, transferDesc: “Choisir le nouveau maître”,
-masterTransferred: “est maintenant maître”,
-welcomeTitle: “LOTO EN LIGNE”, welcomeSubtitle: “JEU CLASSIQUE”, welcomeMsg: “Bienvenue”,
-playerNameLabel: “Nom”, placeholderName: “Entrez…”, modeSolo: “Solo”, modeMulti: “Multi”,
-setupTitle: “Réglages”, ticketQtyLabel: “Tickets”, opponentsLabel: “Bots”, drawMethod: “Méthode”,
-speedLabel: “Vitesse”, betLabel: “Mise”, startBtn: “JOUER”,
-historyLabel: “Historique”, waitingMsg: “Attente…”, playText: “Play”, pauseText: “Pause”,
-nextBtn: “Suiv.”, kinhBtn: “KINH!”, winMsg: “Gagné!”, loseMsg: “Non!”,
-homeBtn: “Home”, walletTitle: “Portefeuille”,
-cancel: “Annuler”, saveBtn: “Sauver”, quitConfirm: “Quitter?”,
-inviteBtn: “Inviter”, inviteTitle: “Invitation”, copyBtn: “Copier”, closeBtn: “Fermer”,
-settingsTitle: “Options”, leftLabel: “restant”, reachText: “REACH”, winLabelShort: “WIN”, fullMsg: “Plein”
-}
+    vi: {
+        label: "Tiếng Việt", cur: "₫", defWallet: 200000,
+        sessionBtn: "Thống kê", roundsLabel: " Ván", netLabel: "Tổng P&L", perPersonLabel: "(Tiền cược mỗi người)",
+        masterAfk: "Host đang AFK - Chuyển quyền sau", afkAutoTransfer: "Chuyển sau",
+        transferBtn: "Chuyển", transferTitle: "Chuyển quyền Host", transferDesc: "Chọn người nhận quyền Host",
+        masterTransferred: "đã nhận quyền Host",
+        welcomeTitle: "LÔ TÔ ONLINE", welcomeSubtitle: "TRÒ CHƠI DÂN GIAN", welcomeMsg: "Chào mừng",
+        playerNameLabel: "TÊN CỦA BẠN", placeholderName: "Nhập tên…", modeSolo: "CHƠI ĐƠN", modeMulti: "CHƠI NHIỀU NGƯỜI",
+        setupTitle: "CÀI ĐẶT", ticketQtyLabel: "SỐ VÉ", opponentsLabel: "SỐ BOT", drawMethod: "CÁCH QUAY",
+        speedLabel: "TỐC ĐỘ", betLabel: "MỨC CƯỢC", startBtn: "BẮT ĐẦU",
+        historyLabel: "LỊCH SỬ", waitingMsg: "Đang chờ…", playText: "Tiếp", pauseText: "Dừng",
+        nextBtn: "Tiếp", kinhBtn: "KINH!", winMsg: "CHIẾN THẮNG!", loseMsg: "Chưa đủ số!",
+        homeBtn: "Trang chủ", walletTitle: "VÍ TIỀN",
+        cancel: "Hủy", saveBtn: "Lưu", quitConfirm: "Thoát game?",
+        inviteBtn: "MỜI", inviteTitle: "MỜI BẠN BÈ", copyBtn: "Sao chép", closeBtn: "Đóng",
+        settingsTitle: "CÀI ĐẶT", leftLabel: "số nữa", reachText: "SẮP KINH!", winLabelShort: "THẮNG", fullMsg: "Phòng đầy"
+    },
+    ja: {
+        label: "日本語", cur: "¥", defWallet: 5000,
+        sessionBtn: "セッション統計", roundsLabel: "戦", netLabel: "累計損益", perPersonLabel: "（一人あたりの掛け金）",
+        masterAfk: "ホスト離席中 - 委譲まで", afkAutoTransfer: "委譲まで",
+        transferBtn: "委譲", transferTitle: "マスター権限の委譲", transferDesc: "権限を渡すプレイヤーを選んでください",
+        masterTransferred: "がマスターになりました",
+        welcomeTitle: "LOTO ONLINE", welcomeSubtitle: "究極の運試し", welcomeMsg: "ようこそ",
+        playerNameLabel: "プレイヤー名", placeholderName: "名前を入力…", modeSolo: "ソロプレイ", modeMulti: "マルチプレイ",
+        setupTitle: "ゲーム設定", ticketQtyLabel: "チケット枚数", opponentsLabel: "Botの数", drawMethod: "抽選方法",
+        speedLabel: "自動間隔", betLabel: "賭け金", startBtn: "ゲーム開始",
+        historyLabel: "履歴", waitingMsg: "待機中…", playText: "再開", pauseText: "停止",
+        nextBtn: "次へ", kinhBtn: "上がり！", winMsg: "おめでとうございます！",
+        loseMsg: "まだ揃っていません", homeBtn: "ホーム", walletTitle: "ウォレット",
+        cancel: "キャンセル", saveBtn: "保存", quitConfirm: "トップに戻りますか？",
+        inviteBtn: "招待", inviteTitle: "ルーム招待", copyBtn: "コピー", closeBtn: "閉じる",
+        settingsTitle: "設定", leftLabel: "マス", reachText: "リーチ！", winLabelShort: "勝利", fullMsg: "満員です"
+    },
+    en: {
+        label: "English", cur: "$", defWallet: 50,
+        sessionBtn: "Session Stats", roundsLabel: " Rounds", netLabel: "Net P&L", perPersonLabel: "(per player bet)",
+        masterAfk: "Host is AFK - Transfer in", afkAutoTransfer: "Transfer in",
+        transferBtn: "Transfer", transferTitle: "Transfer Master", transferDesc: "Choose player to receive master role",
+        masterTransferred: "is now master",
+        welcomeTitle: "LOTO ONLINE", welcomeSubtitle: "CLASSIC GAME", welcomeMsg: "Welcome",
+        playerNameLabel: "PLAYER NAME", placeholderName: "Enter name…", modeSolo: "SOLO MODE", modeMulti: "MULTIPLAYER",
+        setupTitle: "GAME SETUP", ticketQtyLabel: "TICKETS", opponentsLabel: "BOT COUNT", drawMethod: "DRAW METHOD",
+        speedLabel: "SPEED", betLabel: "BET AMOUNT", startBtn: "START GAME",
+        historyLabel: "HISTORY", waitingMsg: "Waiting…", playText: "Play", pauseText: "Pause",
+        nextBtn: "Next", kinhBtn: "BINGO!", winMsg: "YOU WIN!", loseMsg: "Not yet!",
+        homeBtn: "Home", walletTitle: "WALLET",
+        cancel: "Cancel", saveBtn: "Save", quitConfirm: "Quit game?",
+        inviteBtn: "INVITE", inviteTitle: "INVITATION", copyBtn: "COPY", closeBtn: "CLOSE",
+        settingsTitle: "SETTINGS", leftLabel: "left", reachText: "REACH!", winLabelShort: "WIN", fullMsg: "Room is full"
+    },
+    th: {
+        label: "ไทย", cur: "฿", defWallet: 2000,
+        sessionBtn: "สถิติ", roundsLabel: " รอบ", netLabel: "ผลรวม", perPersonLabel: "(เดิมพันต่อคน)",
+        masterAfk: "โฮสต์ไม่อยู่ - โอนสิทธิ์ใน", afkAutoTransfer: "โอนใน",
+        transferBtn: "โอน", transferTitle: "โอนสิทธิ์", transferDesc: "เลือกผู้เล่นที่จะรับสิทธิ์",
+        masterTransferred: "ได้รับสิทธิ์แล้ว",
+        welcomeTitle: "โลโต้ ออนไลน์", welcomeSubtitle: "เกมคลาสสิค", welcomeMsg: "ยินดีต้อนรับ",
+        playerNameLabel: "ชื่อผู้เล่น", placeholderName: "กรอกชื่อ…", modeSolo: "เล่นคนเดียว", modeMulti: "เล่นหลายคน",
+        setupTitle: "ตั้งค่าเกม", ticketQtyLabel: "จำนวนตั๋ว", opponentsLabel: "จำนวนบอท", drawMethod: "วิธีจั่ว",
+        speedLabel: "ความเร็ว", betLabel: "เงินเดิมพัน", startBtn: "เริ่มเกม",
+        historyLabel: "ประวัติ", waitingMsg: "กำลังรอ…", playText: "เล่นต่อ", pauseText: "หยุด",
+        nextBtn: "ถัดไป", kinhBtn: "บิงโก!", winMsg: "คุณชนะ!", loseMsg: "ยังไม่ครบ",
+        homeBtn: "หน้าหลัก", walletTitle: "กระเป๋าเงิน",
+        cancel: "ยกเลิก", saveBtn: "บันทึก", quitConfirm: "ออกจากเกม?",
+        inviteBtn: "เชิญ", inviteTitle: "เชิญเพื่อน", copyBtn: "คัดลอก", closeBtn: "ปิด",
+        settingsTitle: "การตั้งค่า", leftLabel: "เหลือ", reachText: "ใกล้แล้ว!", winLabelShort: "ชนะ", fullMsg: "ห้องเต็ม"
+    },
+    lo: {
+        label: "ລາວ", cur: "₭", defWallet: 500000,
+        sessionBtn: "ສະຖິຕິ", roundsLabel: " ຮອບ", netLabel: "ລວມ", perPersonLabel: "(ເດີມພັນຕໍ່ຄົນ)",
+        masterAfk: "Host ຫ່າງ - ໂອນສິດໃນ", afkAutoTransfer: "ໂອນໃນ",
+        transferBtn: "ໂອນ", transferTitle: "ໂອນສິດ", transferDesc: "ເລືອກຜູ້ຫຼິ້ນທີ່ຈະໄດ້ຮັບສິດ",
+        masterTransferred: "ໄດ້ຮັບສິດແລ້ວ",
+        welcomeTitle: "ໂລໂຕ ອອນລາຍ", welcomeSubtitle: "ເກມພື້ນເມືອງ", welcomeMsg: "ຍິນດີຕ້ອນຮັບ",
+        playerNameLabel: "ຊື່ຜູ້ຫຼິ້ນ", placeholderName: "ໃສ່ຊື່…", modeSolo: "ຫຼິ້ນຄົນດຽວ", modeMulti: "ຫຼິ້ນຫຼາຍຄົນ",
+        setupTitle: "ຕັ້ງຄ່າ", ticketQtyLabel: "ຈຳນວນໃບ", opponentsLabel: "Bot", drawMethod: "ວິທີ",
+        speedLabel: "ຄວາມໄວ", betLabel: "ເດີມພັນ", startBtn: "ເລີ່ມ",
+        historyLabel: "ປະຫວັດ", waitingMsg: "ລໍຖ້າ…", playText: "ຫຼິ້ນ", pauseText: "ຢຸດ",
+        nextBtn: "ຕໍ່ໄປ", kinhBtn: "ຊະນະ!", winMsg: "ຊະນະແລ້ວ!", loseMsg: "ຍັງ!",
+        homeBtn: "ໜ້າຫຼັກ", walletTitle: "ກະເປົາ",
+        cancel: "ຍົກເລີກ", saveBtn: "ບັນທຶກ", quitConfirm: "ອອກ?",
+        inviteBtn: "ເຊີນ", inviteTitle: "ເຊີນ", copyBtn: "ກັອບປີ້", closeBtn: "ປິດ",
+        settingsTitle: "ຕັ້ງຄ່າ", leftLabel: "ເຫຼືອ", reachText: "ໃກ້ແລ້ວ!", winLabelShort: "ຊະນະ", fullMsg: "ເຕັມ"
+    },
+    km: {
+        label: "ខ្មែរ", cur: "៛", defWallet: 200000,
+        sessionBtn: "ស្ថិតិ", roundsLabel: " វគ្គ", netLabel: "សរុប", perPersonLabel: "(ភ្នាល់ក្នុងម្នាក់)",
+        masterAfk: "ម្ចាស់ host អវត្ដមាន - ផ្ទេរក្នុង", afkAutoTransfer: "ផ្ទេរក្នុង",
+        transferBtn: "ផ្ទេរ", transferTitle: "ផ្ទេរអំណាច", transferDesc: "ជ្រើសរើសអ្នកលេង",
+        masterTransferred: "បានទទួលអំណាច",
+        welcomeTitle: "ឡូតូ អនឡាញ", welcomeSubtitle: "ល្បែងប្រជាប្រិយ", welcomeMsg: "សូមស្វាគមន៍",
+        playerNameLabel: "ឈ្មោះ", placeholderName: "បញ្ចូល…", modeSolo: "ម្នាក់ឯង", modeMulti: "ច្រើននាក់",
+        setupTitle: "កំណត់", ticketQtyLabel: "សន្លឹក", opponentsLabel: "Bot", drawMethod: "វិធី",
+        speedLabel: "ល្បឿន", betLabel: "ភ្នាល់", startBtn: "ចាប់ផ្ដើម",
+        historyLabel: "ប្រវត្តិ", waitingMsg: "រង់ចាំ…", playText: "បន្ត", pauseText: "ឈប់",
+        nextBtn: "បន្ទាប់", kinhBtn: "ឈ្នះ!", winMsg: "អ្នកឈ្នះ!", loseMsg: "នៅ!",
+        homeBtn: "ដើម", walletTitle: "កាបូប",
+        cancel: "បោះបង់", saveBtn: "រក្សា", quitConfirm: "ចាកចេញ?",
+        inviteBtn: "អញ្ជើញ", inviteTitle: "អញ្ជើញ", copyBtn: "ចម្លង", closeBtn: "បិទ",
+        settingsTitle: "ការកំណត់", leftLabel: "ទៀត", reachText: "ជិតហើយ!", winLabelShort: "ឈ្នះ", fullMsg: "ពេញ"
+    },
+    zh: {
+        label: "简体中文", cur: "¥", defWallet: 300,
+        sessionBtn: "统计", roundsLabel: "局", netLabel: "累计损益", perPersonLabel: "（每人下注金额）",
+        masterAfk: "房主离开中 - 转让倒计时", afkAutoTransfer: "转让倒计时",
+        transferBtn: "转让", transferTitle: "转让房主", transferDesc: "选择接收房主权限的玩家",
+        masterTransferred: "成为新房主",
+        welcomeTitle: "乐透在线", welcomeSubtitle: "经典游戏", welcomeMsg: "欢迎",
+        playerNameLabel: "玩家名称", placeholderName: "输入…", modeSolo: "单人", modeMulti: "多人",
+        setupTitle: "设置", ticketQtyLabel: "票数", opponentsLabel: "机器人", drawMethod: "方式",
+        speedLabel: "速度", betLabel: "下注", startBtn: "开始",
+        historyLabel: "历史", waitingMsg: "等待中…", playText: "继续", pauseText: "暂停",
+        nextBtn: "下个", kinhBtn: "赢了!", winMsg: "恭喜!", loseMsg: "未中!",
+        homeBtn: "主页", walletTitle: "钱包",
+        cancel: "取消", saveBtn: "保存", quitConfirm: "退出?",
+        inviteBtn: "邀请", inviteTitle: "邀请", copyBtn: "复制", closeBtn: "关闭",
+        settingsTitle: "设置", leftLabel: "剩余", reachText: "听牌!", winLabelShort: "胜", fullMsg: "满员"
+    },
+    fr: {
+        label: "Français", cur: "€", defWallet: 50,
+        sessionBtn: "Statistiques", roundsLabel: " Parties", netLabel: "Net P&L", perPersonLabel: "(mise par joueur)",
+        masterAfk: "Hôte AFK - Transfert dans", afkAutoTransfer: "Transfert dans",
+        transferBtn: "Transférer", transferTitle: "Transfert du maître", transferDesc: "Choisir le nouveau maître",
+        masterTransferred: "est maintenant maître",
+        welcomeTitle: "LOTO EN LIGNE", welcomeSubtitle: "JEU CLASSIQUE", welcomeMsg: "Bienvenue",
+        playerNameLabel: "Nom", placeholderName: "Entrez…", modeSolo: "Solo", modeMulti: "Multi",
+        setupTitle: "Réglages", ticketQtyLabel: "Tickets", opponentsLabel: "Bots", drawMethod: "Méthode",
+        speedLabel: "Vitesse", betLabel: "Mise", startBtn: "JOUER",
+        historyLabel: "Historique", waitingMsg: "Attente…", playText: "Play", pauseText: "Pause",
+        nextBtn: "Suiv.", kinhBtn: "KINH!", winMsg: "Gagné!", loseMsg: "Non!",
+        homeBtn: "Home", walletTitle: "Portefeuille",
+        cancel: "Annuler", saveBtn: "Sauver", quitConfirm: "Quitter?",
+        inviteBtn: "Inviter", inviteTitle: "Invitation", copyBtn: "Copier", closeBtn: "Fermer",
+        settingsTitle: "Options", leftLabel: "restant", reachText: "REACH", winLabelShort: "WIN", fullMsg: "Plein"
+    }
 };
 
-// Safe localStorage wrapper: GitHub app WKWebView can throw SecurityError on localStorage access
 const safeStorage = (() => {
-try {
-safeStorage.setItem(’**ls_test**’, ‘1’);
-safeStorage.removeItem(’**ls_test**’);
-return localStorage;
-} catch(e) {
-const mem = {};
-return {
-getItem: (k) => mem[k] !== undefined ? mem[k] : null,
-setItem: (k, v) => { mem[k] = String(v); },
-removeItem: (k) => { delete mem[k]; }
-};
-}
+    try {
+        localStorage.setItem('ls_test', '1');
+        localStorage.removeItem('ls_test');
+        return localStorage;
+    } catch(e) {
+        const mem = {};
+        return {
+            getItem: (k) => mem[k] !== undefined ? mem[k] : null,
+            setItem: (k, v) => { mem[k] = String(v); },
+            removeItem: (k) => { delete mem[k]; }
+        };
+    }
 })();
 
 const { createApp, ref, reactive, computed, watch, onMounted, onUnmounted } = Vue;
 
 createApp({
-setup() {
-const currentLang = ref(safeStorage.getItem(‘loto_lang’) || ‘ja’);
-const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
+    setup() {
+        const currentLang = ref(safeStorage.getItem('loto_lang') || 'ja');
+        const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
 
+        const gameState = ref('HOME');
+        const mode = ref('SOLO');
+        const isGameOver = ref(false);
 
-    const gameState = ref('HOME');
-    const mode = ref('SOLO');
-    const isGameOver = ref(false);
+        const generateRandomString = (length) => {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
+            return result;
+        };
 
-    const generateRandomString = (length) => {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        let result = '';
-        for (let i = 0; i < length; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
-        return result;
-    };
+        const playerId = ref(safeStorage.getItem('loto_player_id'));
+        if (!playerId.value) { playerId.value = generateRandomString(12); safeStorage.setItem('loto_player_id', playerId.value); }
 
-    const playerId = ref(safeStorage.getItem('loto_player_id'));
-    if (!playerId.value) { playerId.value = generateRandomString(12); safeStorage.setItem('loto_player_id', playerId.value); }
+        const playerName = ref(safeStorage.getItem('loto_player_name') || ('Player' + generateRandomString(4)));
+        if (!safeStorage.getItem('loto_player_name')) safeStorage.setItem('loto_player_name', playerName.value);
 
-    const playerName = ref(safeStorage.getItem('loto_player_name') || ('Player' + generateRandomString(4)));
-    if (!safeStorage.getItem('loto_player_name')) safeStorage.setItem('loto_player_name', playerName.value);
+        const walletBalances = reactive({});
+        const wallet = reactive({ amount: 5000, currency: '¥' });
+        const selectedWalletCurrency = ref('¥');
+        const tempWalletMap = reactive({});
 
-    // ① 多通貨ウォレット
-    const walletBalances = reactive({});
-    const wallet = reactive({ amount: 5000, currency: '¥' });
-    const selectedWalletCurrency = ref('¥');
-    const tempWalletMap = reactive({});
+        const syncWallet = () => { wallet.amount = walletBalances[wallet.currency] || 0; };
 
-    const syncWallet = () => { wallet.amount = walletBalances[wallet.currency] || 0; };
+        const setBetCurrency = (code) => {
+            wallet.currency = code;
+            syncWallet();
+        };
 
-    const setBetCurrency = (code) => {
-        wallet.currency = code;
-        syncWallet();
-    };
+        const selectWalletCurrency = (code) => {
+            selectedWalletCurrency.value = code;
+        };
 
-    const selectWalletCurrency = (code) => {
-        selectedWalletCurrency.value = code;
-    };
-
-    const currentTempBalance = computed(() => {
-        return tempWalletMap[selectedWalletCurrency.value] || 0;
-    });
-
-    const setCurrentTempBalance = (val) => {
-        tempWalletMap[selectedWalletCurrency.value] = Number(val) || 0;
-    };
-
-    const walletAdd = (n) => {
-        tempWalletMap[selectedWalletCurrency.value] = (tempWalletMap[selectedWalletCurrency.value] || 0) + n;
-    };
-
-    const walletSub = (n) => {
-        tempWalletMap[selectedWalletCurrency.value] = Math.max(0, (tempWalletMap[selectedWalletCurrency.value] || 0) - n);
-    };
-
-    const ticketQty = ref(6);
-    const botCount = ref(3);
-    const betAmount = ref(250);
-    const isAutoMode = ref(true);
-    const drawInterval = ref(4);
-    const isPaused = ref(false);
-    const myCards = ref([]);
-    const myMarks = ref([]);
-    const currentNumber = ref(null);
-    const drawnHistory = ref([]);
-    const bots = ref([]);
-    const roomId = ref(new URLSearchParams(window.location.search).get('room'));
-    const isMaster = ref(false);
-    const players = ref([]);
-    const winnerInfo = ref(null);
-    const readyPlayers = ref({});
-    const currentTime = ref('');
-    const showWalletModal = ref(false);
-    const showSettingsModal = ref(false);
-    const showShareModal = ref(false);
-    const showSessionModal = ref(false);
-    const showTransferModal = ref(false);
-
-    // ③⑧ ゲーム結果・セッション統計
-    const gameResult = reactive({ participants: [] });
-    const sessionStats = reactive({ rounds: 0, netChange: 0, history: [] });
-
-    // ⑤⑥ AFK / マスター管理
-    const masterPlayerId = ref('');
-    const masterIsAfk = ref(false);
-    const afkCountdown = ref(0);
-    const afkTransferDelay = ref(300); // seconds, configurable in settings
-    const toasts = ref([]);
-
-    // ⑥ マスター委譲
-    const transferableGuests = computed(() => players.value.filter(p => p.id !== playerId.value));
-
-    let timer = null;
-    let heartbeatTimer = null;
-    let afkWatchInterval = null;
-
-    // トースト通知
-    const addToast = (message, type = 'info', duration = 5000) => {
-        const iconMap = { info: 'fas fa-info-circle', warn: 'fas fa-exclamation-triangle', error: 'fas fa-exclamation-circle', success: 'fas fa-check-circle' };
-        const id = Date.now() + Math.random();
-        toasts.value.push({ id, message, type, icon: iconMap[type] });
-        setTimeout(() => { toasts.value = toasts.value.filter(x => x.id !== id); }, duration);
-    };
-
-    // AFK カウントダウン表示
-    const formatAfkCountdown = computed(() => {
-        const s = afkCountdown.value;
-        if (s <= 0) return '0:00';
-        const m = Math.floor(s / 60);
-        const sec = s % 60;
-        return m + ':' + (sec < 10 ? '0' : '') + sec;
-    });
-
-    const myNumbers = computed(() => {
-        const nums = [];
-        myCards.value.forEach(card => card.forEach(row => row.forEach(n => { if (n !== 0) nums.push(n); })));
-        return nums;
-    });
-
-    const activeOpponentsCount = computed(() =>
-        bots.value.length + (mode.value === 'MULTI' ? players.value.filter(p => p.name !== playerName.value).length : 0)
-    );
-
-    // ⑦ 所持金の1/20をキリのよい金額に
-    const calcNiceBet = (amount) => {
-        if (!amount || amount <= 0) return 1;
-        const raw = amount / 20;
-        if (raw < 1) return 1;
-        const mag = Math.pow(10, Math.floor(Math.log10(raw)));
-        const candidates = [1, 2, 5, 10].map(n => n * mag);
-        return candidates.reduce((best, c) => Math.abs(c - raw) < Math.abs(best - raw) ? c : best);
-    };
-
-    // ① 言語変更時は通貨を変えない
-    const setLang = (key) => {
-        currentLang.value = key;
-        safeStorage.setItem('loto_lang', key);
-        // 通貨は変更しない
-    };
-
-    const generateUniqueCards = (count) => {
-        const colBounds = [[1,9],[10,19],[20,29],[30,39],[40,49],[50,59],[60,69],[70,79],[80,90]];
-        const usedGlobal = new Set();
-        return Array.from({ length: count }, () => {
-            const card = [Array(9).fill(0), Array(9).fill(0), Array(9).fill(0)];
-            for (let r = 0; r < 3; r++) {
-                const cols = [0,1,2,3,4,5,6,7,8].sort(() => Math.random() - 0.5).slice(0, 5).sort((a, b) => a - b);
-                cols.forEach(c => {
-                    const [min, max] = colBounds[c];
-                    let n, attempts = 0;
-                    do { n = Math.floor(Math.random() * (max - min + 1)) + min; attempts++; }
-                    while ((usedGlobal.has(n) || card[0][c] === n || card[1][c] === n || card[2][c] === n) && attempts < 200);
-                    card[r][c] = n; usedGlobal.add(n);
-                });
-            }
-            return card;
+        const currentTempBalance = computed(() => {
+            return tempWalletMap[selectedWalletCurrency.value] || 0;
         });
-    };
 
-    const initBots = () => {
-        // ① Botは常にマスターと同じ通貨・同じ金額で賭ける
-        bots.value = Array.from({ length: botCount.value }, (_, i) => ({
-            id: i, name: 'Bot ' + (i + 1), card: generateUniqueCards(1)[0], remaining: 5,
-            betCurrency: wallet.currency, betAmount: betAmount.value
-        }));
-    };
+        const setCurrentTempBalance = (val) => {
+            tempWalletMap[selectedWalletCurrency.value] = Number(val) || 0;
+        };
 
-    const updateBots = () => {
-        if (mode.value === 'MULTI' && !isMaster.value) return;
-        let botWinner = null;
-        bots.value.forEach(bot => {
-            if (bot.remaining === 0) return;
-            let maxMarks = 0;
-            bot.card.forEach(row => {
-                const marks = row.filter(n => n !== 0 && drawnHistory.value.includes(n)).length;
-                if (marks > maxMarks) maxMarks = marks;
-                if (marks === 5 && bot.remaining > 0) { bot.remaining = 0; if (!botWinner) botWinner = bot; }
+        const walletAdd = (n) => {
+            tempWalletMap[selectedWalletCurrency.value] = (tempWalletMap[selectedWalletCurrency.value] || 0) + n;
+        };
+
+        const walletSub = (n) => {
+            tempWalletMap[selectedWalletCurrency.value] = Math.max(0, (tempWalletMap[selectedWalletCurrency.value] || 0) - n);
+        };
+
+        const ticketQty = ref(6);
+        const botCount = ref(3);
+        const betAmount = ref(250);
+        const isAutoMode = ref(true);
+        const drawInterval = ref(4);
+        const isPaused = ref(false);
+        const myCards = ref([]);
+        const myMarks = ref([]);
+        const currentNumber = ref(null);
+        const drawnHistory = ref([]);
+        const bots = ref([]);
+        const roomId = ref(new URLSearchParams(window.location.search).get('room'));
+        const isMaster = ref(false);
+        const players = ref([]);
+        const winnerInfo = ref(null);
+        const readyPlayers = ref({});
+        const currentTime = ref('');
+        const showWalletModal = ref(false);
+        const showSettingsModal = ref(false);
+        const showShareModal = ref(false);
+        const showSessionModal = ref(false);
+        const showTransferModal = ref(false);
+
+        const gameResult = reactive({ participants: [] });
+        const sessionStats = reactive({ rounds: 0, netChange: 0, history: [] });
+
+        const masterPlayerId = ref('');
+        const masterIsAfk = ref(false);
+        const afkCountdown = ref(0);
+        const afkTransferDelay = ref(300);
+        const toasts = ref([]);
+
+        const transferableGuests = computed(() => players.value.filter(p => p.id !== playerId.value));
+
+        let timer = null;
+        let heartbeatTimer = null;
+        let afkWatchInterval = null;
+
+        const addToast = (message, type = 'info', duration = 5000) => {
+            const iconMap = { info: 'fas fa-info-circle', warn: 'fas fa-exclamation-triangle', error: 'fas fa-exclamation-circle', success: 'fas fa-check-circle' };
+            const id = Date.now() + Math.random();
+            toasts.value.push({ id, message, type, icon: iconMap[type] });
+            setTimeout(() => { toasts.value = toasts.value.filter(x => x.id !== id); }, duration);
+        };
+
+        const formatAfkCountdown = computed(() => {
+            const s = afkCountdown.value;
+            if (s <= 0) return '0:00';
+            const m = Math.floor(s / 60);
+            const sec = s % 60;
+            return m + ':' + (sec < 10 ? '0' : '') + sec;
+        });
+
+        const myNumbers = computed(() => {
+            const nums = [];
+            myCards.value.forEach(card => card.forEach(row => row.forEach(n => { if (n !== 0) nums.push(n); })));
+            return nums;
+        });
+
+        const activeOpponentsCount = computed(() =>
+            bots.value.length + (mode.value === 'MULTI' ? players.value.filter(p => p.name !== playerName.value).length : 0)
+        );
+
+        const calcNiceBet = (amount) => {
+            if (!amount || amount <= 0) return 1;
+            const raw = amount / 20;
+            if (raw < 1) return 1;
+            const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+            const candidates = [1, 2, 5, 10].map(n => n * mag);
+            return candidates.reduce((best, c) => Math.abs(c - raw) < Math.abs(best - raw) ? c : best);
+        };
+
+        const setLang = (key) => {
+            currentLang.value = key;
+            safeStorage.setItem('loto_lang', key);
+        };
+
+        const generateUniqueCards = (count) => {
+            const colBounds = [[1,9],[10,19],[20,29],[30,39],[40,49],[50,59],[60,69],[70,79],[80,90]];
+            const usedGlobal = new Set();
+            return Array.from({ length: count }, () => {
+                const card = [Array(9).fill(0), Array(9).fill(0), Array(9).fill(0)];
+                for (let r = 0; r < 3; r++) {
+                    const cols = [0,1,2,3,4,5,6,7,8].sort(() => Math.random() - 0.5).slice(0, 5).sort((a, b) => a - b);
+                    cols.forEach(c => {
+                        const [min, max] = colBounds[c];
+                        let n, attempts = 0;
+                        do { n = Math.floor(Math.random() * (max - min + 1)) + min; attempts++; }
+                        while ((usedGlobal.has(n) || card[0][c] === n || card[1][c] === n || card[2][c] === n) && attempts < 200);
+                        card[r][c] = n; usedGlobal.add(n);
+                    });
+                }
+                return card;
             });
-            if (bot.remaining > 0) bot.remaining = Math.min(bot.remaining, 5 - maxMarks);
-        });
-        if (botWinner && gameState.value === 'PLAYING') {
-            const winData = { name: botWinner.name, id: 'bot_' + botWinner.id };
-            if (mode.value === 'MULTI') {
-                dbRef('rooms/' + roomId.value + '/winner').set(winData);
-            } else {
-                setTimeout(() => { if (gameState.value === 'PLAYING' && !isGameOver.value) finishGame(winData); }, 500);
-            }
-        }
-        if (mode.value === 'MULTI' && isMaster.value) {
-            dbRef('rooms/' + roomId.value + '/bots').set(
-                bots.value.map(b => ({ id: b.id, name: b.name, remaining: b.remaining, card: b.card, betCurrency: b.betCurrency, betAmount: b.betAmount }))
-            );
-        }
-    };
+        };
 
-    // ①③ 多通貨対応の精算計算
-    const buildGameResult = (winner) => {
-        const humanPlayers = mode.value === 'MULTI' ? players.value : [{ name: playerName.value, id: playerId.value, betCurrency: wallet.currency, betAmount: betAmount.value }];
-
-        // マスターのbet情報 (Botに使用)
-        let masterBetCur = wallet.currency;
-        let masterBetAmt = betAmount.value;
-        if (mode.value === 'MULTI') {
-            const mp = humanPlayers.find(p => p.id === masterPlayerId.value);
-            if (mp) { masterBetCur = mp.betCurrency || wallet.currency; masterBetAmt = mp.betAmount || betAmount.value; }
-        }
-
-        // 第1パス: 全参加者の基本情報
-        const participants = [];
-        humanPlayers.forEach(p => {
-            const pCur = p.betCurrency || wallet.currency;
-            const pAmt = (typeof p.betAmount === 'number') ? p.betAmount : betAmount.value;
-            const isWinner = p.name === winner.name;
-            participants.push({ name: p.name, isWinner, isMe: p.name === playerName.value, isBot: false, betCurrency: pCur, betAmount: pAmt, ownCurrencyProfit: 0, foreignGains: [], change: isWinner ? 0 : -pAmt });
-        });
-        bots.value.forEach(bot => {
-            const isWinner = winner.name === bot.name;
-            const bCur = bot.betCurrency || masterBetCur;
-            const bAmt = bot.betAmount || masterBetAmt;
-            participants.push({ name: bot.name, isWinner, isMe: false, isBot: true, betCurrency: bCur, betAmount: bAmt, ownCurrencyProfit: 0, foreignGains: [], change: isWinner ? 0 : -bAmt });
-        });
-
-        // 第2パス: 勝者の利益計算
-        const winnerEntry = participants.find(p => p.isWinner);
-        if (winnerEntry) {
-            const gainsByCur = {};
-            participants.forEach(p => { if (!p.isWinner) gainsByCur[p.betCurrency] = (gainsByCur[p.betCurrency] || 0) + p.betAmount; });
-            winnerEntry.ownCurrencyProfit = gainsByCur[winnerEntry.betCurrency] || 0;
-            winnerEntry.foreignGains = Object.entries(gainsByCur).filter(([c]) => c !== winnerEntry.betCurrency).map(([c, a]) => ({ currency: c, amount: a }));
-            winnerEntry.change = winnerEntry.ownCurrencyProfit;
-        }
-
-        gameResult.participants = participants;
-    };
-
-    const finishGame = (winner) => {
-        if (isGameOver.value || gameState.value !== 'PLAYING') return;
-        isGameOver.value = true;
-        stopGame();
-        winnerInfo.value = winner;
-        buildGameResult(winner);
-
-        const myEntry = gameResult.participants.find(p => p.isMe);
-        if (myEntry) {
-            if (myEntry.isWinner) {
-                // 自分のbet返却 + 敗者全員のbet受取
-                walletBalances[myEntry.betCurrency] = (walletBalances[myEntry.betCurrency] || 0) + myEntry.betAmount + myEntry.ownCurrencyProfit;
-                myEntry.foreignGains.forEach(fg => {
-                    walletBalances[fg.currency] = (walletBalances[fg.currency] || 0) + fg.amount;
-                });
-                syncWallet();
-            }
-            sessionStats.rounds++;
-            sessionStats.netChange += myEntry.change;
-            sessionStats.history.push({ round: sessionStats.rounds, change: myEntry.change, winner: winner.name, currency: myEntry.betCurrency });
-            saveWalletToStorage();
-        }
-        gameState.value = 'FINISHED';
-    };
-
-    const calcNiceBetOnce = ref(false);
-
-    const initGame = (m) => {
-        mode.value = m;
-        playerName.value = playerName.value.trim() || ('Player' + generateRandomString(4));
-        safeStorage.setItem('loto_player_name', playerName.value);
-        // ⑦ 初回のみ賭け金を自動設定
-        if (!calcNiceBetOnce.value) {
-            betAmount.value = calcNiceBet(wallet.amount || (walletBalances[wallet.currency] || 0));
-            calcNiceBetOnce.value = true;
-        }
-        if (m === 'MULTI') {
-            if (!roomId.value) roomId.value = generateRandomString(6).toUpperCase();
-            const url = new URL(window.location);
-            url.searchParams.set('room', roomId.value);
-            window.history.pushState({}, '', url);
-            isMaster.value = true;
-        }
-        gameState.value = 'SETUP';
-    };
-
-    const startGame = () => {
-        const bal = walletBalances[wallet.currency] || 0;
-        if (bal < betAmount.value) return alert(t.value.loseMsg);
-        isGameOver.value = false;
-        walletBalances[wallet.currency] = bal - betAmount.value;
-        syncWallet();
-        myCards.value = generateUniqueCards(ticketQty.value);
-        myMarks.value = myCards.value.map(c => c.map(r => r.map(() => false)));
-        drawnHistory.value = [];
-        currentNumber.value = null;
-
-        if (mode.value === 'SOLO' || isMaster.value) {
-            initBots();
-        } else {
-            bots.value = [];
-        }
-
-        gameState.value = 'PLAYING';
-        saveState();
-
-        if (mode.value === 'MULTI') {
-            if (isMaster.value) {
-                dbRef('rooms/' + roomId.value).update({
-                    history: [], current: null, winner: null,
-                    bots: bots.value.map(b => ({ id: b.id, name: b.name, remaining: b.remaining, card: b.card, betCurrency: b.betCurrency, betAmount: b.betAmount }))
-                });
-                setupMasterPresence();
-            }
-            setupMultiplayer();
-        }
-        if (isAutoMode.value && (mode.value === 'SOLO' || isMaster.value)) startTimer();
-    };
-
-    // ⑥ マスタープレゼンス設定
-    const setupMasterPresence = () => {
-        if (!roomId.value) return;
-        const masterRef = dbRef('rooms/' + roomId.value + '/masterInfo');
-        masterRef.onDisconnect().update({ online: false, afkSince: Date.now() });
-        masterRef.set({ playerId: playerId.value, name: playerName.value, lastSeen: Date.now(), online: true, afkSince: null });
-        if (heartbeatTimer) clearInterval(heartbeatTimer);
-        heartbeatTimer = setInterval(sendHeartbeat, 30000);
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-    };
-
-    const sendHeartbeat = () => {
-        if (!isMaster.value || !roomId.value) return;
-        dbRef('rooms/' + roomId.value + '/masterInfo').update({ lastSeen: Date.now(), online: true });
-    };
-
-    const handleVisibilityChange = () => {
-        if (!isMaster.value || !roomId.value) return;
-        if (document.hidden) {
-            dbRef('rooms/' + roomId.value + '/masterInfo').update({ online: false, afkSince: Date.now() });
-            if (timer) { clearInterval(timer); timer = null; }
-        } else {
-            dbRef('rooms/' + roomId.value + '/masterInfo').update({ online: true, lastSeen: Date.now(), afkSince: null });
-            if (isAutoMode.value && gameState.value === 'PLAYING' && !isPaused.value) startTimer();
-        }
-    };
-
-    // ⑤ AFK 監視
-    const clearAfkWatch = () => {
-        if (afkWatchInterval) { clearInterval(afkWatchInterval); afkWatchInterval = null; }
-        afkCountdown.value = 0;
-    };
-
-    const startAfkWatch = (afkSinceTs) => {
-        clearAfkWatch();
-        const notified = new Set();
-        const DELAY_MS = afkTransferDelay.value * 1000;
-        afkWatchInterval = setInterval(() => {
-            const elapsed = Date.now() - afkSinceTs;
-            const remaining = Math.max(0, DELAY_MS - elapsed);
-            afkCountdown.value = Math.ceil(remaining / 1000);
-
-            if (elapsed >= 10000 && !notified.has('10s')) {
-                notified.add('10s');
-                addToast('⚠️ ' + (t.value.masterAfk || 'Host AFK') + ' ' + formatAfkCountdown.value, 'warn', 8000);
-            }
-            if (elapsed >= DELAY_MS - 180000 && DELAY_MS > 180000 && !notified.has('3m')) {
-                notified.add('3m');
-                addToast('⏰ ' + (t.value.afkAutoTransfer || 'Transfer in') + ' 3min', 'warn', 8000);
-            }
-            if (elapsed >= DELAY_MS - 60000 && !notified.has('1m')) {
-                notified.add('1m');
-                addToast('🚨 ' + (t.value.afkAutoTransfer || 'Transfer in') + ' 1min', 'error', 8000);
-            }
-            if (remaining <= 0 && !notified.has('transfer')) {
-                notified.add('transfer');
-                clearAfkWatch();
-                tryAutoTransfer();
-            }
-        }, 1000);
-    };
-
-    // ⑥ 自動委譲 (最古のゲストのみ実行)
-    const tryAutoTransfer = () => {
-        const guests = players.value.filter(p => p.id !== masterPlayerId.value);
-        if (guests.length === 0) return;
-        guests.sort((a, b) => (a.joinedAt || Infinity) - (b.joinedAt || Infinity));
-        const target = guests[0];
-        if (target.id !== playerId.value) return;
-
-        const masterRef = dbRef('rooms/' + roomId.value + '/masterInfo');
-        masterRef.transaction(current => {
-            if (!current || current.online) return undefined;
-            return { playerId: target.id, name: target.name, lastSeen: Date.now(), online: true, afkSince: null };
-        }, (err, committed) => {
-            if (committed) {
-                addToast('👑 ' + target.name + ' ' + (t.value.masterTransferred || 'is now master'), 'success', 6000);
-            }
-        });
-    };
-
-    // ⑥ 手動委譲
-    const transferMasterTo = (targetPlayer) => {
-        dbRef('rooms/' + roomId.value + '/masterInfo').set({
-            playerId: targetPlayer.id, name: targetPlayer.name,
-            lastSeen: Date.now(), online: true, afkSince: null
-        });
-        dbRef('rooms/' + roomId.value + '/masterInfo').onDisconnect().cancel();
-        if (heartbeatTimer) { clearInterval(heartbeatTimer); heartbeatTimer = null; }
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-        if (timer) { clearInterval(timer); timer = null; }
-        isMaster.value = false;
-        addToast('👑 ' + targetPlayer.name + ' ' + (t.value.masterTransferred || 'is now master'), 'success', 5000);
-        showTransferModal.value = false;
-    };
-
-    // ⑥ マスター昇格
-    const promoteToMaster = () => {
-        isMaster.value = true;
-        masterIsAfk.value = false;
-        clearAfkWatch();
-        setupMasterPresence();
-        if (isAutoMode.value && gameState.value === 'PLAYING' && !isPaused.value) startTimer();
-        addToast('👑 ' + (t.value.transferTitle || 'You are now master') + '!', 'success', 6000);
-    };
-
-    // ⑥ マルチプレイヤー同期
-    const setupMultiplayer = () => {
-        const roomRef = dbRef('rooms/' + roomId.value);
-        const myJoinedAtKey = 'loto_joined_' + roomId.value;
-        let myJoinedAt = parseInt(safeStorage.getItem(myJoinedAtKey) || '0');
-        if (!myJoinedAt) { myJoinedAt = Date.now(); safeStorage.setItem(myJoinedAtKey, myJoinedAt.toString()); }
-
-        const myPresenceRef = dbRef('rooms/' + roomId.value + '/presence/' + playerId.value);
-
-        watch([playerName, myMarks], () => {
-            let minRemaining = 5;
-            myMarks.value.forEach(card => card.forEach(row => {
-                const m = row.filter(x => x).length;
-                if (5 - m < minRemaining) minRemaining = 5 - m;
+        const initBots = () => {
+            bots.value = Array.from({ length: botCount.value }, (_, i) => ({
+                id: i, name: 'Bot ' + (i + 1), card: generateUniqueCards(1)[0], remaining: 5,
+                betCurrency: wallet.currency, betAmount: betAmount.value
             }));
-            myPresenceRef.update({ name: playerName.value, id: playerId.value, remaining: minRemaining, betCurrency: wallet.currency, betAmount: betAmount.value, joinedAt: myJoinedAt });
-        }, { deep: true, immediate: true });
+        };
 
-        roomRef.off('value');
-        roomRef.on('value', s => {
-            const d = s.val();
-            if (!d) return;
+        const updateBots = () => {
+            if (mode.value === 'MULTI' && !isMaster.value) return;
+            let botWinner = null;
+            bots.value.forEach(bot => {
+                if (bot.remaining === 0) return;
+                let maxMarks = 0;
+                bot.card.forEach(row => {
+                    const marks = row.filter(n => n !== 0 && drawnHistory.value.includes(n)).length;
+                    if (marks > maxMarks) maxMarks = marks;
+                    if (marks === 5 && bot.remaining > 0) { bot.remaining = 0; if (!botWinner) botWinner = bot; }
+                });
+                if (bot.remaining > 0) bot.remaining = Math.min(bot.remaining, 5 - maxMarks);
+            });
+            if (botWinner && gameState.value === 'PLAYING') {
+                const winData = { name: botWinner.name, id: 'bot_' + botWinner.id };
+                if (mode.value === 'MULTI') {
+                    dbRef('rooms/' + roomId.value + '/winner').set(winData);
+                } else {
+                    setTimeout(() => { if (gameState.value === 'PLAYING' && !isGameOver.value) finishGame(winData); }, 500);
+                }
+            }
+            if (mode.value === 'MULTI' && isMaster.value) {
+                dbRef('rooms/' + roomId.value + '/bots').set(
+                    bots.value.map(b => ({ id: b.id, name: b.name, remaining: b.remaining, card: b.card, betCurrency: b.betCurrency, betAmount: b.betAmount }))
+                );
+            }
+        };
 
-            if (d.history) drawnHistory.value = d.history;
-            if (d.current !== undefined) currentNumber.value = d.current;
-            if (d.presence) players.value = Object.values(d.presence);
+        const buildGameResult = (winner) => {
+            const humanPlayers = mode.value === 'MULTI' ? players.value : [{ name: playerName.value, id: playerId.value, betCurrency: wallet.currency, betAmount: betAmount.value }];
 
-            if (!isMaster.value && d.bots) {
-                bots.value = Array.isArray(d.bots) ? d.bots : Object.values(d.bots);
+            let masterBetCur = wallet.currency;
+            let masterBetAmt = betAmount.value;
+            if (mode.value === 'MULTI') {
+                const mp = humanPlayers.find(p => p.id === masterPlayerId.value);
+                if (mp) { masterBetCur = mp.betCurrency || wallet.currency; masterBetAmt = mp.betAmount || betAmount.value; }
             }
 
-            readyPlayers.value = d.ready || {};
+            const participants = [];
+            humanPlayers.forEach(p => {
+                const pCur = p.betCurrency || wallet.currency;
+                const pAmt = (typeof p.betAmount === 'number') ? p.betAmount : betAmount.value;
+                const isWinner = p.name === winner.name;
+                participants.push({ name: p.name, isWinner, isMe: p.name === playerName.value, isBot: false, betCurrency: pCur, betAmount: pAmt, ownCurrencyProfit: 0, foreignGains: [], change: isWinner ? 0 : -pAmt });
+            });
+            bots.value.forEach(bot => {
+                const isWinner = winner.name === bot.name;
+                const bCur = bot.betCurrency || masterBetCur;
+                const bAmt = bot.betAmount || masterBetAmt;
+                participants.push({ name: bot.name, isWinner, isMe: false, isBot: true, betCurrency: bCur, betAmount: bAmt, ownCurrencyProfit: 0, foreignGains: [], change: isWinner ? 0 : -bAmt });
+            });
 
-            // ⑤⑥ masterInfo 処理
-            if (d.masterInfo) {
-                const mi = d.masterInfo;
-                masterPlayerId.value = mi.playerId;
+            const winnerEntry = participants.find(p => p.isWinner);
+            if (winnerEntry) {
+                const gainsByCur = {};
+                participants.forEach(p => { if (!p.isWinner) gainsByCur[p.betCurrency] = (gainsByCur[p.betCurrency] || 0) + p.betAmount; });
+                winnerEntry.ownCurrencyProfit = gainsByCur[winnerEntry.betCurrency] || 0;
+                winnerEntry.foreignGains = Object.entries(gainsByCur).filter(([c]) => c !== winnerEntry.betCurrency).map(([c, a]) => ({ currency: c, amount: a }));
+                winnerEntry.change = winnerEntry.ownCurrencyProfit;
+            }
 
-                // 自分がマスターに昇格した場合
-                if (mi.playerId === playerId.value && !isMaster.value) {
-                    promoteToMaster();
+            gameResult.participants = participants;
+        };
+
+        const finishGame = (winner) => {
+            if (isGameOver.value || gameState.value !== 'PLAYING') return;
+            isGameOver.value = true;
+            stopGame();
+            winnerInfo.value = winner;
+            buildGameResult(winner);
+
+            const myEntry = gameResult.participants.find(p => p.isMe);
+            if (myEntry) {
+                if (myEntry.isWinner) {
+                    walletBalances[myEntry.betCurrency] = (walletBalances[myEntry.betCurrency] || 0) + myEntry.betAmount + myEntry.ownCurrencyProfit;
+                    myEntry.foreignGains.forEach(fg => {
+                        walletBalances[fg.currency] = (walletBalances[fg.currency] || 0) + fg.amount;
+                    });
+                    syncWallet();
+                }
+                sessionStats.rounds++;
+                sessionStats.netChange += myEntry.change;
+                sessionStats.history.push({ round: sessionStats.rounds, change: myEntry.change, winner: winner.name, currency: myEntry.betCurrency });
+                saveWalletToStorage();
+            }
+            gameState.value = 'FINISHED';
+        };
+
+        const calcNiceBetOnce = ref(false);
+
+        const initGame = (m) => {
+            mode.value = m;
+            playerName.value = playerName.value.trim() || ('Player' + generateRandomString(4));
+            safeStorage.setItem('loto_player_name', playerName.value);
+            if (!calcNiceBetOnce.value) {
+                betAmount.value = calcNiceBet(wallet.amount || (walletBalances[wallet.currency] || 0));
+                calcNiceBetOnce.value = true;
+            }
+            if (m === 'MULTI') {
+                if (!roomId.value) roomId.value = generateRandomString(6).toUpperCase();
+                const url = new URL(window.location);
+                url.searchParams.set('room', roomId.value);
+                window.history.pushState({}, '', url);
+                isMaster.value = true;
+            }
+            gameState.value = 'SETUP';
+        };
+
+        const startGame = () => {
+            const bal = walletBalances[wallet.currency] || 0;
+            if (bal < betAmount.value) return alert(t.value.loseMsg);
+            isGameOver.value = false;
+            walletBalances[wallet.currency] = bal - betAmount.value;
+            syncWallet();
+            myCards.value = generateUniqueCards(ticketQty.value);
+            myMarks.value = myCards.value.map(c => c.map(r => r.map(() => false)));
+            drawnHistory.value = [];
+            currentNumber.value = null;
+
+            if (mode.value === 'SOLO' || isMaster.value) {
+                initBots();
+            } else {
+                bots.value = [];
+            }
+
+            gameState.value = 'PLAYING';
+            saveState();
+
+            if (mode.value === 'MULTI') {
+                if (isMaster.value) {
+                    dbRef('rooms/' + roomId.value).update({
+                        history: [], current: null, winner: null,
+                        bots: bots.value.map(b => ({ id: b.id, name: b.name, remaining: b.remaining, card: b.card, betCurrency: b.betCurrency, betAmount: b.betAmount }))
+                    });
+                    setupMasterPresence();
+                }
+                setupMultiplayer();
+            }
+            if (isAutoMode.value && (mode.value === 'SOLO' || isMaster.value)) startTimer();
+        };
+
+        const setupMasterPresence = () => {
+            if (!roomId.value) return;
+            const masterRef = dbRef('rooms/' + roomId.value + '/masterInfo');
+            masterRef.onDisconnect().update({ online: false, afkSince: Date.now() });
+            masterRef.set({ playerId: playerId.value, name: playerName.value, lastSeen: Date.now(), online: true, afkSince: null });
+            if (heartbeatTimer) clearInterval(heartbeatTimer);
+            heartbeatTimer = setInterval(sendHeartbeat, 30000);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+        };
+
+        const sendHeartbeat = () => {
+            if (!isMaster.value || !roomId.value) return;
+            dbRef('rooms/' + roomId.value + '/masterInfo').update({ lastSeen: Date.now(), online: true });
+        };
+
+        const handleVisibilityChange = () => {
+            if (!isMaster.value || !roomId.value) return;
+            if (document.hidden) {
+                dbRef('rooms/' + roomId.value + '/masterInfo').update({ online: false, afkSince: Date.now() });
+                if (timer) { clearInterval(timer); timer = null; }
+            } else {
+                dbRef('rooms/' + roomId.value + '/masterInfo').update({ online: true, lastSeen: Date.now(), afkSince: null });
+                if (isAutoMode.value && gameState.value === 'PLAYING' && !isPaused.value) startTimer();
+            }
+        };
+
+        const clearAfkWatch = () => {
+            if (afkWatchInterval) { clearInterval(afkWatchInterval); afkWatchInterval = null; }
+            afkCountdown.value = 0;
+        };
+
+        const startAfkWatch = (afkSinceTs) => {
+            clearAfkWatch();
+            const notified = new Set();
+            const DELAY_MS = afkTransferDelay.value * 1000;
+            afkWatchInterval = setInterval(() => {
+                const elapsed = Date.now() - afkSinceTs;
+                const remaining = Math.max(0, DELAY_MS - elapsed);
+                afkCountdown.value = Math.ceil(remaining / 1000);
+
+                if (elapsed >= 10000 && !notified.has('10s')) {
+                    notified.add('10s');
+                    addToast('⚠️ ' + (t.value.masterAfk || 'Host AFK') + ' ' + formatAfkCountdown.value, 'warn', 8000);
+                }
+                if (elapsed >= DELAY_MS - 180000 && DELAY_MS > 180000 && !notified.has('3m')) {
+                    notified.add('3m');
+                    addToast('⏰ ' + (t.value.afkAutoTransfer || 'Transfer in') + ' 3min', 'warn', 8000);
+                }
+                if (elapsed >= DELAY_MS - 60000 && !notified.has('1m')) {
+                    notified.add('1m');
+                    addToast('🚨 ' + (t.value.afkAutoTransfer || 'Transfer in') + ' 1min', 'error', 8000);
+                }
+                if (remaining <= 0 && !notified.has('transfer')) {
+                    notified.add('transfer');
+                    clearAfkWatch();
+                    tryAutoTransfer();
+                }
+            }, 1000);
+        };
+
+        const tryAutoTransfer = () => {
+            const guests = players.value.filter(p => p.id !== masterPlayerId.value);
+            if (guests.length === 0) return;
+            guests.sort((a, b) => (a.joinedAt || Infinity) - (b.joinedAt || Infinity));
+            const target = guests[0];
+            if (target.id !== playerId.value) return;
+
+            const masterRef = dbRef('rooms/' + roomId.value + '/masterInfo');
+            masterRef.transaction(current => {
+                if (!current || current.online) return undefined;
+                return { playerId: target.id, name: target.name, lastSeen: Date.now(), online: true, afkSince: null };
+            }, (err, committed) => {
+                if (committed) {
+                    addToast('👑 ' + target.name + ' ' + (t.value.masterTransferred || 'is now master'), 'success', 6000);
+                }
+            });
+        };
+
+        const transferMasterTo = (targetPlayer) => {
+            dbRef('rooms/' + roomId.value + '/masterInfo').set({
+                playerId: targetPlayer.id, name: targetPlayer.name,
+                lastSeen: Date.now(), online: true, afkSince: null
+            });
+            dbRef('rooms/' + roomId.value + '/masterInfo').onDisconnect().cancel();
+            if (heartbeatTimer) { clearInterval(heartbeatTimer); heartbeatTimer = null; }
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            if (timer) { clearInterval(timer); timer = null; }
+            isMaster.value = false;
+            addToast('👑 ' + targetPlayer.name + ' ' + (t.value.masterTransferred || 'is now master'), 'success', 5000);
+            showTransferModal.value = false;
+        };
+
+        const promoteToMaster = () => {
+            isMaster.value = true;
+            masterIsAfk.value = false;
+            clearAfkWatch();
+            setupMasterPresence();
+            if (isAutoMode.value && gameState.value === 'PLAYING' && !isPaused.value) startTimer();
+            addToast('👑 ' + (t.value.transferTitle || 'You are now master') + '!', 'success', 6000);
+        };
+
+        const setupMultiplayer = () => {
+            const roomRef = dbRef('rooms/' + roomId.value);
+            const myJoinedAtKey = 'loto_joined_' + roomId.value;
+            let myJoinedAt = parseInt(safeStorage.getItem(myJoinedAtKey) || '0');
+            if (!myJoinedAt) { myJoinedAt = Date.now(); safeStorage.setItem(myJoinedAtKey, myJoinedAt.toString()); }
+
+            const myPresenceRef = dbRef('rooms/' + roomId.value + '/presence/' + playerId.value);
+
+            watch([playerName, myMarks], () => {
+                let minRemaining = 5;
+                myMarks.value.forEach(card => card.forEach(row => {
+                    const m = row.filter(x => x).length;
+                    if (5 - m < minRemaining) minRemaining = 5 - m;
+                }));
+                myPresenceRef.update({ name: playerName.value, id: playerId.value, remaining: minRemaining, betCurrency: wallet.currency, betAmount: betAmount.value, joinedAt: myJoinedAt });
+            }, { deep: true, immediate: true });
+
+            roomRef.off('value');
+            roomRef.on('value', s => {
+                const d = s.val();
+                if (!d) return;
+
+                if (d.history) drawnHistory.value = d.history;
+                if (d.current !== undefined) currentNumber.value = d.current;
+                if (d.presence) players.value = Object.values(d.presence);
+
+                if (!isMaster.value && d.bots) {
+                    bots.value = Array.isArray(d.bots) ? d.bots : Object.values(d.bots);
                 }
 
-                // ゲストとしてAFK監視
-                if (!isMaster.value) {
-                    if (mi.afkSince && mi.online === false) {
-                        if (!masterIsAfk.value) {
-                            masterIsAfk.value = true;
-                            startAfkWatch(mi.afkSince);
-                        }
-                    } else {
-                        if (masterIsAfk.value) {
-                            masterIsAfk.value = false;
-                            clearAfkWatch();
+                readyPlayers.value = d.ready || {};
+
+                if (d.masterInfo) {
+                    const mi = d.masterInfo;
+                    masterPlayerId.value = mi.playerId;
+
+                    if (mi.playerId === playerId.value && !isMaster.value) {
+                        promoteToMaster();
+                    }
+
+                    if (!isMaster.value) {
+                        if (mi.afkSince && mi.online === false) {
+                            if (!masterIsAfk.value) {
+                                masterIsAfk.value = true;
+                                startAfkWatch(mi.afkSince);
+                            }
+                        } else {
+                            if (masterIsAfk.value) {
+                                masterIsAfk.value = false;
+                                clearAfkWatch();
+                            }
                         }
                     }
                 }
+
+                if (d.winner && gameState.value !== 'FINISHED') finishGame(d.winner);
+
+                if (gameState.value === 'FINISHED' && !d.winner && Object.keys(d.ready || {}).length === 0 && d.history && d.history.length === 0) {
+                    winnerInfo.value = null; isGameOver.value = false; gameState.value = 'SETUP';
+                }
+
+                if (isMaster.value && d.ready && players.value.length > 0 && Object.keys(d.ready).length >= players.value.length) {
+                    dbRef('rooms/' + roomId.value + '/winner').remove();
+                    dbRef('rooms/' + roomId.value + '/ready').remove();
+                    dbRef('rooms/' + roomId.value + '/current').set(null);
+                    dbRef('rooms/' + roomId.value + '/history').set([]);
+                }
+            });
+        };
+
+        const startTimer = () => {
+            if (timer) clearInterval(timer);
+            timer = setInterval(() => {
+                if (!isPaused.value && drawnHistory.value.length < 90 && gameState.value === 'PLAYING') drawNextNumber();
+            }, drawInterval.value * 1000);
+        };
+
+        const drawNextNumber = () => {
+            if (drawnHistory.value.length >= 90) { stopGame(); return; }
+            let n;
+            do { n = Math.floor(Math.random() * 90) + 1; } while (drawnHistory.value.includes(n));
+            if (mode.value === 'SOLO') {
+                currentNumber.value = n;
+                drawnHistory.value.push(n);
+                if (isAutoMode.value) performAutoMark(n);
+                updateBots();
+                saveState();
+            } else if (isMaster.value) {
+                dbRef('rooms/' + roomId.value).update({ current: n, history: [...drawnHistory.value, n] });
             }
+        };
 
-            if (d.winner && gameState.value !== 'FINISHED') finishGame(d.winner);
+        watch(currentNumber, (val) => {
+            if (val && mode.value === 'MULTI') {
+                if (isAutoMode.value) performAutoMark(val);
+                if (isMaster.value) updateBots();
+            }
+        });
 
-            // 次ゲームリセット検知
-            if (gameState.value === 'FINISHED' && !d.winner && Object.keys(d.ready || {}).length === 0 && d.history && d.history.length === 0) {
+        const performAutoMark = (num) => {
+            myCards.value.forEach((card, ci) => card.forEach((row, ri) => row.forEach((n, ni) => {
+                if (n === num) myMarks.value[ci][ri][ni] = true;
+            })));
+        };
+
+        const handleManualMark = (ci, ri, ni) => {
+            if (isAutoMode.value) return;
+            if (myCards.value[ci][ri][ni] !== 0) { myMarks.value[ci][ri][ni] = !myMarks.value[ci][ri][ni]; saveState(); }
+        };
+
+        const isMarked = (ci, ri, ni) => myMarks.value[ci]?.[ri]?.[ni];
+
+        const checkWinReady = (ci) => {
+            if (!myMarks.value[ci]) return false;
+            return myMarks.value[ci].some(row => row.filter(m => m).length === 5);
+        };
+
+        const checkKinh = () => {
+            let validWin = false;
+            myMarks.value.forEach((cardMarks, ci) => {
+                cardMarks.forEach((rowMarks, ri) => {
+                    const nums = myCards.value[ci][ri].filter(n => n !== 0);
+                    const markedCount = rowMarks.filter((m, i) => m && myCards.value[ci][ri][i] !== 0).length;
+                    if (nums.length === 5 && markedCount === 5 && nums.every(n => drawnHistory.value.includes(n))) validWin = true;
+                });
+            });
+            if (validWin) {
+                const winData = { name: playerName.value, id: playerId.value };
+                if (mode.value === 'MULTI') dbRef('rooms/' + roomId.value + '/winner').set(winData);
+                else finishGame(winData);
+            } else {
+                alert(t.value.loseMsg);
+            }
+        };
+
+        const confirmNextGame = () => {
+            if (mode.value === 'MULTI' && roomId.value) {
+                dbRef('rooms/' + roomId.value + '/ready/' + playerId.value).set(true);
+            } else {
                 winnerInfo.value = null; isGameOver.value = false; gameState.value = 'SETUP';
             }
+        };
 
-            // 全員READY → masterがリセット
-            if (isMaster.value && d.ready && players.value.length > 0 && Object.keys(d.ready).length >= players.value.length) {
-                dbRef('rooms/' + roomId.value + '/winner').remove();
-                dbRef('rooms/' + roomId.value + '/ready').remove();
-                dbRef('rooms/' + roomId.value + '/current').set(null);
-                dbRef('rooms/' + roomId.value + '/history').set([]);
+        const handleBack = () => { if (confirm(t.value.quitConfirm)) exitToHome(); };
+
+        const exitToHome = () => {
+            stopGame();
+            gameState.value = 'HOME'; winnerInfo.value = null; readyPlayers.value = {};
+            isGameOver.value = false; masterIsAfk.value = false; clearAfkWatch();
+            calcNiceBetOnce.value = false;
+            safeStorage.removeItem('loto_session');
+            if (roomId.value) {
+                const url = new URL(window.location);
+                url.searchParams.delete('room');
+                window.history.pushState({}, '', url);
+                roomId.value = null;
+            }
+        };
+
+        const stopGame = () => {
+            if (timer) { clearInterval(timer); timer = null; }
+            if (heartbeatTimer) { clearInterval(heartbeatTimer); heartbeatTimer = null; }
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            if (mode.value === 'MULTI' && roomId.value) dbRef('rooms/' + roomId.value).off('value');
+        };
+
+        const saveWalletToStorage = () => {
+            safeStorage.setItem('loto_wallet', JSON.stringify({ balances: { ...walletBalances }, currency: wallet.currency }));
+        };
+
+        const saveState = () => {
+            if (gameState.value === 'PLAYING') {
+                safeStorage.setItem('loto_session', JSON.stringify({
+                    gs: gameState.value, m: mode.value, c: myCards.value, mk: myMarks.value,
+                    tc: ticketQty.value, ba: betAmount.value, ia: isAutoMode.value, di: drawInterval.value,
+                    ri: roomId.value, im: isMaster.value, wal: walletBalances[wallet.currency],
+                    walCur: wallet.currency, his: drawnHistory.value, bots: bots.value
+                }));
+            }
+        };
+
+        const openWalletModal = () => {
+            CURRENCIES.forEach(c => { tempWalletMap[c.code] = walletBalances[c.code] || 0; });
+            selectedWalletCurrency.value = wallet.currency;
+            showWalletModal.value = true;
+        };
+
+        const saveWallet = () => {
+            CURRENCIES.forEach(c => { walletBalances[c.code] = Number(tempWalletMap[c.code]) || 0; });
+            syncWallet();
+            showWalletModal.value = false;
+            saveWalletToStorage();
+        };
+
+        const copyLink = () => { navigator.clipboard.writeText(window.location.href); alert("Copied!"); };
+        const togglePause = () => { isPaused.value = !isPaused.value; };
+        const updateClock = () => { currentTime.value = new Date().toLocaleTimeString(); };
+
+        watch(showShareModal, (v) => {
+            if (v) setTimeout(() => {
+                document.getElementById('qrcode').innerHTML = "";
+                if (typeof QRCode !== 'undefined') { new QRCode(document.getElementById('qrcode'), { text: window.location.href, width: 150, height: 150 }); }
+            }, 100);
+        });
+
+        watch(drawInterval, () => {
+            if (gameState.value === 'PLAYING' && isAutoMode.value && (mode.value === 'SOLO' || isMaster.value)) startTimer();
+        });
+
+        onMounted(() => {
+            setInterval(updateClock, 1000);
+
+            const w = safeStorage.getItem('loto_wallet');
+            if (w) {
+                try {
+                    const p = JSON.parse(w);
+                    if (p.balances) { Object.assign(walletBalances, p.balances); }
+                    else if (p.amount != null) { walletBalances[p.currency || '¥'] = p.amount; }
+                    if (p.currency) wallet.currency = p.currency;
+                } catch(e) {}
+            } else {
+                const langCur = i18nData[currentLang.value]?.cur || '¥';
+                const langAmt = i18nData[currentLang.value]?.defWallet || 5000;
+                wallet.currency = langCur;
+                walletBalances[langCur] = langAmt;
+            }
+            syncWallet();
+
+            const s = safeStorage.getItem('loto_session');
+            if (s) {
+                try {
+                    const d = JSON.parse(s);
+                    gameState.value = d.gs; mode.value = d.m; myCards.value = d.c; myMarks.value = d.mk;
+                    ticketQty.value = d.tc; betAmount.value = d.ba; isAutoMode.value = d.ia; drawInterval.value = d.di;
+                    roomId.value = d.ri; isMaster.value = d.im;
+                    if (d.walCur) wallet.currency = d.walCur;
+                    if (d.wal != null) { walletBalances[wallet.currency] = d.wal; syncWallet(); }
+                    drawnHistory.value = d.his || []; bots.value = d.bots || [];
+                    calcNiceBetOnce.value = true;
+                    if (gameState.value === 'PLAYING') {
+                        if (drawnHistory.value.length > 0) currentNumber.value = drawnHistory.value[drawnHistory.value.length - 1];
+                        if (mode.value === 'MULTI') { if (isMaster.value) setupMasterPresence(); setupMultiplayer(); }
+                        if (isAutoMode.value && (mode.value === 'SOLO' || isMaster.value)) startTimer();
+                    }
+                } catch(e) { safeStorage.removeItem('loto_session'); }
+            } else {
+                if (roomId.value) { isMaster.value = false; initGame('MULTI'); }
             }
         });
-    };
 
-    const startTimer = () => {
-        if (timer) clearInterval(timer);
-        timer = setInterval(() => {
-            if (!isPaused.value && drawnHistory.value.length < 90 && gameState.value === 'PLAYING') drawNextNumber();
-        }, drawInterval.value * 1000);
-    };
-
-    const drawNextNumber = () => {
-        if (drawnHistory.value.length >= 90) { stopGame(); return; }
-        let n;
-        do { n = Math.floor(Math.random() * 90) + 1; } while (drawnHistory.value.includes(n));
-        if (mode.value === 'SOLO') {
-            currentNumber.value = n;
-            drawnHistory.value.push(n);
-            if (isAutoMode.value) performAutoMark(n);
-            updateBots();
-            saveState();
-        } else if (isMaster.value) {
-            dbRef('rooms/' + roomId.value).update({ current: n, history: [...drawnHistory.value, n] });
-        }
-    };
-
-    watch(currentNumber, (val) => {
-        if (val && mode.value === 'MULTI') {
-            if (isAutoMode.value) performAutoMark(val);
-            if (isMaster.value) updateBots();
-        }
-    });
-
-    const performAutoMark = (num) => {
-        myCards.value.forEach((card, ci) => card.forEach((row, ri) => row.forEach((n, ni) => {
-            if (n === num) myMarks.value[ci][ri][ni] = true;
-        })));
-    };
-
-    const handleManualMark = (ci, ri, ni) => {
-        if (isAutoMode.value) return;
-        if (myCards.value[ci][ri][ni] !== 0) { myMarks.value[ci][ri][ni] = !myMarks.value[ci][ri][ni]; saveState(); }
-    };
-
-    const isMarked = (ci, ri, ni) => myMarks.value[ci]?.[ri]?.[ni];
-
-    const checkWinReady = (ci) => {
-        if (!myMarks.value[ci]) return false;
-        return myMarks.value[ci].some(row => row.filter(m => m).length === 5);
-    };
-
-    const checkKinh = () => {
-        let validWin = false;
-        myMarks.value.forEach((cardMarks, ci) => {
-            cardMarks.forEach((rowMarks, ri) => {
-                const nums = myCards.value[ci][ri].filter(n => n !== 0);
-                const markedCount = rowMarks.filter((m, i) => m && myCards.value[ci][ri][i] !== 0).length;
-                if (nums.length === 5 && markedCount === 5 && nums.every(n => drawnHistory.value.includes(n))) validWin = true;
-            });
-        });
-        if (validWin) {
-            const winData = { name: playerName.value, id: playerId.value };
-            if (mode.value === 'MULTI') dbRef('rooms/' + roomId.value + '/winner').set(winData);
-            else finishGame(winData);
-        } else {
-            alert(t.value.loseMsg);
-        }
-    };
-
-    const confirmNextGame = () => {
-        if (mode.value === 'MULTI' && roomId.value) {
-            dbRef('rooms/' + roomId.value + '/ready/' + playerId.value).set(true);
-        } else {
-            winnerInfo.value = null; isGameOver.value = false; gameState.value = 'SETUP';
-        }
-    };
-
-    const handleBack = () => { if (confirm(t.value.quitConfirm)) exitToHome(); };
-
-    const exitToHome = () => {
-        stopGame();
-        gameState.value = 'HOME'; winnerInfo.value = null; readyPlayers.value = {};
-        isGameOver.value = false; masterIsAfk.value = false; clearAfkWatch();
-        calcNiceBetOnce.value = false;
-        safeStorage.removeItem('loto_session');
-        if (roomId.value) {
-            const url = new URL(window.location);
-            url.searchParams.delete('room');
-            window.history.pushState({}, '', url);
-            roomId.value = null;
-        }
-    };
-
-    const stopGame = () => {
-        if (timer) { clearInterval(timer); timer = null; }
-        if (heartbeatTimer) { clearInterval(heartbeatTimer); heartbeatTimer = null; }
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-        if (mode.value === 'MULTI' && roomId.value) dbRef('rooms/' + roomId.value).off('value');
-    };
-
-    const saveWalletToStorage = () => {
-        safeStorage.setItem('loto_wallet', JSON.stringify({ balances: { ...walletBalances }, currency: wallet.currency }));
-    };
-
-    const saveState = () => {
-        if (gameState.value === 'PLAYING') {
-            safeStorage.setItem('loto_session', JSON.stringify({
-                gs: gameState.value, m: mode.value, c: myCards.value, mk: myMarks.value,
-                tc: ticketQty.value, ba: betAmount.value, ia: isAutoMode.value, di: drawInterval.value,
-                ri: roomId.value, im: isMaster.value, wal: walletBalances[wallet.currency],
-                walCur: wallet.currency, his: drawnHistory.value, bots: bots.value
-            }));
-        }
-    };
-
-    // ① ウォレットモーダル (多通貨)
-    const openWalletModal = () => {
-        CURRENCIES.forEach(c => { tempWalletMap[c.code] = walletBalances[c.code] || 0; });
-        selectedWalletCurrency.value = wallet.currency;
-        showWalletModal.value = true;
-    };
-
-    const saveWallet = () => {
-        CURRENCIES.forEach(c => { walletBalances[c.code] = Number(tempWalletMap[c.code]) || 0; });
-        syncWallet();
-        showWalletModal.value = false;
-        saveWalletToStorage();
-    };
-
-    const copyLink = () => { navigator.clipboard.writeText(window.location.href); alert("Copied!"); };
-    const togglePause = () => { isPaused.value = !isPaused.value; };
-    const updateClock = () => { currentTime.value = new Date().toLocaleTimeString(); };
-
-    watch(showShareModal, (v) => {
-        if (v) setTimeout(() => {
-            document.getElementById('qrcode').innerHTML = "";
-            if (typeof QRCode !== 'undefined') { new QRCode(document.getElementById('qrcode'), { text: window.location.href, width: 150, height: 150 }); }
-        }, 100);
-    });
-
-    watch(drawInterval, () => {
-        if (gameState.value === 'PLAYING' && isAutoMode.value && (mode.value === 'SOLO' || isMaster.value)) startTimer();
-    });
-
-    onMounted(() => {
-        setInterval(updateClock, 1000);
-
-        // ① 多通貨ウォレット読み込み
-        const w = safeStorage.getItem('loto_wallet');
-        if (w) {
-            try {
-                const p = JSON.parse(w);
-                if (p.balances) { Object.assign(walletBalances, p.balances); }
-                else if (p.amount != null) { walletBalances[p.currency || '¥'] = p.amount; }
-                if (p.currency) wallet.currency = p.currency;
-            } catch(e) {}
-        } else {
-            // 初期値: 言語のデフォルト通貨+金額
-            const langCur = i18nData[currentLang.value]?.cur || '¥';
-            const langAmt = i18nData[currentLang.value]?.defWallet || 5000;
-            wallet.currency = langCur;
-            walletBalances[langCur] = langAmt;
-        }
-        syncWallet();
-
-        const s = safeStorage.getItem('loto_session');
-        if (s) {
-            try {
-                const d = JSON.parse(s);
-                gameState.value = d.gs; mode.value = d.m; myCards.value = d.c; myMarks.value = d.mk;
-                ticketQty.value = d.tc; betAmount.value = d.ba; isAutoMode.value = d.ia; drawInterval.value = d.di;
-                roomId.value = d.ri; isMaster.value = d.im;
-                if (d.walCur) wallet.currency = d.walCur;
-                if (d.wal != null) { walletBalances[wallet.currency] = d.wal; syncWallet(); }
-                drawnHistory.value = d.his || []; bots.value = d.bots || [];
-                calcNiceBetOnce.value = true;
-                if (gameState.value === 'PLAYING') {
-                    if (drawnHistory.value.length > 0) currentNumber.value = drawnHistory.value[drawnHistory.value.length - 1];
-                    if (mode.value === 'MULTI') { if (isMaster.value) setupMasterPresence(); setupMultiplayer(); }
-                    if (isAutoMode.value && (mode.value === 'SOLO' || isMaster.value)) startTimer();
-                }
-            } catch(e) { safeStorage.removeItem('loto_session'); }
-        } else {
-            if (roomId.value) { isMaster.value = false; initGame('MULTI'); }
-        }
-    });
-
-    return {
-        CURRENCIES, i18nData, currentLang, t,
-        gameState, mode, playerName, wallet, walletBalances, tempWalletMap, selectedWalletCurrency,
-        ticketQty, botCount, betAmount, isAutoMode, drawInterval, isPaused,
-        myCards, myMarks, drawnHistory, currentNumber, bots,
-        players, winnerInfo, readyPlayers, gameResult, sessionStats,
-        activeOpponentsCount, myNumbers, roomId, isMaster, playerId,
-        masterIsAfk, afkCountdown, afkTransferDelay, formatAfkCountdown,
-        toasts, transferableGuests,
-        showWalletModal, showShareModal, showSettingsModal, showSessionModal, showTransferModal,
-        currentTime,
-        setLang, setBetCurrency, selectWalletCurrency, initGame, startGame,
-        drawNextNumber, togglePause,
-        handleManualMark, isMarked, checkWinReady, checkKinh,
-        handleBack, exitToHome, openWalletModal, saveWallet, copyLink,
-        confirmNextGame, transferMasterTo,
-        currentTempBalance, setCurrentTempBalance, walletAdd, walletSub
-    };
-}
-
-
-}).mount(’#app’);
+        return {
+            CURRENCIES, i18nData, currentLang, t,
+            gameState, mode, playerName, wallet, walletBalances, tempWalletMap, selectedWalletCurrency,
+            ticketQty, botCount, betAmount, isAutoMode, drawInterval, isPaused,
+            myCards, myMarks, drawnHistory, currentNumber, bots,
+            players, winnerInfo, readyPlayers, gameResult, sessionStats,
+            activeOpponentsCount, myNumbers, roomId, isMaster, playerId,
+            masterIsAfk, afkCountdown, afkTransferDelay, formatAfkCountdown,
+            toasts, transferableGuests,
+            showWalletModal, showShareModal, showSettingsModal, showSessionModal, showTransferModal,
+            currentTime,
+            setLang, setBetCurrency, selectWalletCurrency, initGame, startGame,
+            drawNextNumber, togglePause,
+            handleManualMark, isMarked, checkWinReady, checkKinh,
+            handleBack, exitToHome, openWalletModal, saveWallet, copyLink,
+            confirmNextGame, transferMasterTo,
+            currentTempBalance, setCurrentTempBalance, walletAdd, walletSub
+        };
+    }
+}).mount('#app');
 </script>
-
 </body>
+</html>
 </html></html></html></html></html></html></html>
