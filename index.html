@@ -277,7 +277,7 @@
         </div>
     </div>
 
-```
+
 <!-- ⑤ AFK バナー (ゲストにのみ表示) -->
 <div v-if="masterIsAfk && !isMaster && mode === 'MULTI'" class="afk-banner">
     <div class="flex items-center gap-2">
@@ -329,7 +329,7 @@
 <div class="sticky-action-container">
     <button @click="checkKinh" class="btn-kinh">{{ t.kinhBtn }}</button>
 </div>
-```
+
 
 </div>
 
@@ -710,7 +710,7 @@ setup() {
 const currentLang = ref(localStorage.getItem(‘loto_lang’) || ‘ja’);
 const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
 
-```
+
     const gameState = ref('HOME');
     const mode = ref('SOLO');
     const isGameOver = ref(false);
@@ -1405,10 +1405,10 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
         currentTempBalance, setCurrentTempBalance, walletAdd, walletSub
     };
 }
-```
+
 
 }).mount(’#app’);
 </script>
 
 </body>
-</html></html></html></html></html>
+</html></html></html></html></html></html>
