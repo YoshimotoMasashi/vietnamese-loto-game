@@ -85,6 +85,12 @@
     .wcur-tab-active { background: #1e293b; color: white; }
     .wcur-tab-inactive { background: #f1f5f9; color: #64748b; }
 </style>
+
+<script>
+// Fallback: remove v-cloak after 6 seconds in case Vue mount fails
+setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribute('v-cloak');},6000);
+</script>
+
 </head>
 <body>
 <div id="app" v-cloak class="app-shell">
@@ -111,7 +117,7 @@
     <div class="flex items-center justify-end gap-2">
         <div @click="openWalletModal" class="wallet-display">
             <i class="fas fa-coins text-yellow-500 text-xs"></i>
-            <div class="wallet-text">{{ wallet.currency }}{{ wallet.amount.toLocaleString() }}</div>
+            <div class="wallet-text">{{ wallet.currency }}{{ (wallet.amount || 0).toLocaleString() }}</div>
         </div>
         <button @click="showSettingsModal = true" class="w-9 h-9 flex items-center justify-center rounded-full bg-slate-50 text-slate-400">
             <i class="fas fa-cog"></i>
@@ -703,11 +709,27 @@ settingsTitle: “Options”, leftLabel: “restant”, reachText: “REACH”, 
 }
 };
 
+// Safe localStorage wrapper: GitHub app WKWebView can throw SecurityError on localStorage access
+const safeStorage = (() => {
+try {
+safeStorage.setItem(’**ls_test**’, ‘1’);
+safeStorage.removeItem(’**ls_test**’);
+return localStorage;
+} catch(e) {
+const mem = {};
+return {
+getItem: (k) => mem[k] !== undefined ? mem[k] : null,
+setItem: (k, v) => { mem[k] = String(v); },
+removeItem: (k) => { delete mem[k]; }
+};
+}
+})();
+
 const { createApp, ref, reactive, computed, watch, onMounted, onUnmounted } = Vue;
 
 createApp({
 setup() {
-const currentLang = ref(localStorage.getItem(‘loto_lang’) || ‘ja’);
+const currentLang = ref(safeStorage.getItem(‘loto_lang’) || ‘ja’);
 const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
 
 
@@ -722,11 +744,11 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
         return result;
     };
 
-    const playerId = ref(localStorage.getItem('loto_player_id'));
-    if (!playerId.value) { playerId.value = generateRandomString(12); localStorage.setItem('loto_player_id', playerId.value); }
+    const playerId = ref(safeStorage.getItem('loto_player_id'));
+    if (!playerId.value) { playerId.value = generateRandomString(12); safeStorage.setItem('loto_player_id', playerId.value); }
 
-    const playerName = ref(localStorage.getItem('loto_player_name') || ('Player' + generateRandomString(4)));
-    if (!localStorage.getItem('loto_player_name')) localStorage.setItem('loto_player_name', playerName.value);
+    const playerName = ref(safeStorage.getItem('loto_player_name') || ('Player' + generateRandomString(4)));
+    if (!safeStorage.getItem('loto_player_name')) safeStorage.setItem('loto_player_name', playerName.value);
 
     // ① 多通貨ウォレット
     const walletBalances = reactive({});
@@ -842,7 +864,7 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
     // ① 言語変更時は通貨を変えない
     const setLang = (key) => {
         currentLang.value = key;
-        localStorage.setItem('loto_lang', key);
+        safeStorage.setItem('loto_lang', key);
         // 通貨は変更しない
     };
 
@@ -971,7 +993,7 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
     const initGame = (m) => {
         mode.value = m;
         playerName.value = playerName.value.trim() || ('Player' + generateRandomString(4));
-        localStorage.setItem('loto_player_name', playerName.value);
+        safeStorage.setItem('loto_player_name', playerName.value);
         // ⑦ 初回のみ賭け金を自動設定
         if (!calcNiceBetOnce.value) {
             betAmount.value = calcNiceBet(wallet.amount || (walletBalances[wallet.currency] || 0));
@@ -1131,8 +1153,8 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
     const setupMultiplayer = () => {
         const roomRef = dbRef('rooms/' + roomId.value);
         const myJoinedAtKey = 'loto_joined_' + roomId.value;
-        let myJoinedAt = parseInt(localStorage.getItem(myJoinedAtKey) || '0');
-        if (!myJoinedAt) { myJoinedAt = Date.now(); localStorage.setItem(myJoinedAtKey, myJoinedAt.toString()); }
+        let myJoinedAt = parseInt(safeStorage.getItem(myJoinedAtKey) || '0');
+        if (!myJoinedAt) { myJoinedAt = Date.now(); safeStorage.setItem(myJoinedAtKey, myJoinedAt.toString()); }
 
         const myPresenceRef = dbRef('rooms/' + roomId.value + '/presence/' + playerId.value);
 
@@ -1283,7 +1305,7 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
         gameState.value = 'HOME'; winnerInfo.value = null; readyPlayers.value = {};
         isGameOver.value = false; masterIsAfk.value = false; clearAfkWatch();
         calcNiceBetOnce.value = false;
-        localStorage.removeItem('loto_session');
+        safeStorage.removeItem('loto_session');
         if (roomId.value) {
             const url = new URL(window.location);
             url.searchParams.delete('room');
@@ -1300,12 +1322,12 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
     };
 
     const saveWalletToStorage = () => {
-        localStorage.setItem('loto_wallet', JSON.stringify({ balances: { ...walletBalances }, currency: wallet.currency }));
+        safeStorage.setItem('loto_wallet', JSON.stringify({ balances: { ...walletBalances }, currency: wallet.currency }));
     };
 
     const saveState = () => {
         if (gameState.value === 'PLAYING') {
-            localStorage.setItem('loto_session', JSON.stringify({
+            safeStorage.setItem('loto_session', JSON.stringify({
                 gs: gameState.value, m: mode.value, c: myCards.value, mk: myMarks.value,
                 tc: ticketQty.value, ba: betAmount.value, ia: isAutoMode.value, di: drawInterval.value,
                 ri: roomId.value, im: isMaster.value, wal: walletBalances[wallet.currency],
@@ -1347,7 +1369,7 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
         setInterval(updateClock, 1000);
 
         // ① 多通貨ウォレット読み込み
-        const w = localStorage.getItem('loto_wallet');
+        const w = safeStorage.getItem('loto_wallet');
         if (w) {
             try {
                 const p = JSON.parse(w);
@@ -1364,7 +1386,7 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
         }
         syncWallet();
 
-        const s = localStorage.getItem('loto_session');
+        const s = safeStorage.getItem('loto_session');
         if (s) {
             try {
                 const d = JSON.parse(s);
@@ -1380,7 +1402,7 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
                     if (mode.value === 'MULTI') { if (isMaster.value) setupMasterPresence(); setupMultiplayer(); }
                     if (isAutoMode.value && (mode.value === 'SOLO' || isMaster.value)) startTimer();
                 }
-            } catch(e) { localStorage.removeItem('loto_session'); }
+            } catch(e) { safeStorage.removeItem('loto_session'); }
         } else {
             if (roomId.value) { isMaster.value = false; initGame('MULTI'); }
         }
@@ -1411,4 +1433,4 @@ const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
 </script>
 
 </body>
-</html></html></html></html></html></html>
+</html></html></html></html></html></html></html>
