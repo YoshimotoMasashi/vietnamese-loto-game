@@ -1173,16 +1173,22 @@ createApp({
             if (drawnHistory.value.length >= 90) { stopGame(); return; }
             let n;
             do { n = Math.floor(Math.random() * 90) + 1; } while (drawnHistory.value.includes(n));
+            
+            // サーバーの返答を待たず、先にローカル（自分の画面）に即時反映させる
+            currentNumber.value = n;
+            drawnHistory.value.push(n);
+
             if (mode.value === 'SOLO') {
-                currentNumber.value = n;
-                drawnHistory.value.push(n);
                 if (isAutoMode.value) performAutoMark(n);
                 updateBots();
                 saveState();
             } else if (isMaster.value) {
-                dbRef('rooms/' + roomId.value).update({ current: n, history: [...drawnHistory.value, n] });
+                saveState();
+                // 画面に表示した直後にデータベースへ送信（ゲストはこれを受け取って表示する）
+                dbRef('rooms/' + roomId.value).update({ current: n, history: drawnHistory.value });
             }
         };
+
 
         watch(currentNumber, (val) => {
             if (val && mode.value === 'MULTI') {
