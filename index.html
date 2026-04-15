@@ -400,6 +400,13 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
 <div v-if="showSettingsModal" class="modal-backdrop">
     <div class="modal-content overflow-y-auto max-h-[80vh]">
         <h3 class="text-xl font-black mb-4 text-slate-800">{{ t.settingsTitle }}</h3>
+
+//設定（Settings）モーダル内に名前変更の入力欄を追加し、変更した瞬間に自動保存とマルチプレイへの即時反映
+        <div class="mb-5 p-4 bg-slate-50 rounded-2xl border border-slate-200">
+            <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Player Name</label>
+            <input type="text" v-model="playerName" class="w-full bg-white rounded-xl p-3 text-center font-bold text-lg outline-none focus:ring-2 focus:ring-red-200 transition border border-slate-200">
+        </div>
+
         <div class="mb-5">
             <label class="text-xs font-black text-slate-400 uppercase mb-2 block">Language</label>
             <div class="grid grid-cols-2 gap-2">
@@ -696,6 +703,12 @@ createApp({
 
         const playerName = ref(safeStorage.getItem('loto_player_name') || ('Player' + generateRandomString(4)));
         if (!safeStorage.getItem('loto_player_name')) safeStorage.setItem('loto_player_name', playerName.value);
+        
+        watch(playerName, (newVal) => {
+            safeStorage.setItem('loto_player_name', newVal);
+        });
+
+
 
         const walletBalances = reactive({});
         const wallet = reactive({ amount: 5000, currency: '¥' });
@@ -955,6 +968,10 @@ createApp({
                 initBots();
             } else {
                 bots.value = [];
+            }
+
+            if (mode.value === 'SOLO') {
+                players.value = []; 
             }
 
             gameState.value = 'PLAYING';
@@ -1223,8 +1240,9 @@ createApp({
         const exitToHome = () => {
             stopGame();
             gameState.value = 'HOME'; winnerInfo.value = null; readyPlayers.value = {};
+
+            players.value = []; // ← ★これを追加して参加者をリセット
             isGameOver.value = false; masterIsAfk.value = false; clearAfkWatch();
-            calcNiceBetOnce.value = false;
             safeStorage.removeItem('loto_session');
             if (roomId.value) {
                 const url = new URL(window.location);
