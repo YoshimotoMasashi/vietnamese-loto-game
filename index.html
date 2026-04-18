@@ -749,6 +749,8 @@ createApp({
         const drawInterval = ref(4);
         const isPaused = ref(false);
         const myCards = ref([]);
+        const drawQueue = ref([]);
+        const currentIndex = ref(-1);
         const myMarks = ref([]);
         const currentNumber = ref(null);
         const drawnHistory = ref([]);
@@ -931,6 +933,7 @@ createApp({
                 saveWalletToStorage();
             }
             gameState.value = 'FINISHED';
+            safeStorage.removeItem('loto_session'); // ★追加: 終了時にセッションを削除し、更新チートを完全に防ぐ
         };
 
         const calcNiceBetOnce = ref(false);
@@ -955,12 +958,18 @@ createApp({
 
         const startGame = () => {
             const bal = walletBalances[wallet.currency] || 0;
-            if (bal < betAmount.value) return alert(t.value.loseMsg);
+            // 修正: loseMsg("まだ揃っていません")を誤用していたバグを修正
+            if (bal < betAmount.value) return alert("残高が不足しています (Insufficient balance)");
+            
             isGameOver.value = false;
             walletBalances[wallet.currency] = bal - betAmount.value;
             syncWallet();
             myCards.value = generateUniqueCards(ticketQty.value);
             myMarks.value = myCards.value.map(c => c.map(r => r.map(() => false)));
+            
+            // 修正: キューの事前生成（90個をランダムにシャッフル）
+            drawQueue.value = Array.from({length: 90}, (_, i) => i + 1).sort(() => Math.random() - 0.5);
+            currentIndex.value = -1;
             drawnHistory.value = [];
             currentNumber.value = null;
 
@@ -970,17 +979,15 @@ createApp({
                 bots.value = [];
             }
 
-            if (mode.value === 'SOLO') {
-                players.value = []; 
-            }
-
             gameState.value = 'PLAYING';
             saveState();
 
             if (mode.value === 'MULTI') {
                 if (isMaster.value) {
                     dbRef('rooms/' + roomId.value).update({
-                        history: [], current: null, winner: null,
+                        queue: drawQueue.value, // キューを全員に共有
+                        currentIndex: -1,
+                        history: null, current: null, winner: null, // 古いデータ形式を消去
                         bots: bots.value.map(b => ({ id: b.id, name: b.name, remaining: b.remaining, card: b.card, betCurrency: b.betCurrency, betAmount: b.betAmount }))
                     });
                     setupMasterPresence();
@@ -1092,75 +1099,83 @@ createApp({
             addToast('👑 ' + (t.value.transferTitle || 'You are now master') + '!', 'success', 6000);
         };
 
-        const setupMultiplayer = () => {
-            const roomRef = dbRef('rooms/' + roomId.value);
-            const myJoinedAtKey = 'loto_joined_' + roomId.value;
-            let myJoinedAt = parseInt(safeStorage.getItem(myJoinedAtKey) || '0');
-            if (!myJoinedAt) { myJoinedAt = Date.now(); safeStorage.setItem(myJoinedAtKey, myJoinedAt.toString()); }
+    const setupMultiplayer = () => {
+        const roomRef = dbRef('rooms/' + roomId.value);
+        const myJoinedAtKey = 'loto_joined_' + roomId.value;
+        let myJoinedAt = parseInt(safeStorage.getItem(myJoinedAtKey) || '0');
+        if (!myJoinedAt) { myJoinedAt = Date.now(); safeStorage.setItem(myJoinedAtKey, myJoinedAt.toString()); }
 
-            const myPresenceRef = dbRef('rooms/' + roomId.value + '/presence/' + playerId.value);
+        const myPresenceRef = dbRef('rooms/' + roomId.value + '/presence/' + playerId.value);
 
-            watch([playerName, myMarks], () => {
-                let minRemaining = 5;
-                myMarks.value.forEach(card => card.forEach(row => {
-                    const m = row.filter(x => x).length;
-                    if (5 - m < minRemaining) minRemaining = 5 - m;
-                }));
-                myPresenceRef.update({ name: playerName.value, id: playerId.value, remaining: minRemaining, betCurrency: wallet.currency, betAmount: betAmount.value, joinedAt: myJoinedAt });
-            }, { deep: true, immediate: true });
+        watch([playerName, myMarks], () => {
+            let minRemaining = 5;
+            myMarks.value.forEach(card => card.forEach(row => {
+                const m = row.filter(x => x).length;
+                if (5 - m < minRemaining) minRemaining = 5 - m;
+            }));
+            myPresenceRef.update({ name: playerName.value, id: playerId.value, remaining: minRemaining, betCurrency: wallet.currency, betAmount: betAmount.value, joinedAt: myJoinedAt });
+        }, { deep: true, immediate: true });
 
-            roomRef.off('value');
-            roomRef.on('value', s => {
-                const d = s.val();
-                if (!d) return;
+        roomRef.off('value');
+        roomRef.on('value', s => {
+            const d = s.val();
+            if (!d) return;
 
-                if (d.history) drawnHistory.value = d.history;
-                if (d.current !== undefined) currentNumber.value = d.current;
-                if (d.presence) players.value = Object.values(d.presence);
+            // ゲストは開始時にキューを受け取る
+            if (d.queue) drawQueue.value = d.queue;
 
-                if (!isMaster.value && d.bots) {
-                    bots.value = Array.isArray(d.bots) ? d.bots : Object.values(d.bots);
-                }
-
-                readyPlayers.value = d.ready || {};
-
-                if (d.masterInfo) {
-                    const mi = d.masterInfo;
-                    masterPlayerId.value = mi.playerId;
-
-                    if (mi.playerId === playerId.value && !isMaster.value) {
-                        promoteToMaster();
-                    }
-
-                    if (!isMaster.value) {
-                        if (mi.afkSince && mi.online === false) {
-                            if (!masterIsAfk.value) {
-                                masterIsAfk.value = true;
-                                startAfkWatch(mi.afkSince);
-                            }
-                        } else {
-                            if (masterIsAfk.value) {
-                                masterIsAfk.value = false;
-                                clearAfkWatch();
-                            }
-                        }
+            // インデックスが進んだ場合、ローカルの履歴を追いつかせる
+            if (d.currentIndex !== undefined && d.currentIndex > currentIndex.value) {
+                while (currentIndex.value < d.currentIndex) {
+                    currentIndex.value++;
+                    const n = drawQueue.value[currentIndex.value];
+                    if (n) {
+                        currentNumber.value = n;
+                        drawnHistory.value.push(n);
+                        if (isAutoMode.value) performAutoMark(n);
                     }
                 }
+                if (!isMaster.value) updateBots(); // ゲスト側でもBot判定を更新
+                saveState();
+            }
 
-                if (d.winner && gameState.value !== 'FINISHED') finishGame(d.winner);
+            if (d.presence) players.value = Object.values(d.presence);
+            if (!isMaster.value && d.bots) {
+                bots.value = Array.isArray(d.bots) ? d.bots : Object.values(d.bots);
+            }
 
-                if (gameState.value === 'FINISHED' && !d.winner && Object.keys(d.ready || {}).length === 0 && d.history && d.history.length === 0) {
-                    winnerInfo.value = null; isGameOver.value = false; gameState.value = 'SETUP';
+            readyPlayers.value = d.ready || {};
+
+            // --- AFK 処理 ---
+            if (d.masterInfo) {
+                const mi = d.masterInfo;
+                masterPlayerId.value = mi.playerId;
+                if (mi.playerId === playerId.value && !isMaster.value) promoteToMaster();
+                if (!isMaster.value) {
+                    if (mi.afkSince && mi.online === false) {
+                        if (!masterIsAfk.value) { masterIsAfk.value = true; startAfkWatch(mi.afkSince); }
+                    } else {
+                        if (masterIsAfk.value) { masterIsAfk.value = false; clearAfkWatch(); }
+                    }
                 }
+            }
 
-                if (isMaster.value && d.ready && players.value.length > 0 && Object.keys(d.ready).length >= players.value.length) {
-                    dbRef('rooms/' + roomId.value + '/winner').remove();
-                    dbRef('rooms/' + roomId.value + '/ready').remove();
-                    dbRef('rooms/' + roomId.value + '/current').set(null);
-                    dbRef('rooms/' + roomId.value + '/history').set([]);
-                }
-            });
-        };
+            if (d.winner && gameState.value !== 'FINISHED') finishGame(d.winner);
+
+            // リセット検知
+            if (gameState.value === 'FINISHED' && !d.winner && Object.keys(d.ready || {}).length === 0 && d.currentIndex === -1) {
+                winnerInfo.value = null; isGameOver.value = false; gameState.value = 'SETUP';
+            }
+
+            // 全員READYでマスターがリセット実行
+            if (isMaster.value && d.ready && players.value.length > 0 && Object.keys(d.ready).length >= players.value.length) {
+                dbRef('rooms/' + roomId.value + '/winner').remove();
+                dbRef('rooms/' + roomId.value + '/ready').remove();
+                dbRef('rooms/' + roomId.value).update({ currentIndex: -1, queue: [] });
+            }
+        });
+    };
+
 
         const startTimer = () => {
             if (timer) clearInterval(timer);
@@ -1170,32 +1185,23 @@ createApp({
         };
 
         const drawNextNumber = () => {
-            if (drawnHistory.value.length >= 90) { stopGame(); return; }
-            let n;
-            do { n = Math.floor(Math.random() * 90) + 1; } while (drawnHistory.value.includes(n));
+            if (currentIndex.value >= 89) { stopGame(); return; }
             
-            // サーバーの返答を待たず、先にローカル（自分の画面）に即時反映させる
+            // キューのインデックスを1つ進める
+            currentIndex.value++;
+            const n = drawQueue.value[currentIndex.value];
             currentNumber.value = n;
             drawnHistory.value.push(n);
 
-            if (mode.value === 'SOLO') {
-                if (isAutoMode.value) performAutoMark(n);
-                updateBots();
-                saveState();
-            } else if (isMaster.value) {
-                saveState();
-                // 画面に表示した直後にデータベースへ送信（ゲストはこれを受け取って表示する）
-                dbRef('rooms/' + roomId.value).update({ current: n, history: drawnHistory.value });
+            if (isAutoMode.value) performAutoMark(n);
+            updateBots();
+            saveState();
+
+            // マスターは現在何番目か(currentIndex)だけを送信する
+            if (mode.value === 'MULTI' && isMaster.value) {
+                dbRef('rooms/' + roomId.value).update({ currentIndex: currentIndex.value });
             }
         };
-
-
-        watch(currentNumber, (val) => {
-            if (val && mode.value === 'MULTI') {
-                if (isAutoMode.value) performAutoMark(val);
-                if (isMaster.value) updateBots();
-            }
-        });
 
         const performAutoMark = (num) => {
             myCards.value.forEach((card, ci) => card.forEach((row, ri) => row.forEach((n, ni) => {
@@ -1275,10 +1281,12 @@ createApp({
                     gs: gameState.value, m: mode.value, c: myCards.value, mk: myMarks.value,
                     tc: ticketQty.value, ba: betAmount.value, ia: isAutoMode.value, di: drawInterval.value,
                     ri: roomId.value, im: isMaster.value, wal: walletBalances[wallet.currency],
-                    walCur: wallet.currency, his: drawnHistory.value, bots: bots.value
+                    walCur: wallet.currency, his: drawnHistory.value, bots: bots.value,
+                    q: drawQueue.value, cIdx: currentIndex.value
                 }));
             }
         };
+
 
         const openWalletModal = () => {
             CURRENCIES.forEach(c => { tempWalletMap[c.code] = walletBalances[c.code] || 0; });
@@ -1337,6 +1345,8 @@ createApp({
                     if (d.walCur) wallet.currency = d.walCur;
                     if (d.wal != null) { walletBalances[wallet.currency] = d.wal; syncWallet(); }
                     drawnHistory.value = d.his || []; bots.value = d.bots || [];
+                    drawQueue.value = d.q || [];
+                    currentIndex.value = d.cIdx !== undefined ? d.cIdx : (d.his ? d.his.length - 1 : -1);
                     calcNiceBetOnce.value = true;
                     if (gameState.value === 'PLAYING') {
                         if (drawnHistory.value.length > 0) currentNumber.value = drawnHistory.value[drawnHistory.value.length - 1];
