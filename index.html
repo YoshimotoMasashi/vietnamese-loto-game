@@ -130,7 +130,12 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
     </div>
     <div class="w-full max-w-xs bg-white p-4 rounded-3xl border-2 border-slate-100 shadow-sm">
         <label class="text-[10px] font-black text-slate-400 uppercase block mb-2 tracking-widest ml-2">{{ t.playerNameLabel }}</label>
-        <input v-model="playerName" type="text" class="w-full bg-slate-50 rounded-xl p-3 text-center font-bold text-lg outline-none focus:ring-2 focus:ring-red-200 transition" :placeholder="t.placeholderName">
+        <input v-model="playerName" type="text" @blur="validatePlayerName"
+               class="w-full bg-slate-50 rounded-xl p-3 text-center font-bold text-lg outline-none focus:ring-2 focus:ring-red-200 transition"
+               :placeholder="t.placeholderName">
+        <div class="mt-2 flex items-center justify-center gap-2 text-[9px] font-mono text-slate-300">
+            <span>ID: {{ playerId }}</span>
+        </div>
     </div>
     <div class="grid grid-cols-2 gap-4 w-full">
         <button @click="initGame('SOLO')" class="h-40 bg-white rounded-[32px] border-b-8 border-slate-100 flex flex-col items-center justify-center active:border-b-0 active:translate-y-2 transition-all group">
@@ -289,7 +294,10 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
 
     <div v-for="(card, cIdx) in myCards" :key="cIdx" class="loto-ticket">
         <div class="flex justify-between items-center mb-2 px-1">
-            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">TICKET #{{ cIdx + 1 }}</span>
+            <div class="flex items-center gap-1.5">
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">TICKET #{{ cIdx + 1 }}</span>
+                <span v-if="cIdx === 0" class="text-[8px] font-mono text-slate-300">{{ playerName }} · {{ playerId.slice(0,8) }}<span v-if="mode === 'MULTI'" class="text-red-400 font-black"> #{{ myRoomNumber }}</span></span>
+            </div>
             <div v-if="checkWinReady(cIdx)" class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[9px] font-black animate-bounce">
                 <i class="fas fa-star mr-1"></i> {{ t.reachText }}
             </div>
@@ -366,7 +374,7 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
 
 </main>
 
-<div class="footer-info">REV: 2026-04-19 | β test 2.1.1 | {{ currentTime }}</div>
+<div class="footer-info" style="line-height:1.6">{{ playerName }} · {{ playerId.slice(0,8) }}<span v-if="mode === 'MULTI'"> · #{{ myRoomNumber }}</span><br>REV: 2026-04-19 | β test 2.1.1 | {{ currentTime }}</div>
 
 <div v-if="showWalletModal" class="modal-backdrop">
     <div class="modal-content">
@@ -407,7 +415,12 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
 
         <div class="mb-5 p-4 bg-slate-50 rounded-2xl border border-slate-200">
             <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">{{ t.playerNameLabel }}</label>
-            <input type="text" v-model="playerName" class="w-full bg-white rounded-xl p-3 text-center font-bold text-lg outline-none focus:ring-2 focus:ring-red-200 transition border border-slate-200">
+            <input type="text" v-model="playerName" @blur="validatePlayerName"
+                   class="w-full bg-white rounded-xl p-3 text-center font-bold text-lg outline-none focus:ring-2 focus:ring-red-200 transition border border-slate-200">
+            <div class="mt-2 flex items-center justify-center gap-2 flex-wrap">
+                <span class="text-[9px] font-mono bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full">ID: {{ playerId }}</span>
+                <span v-if="mode === 'MULTI'" class="text-[9px] font-black bg-red-100 text-red-500 px-2 py-0.5 rounded-full"># {{ myRoomNumber }}</span>
+            </div>
         </div>
 
         <div class="mb-5">
@@ -724,8 +737,17 @@ const app = createApp({
         if (!safeStorage.getItem('loto_player_name')) safeStorage.setItem('loto_player_name', playerName.value);
         
         watch(playerName, (newVal) => {
-            safeStorage.setItem('loto_player_name', newVal);
+            if (newVal.trim()) safeStorage.setItem('loto_player_name', newVal.trim());
         });
+
+        const validatePlayerName = () => {
+            if (!playerName.value.trim()) {
+                playerName.value = safeStorage.getItem('loto_player_name') || ('Player' + generateRandomString(4));
+            } else {
+                playerName.value = playerName.value.trim();
+                safeStorage.setItem('loto_player_name', playerName.value);
+            }
+        };
 
 
 
@@ -796,6 +818,13 @@ const app = createApp({
         const toasts = ref([]);
 
         const transferableGuests = computed(() => players.value.filter(p => p.id !== playerId.value));
+
+        const myRoomNumber = computed(() => {
+            if (mode.value !== 'MULTI' || !players.value.length) return 1;
+            const sorted = [...players.value].sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
+            const idx = sorted.findIndex(p => p.id === playerId.value);
+            return idx >= 0 ? idx + 1 : 1;
+        });
 
         let timer = null;
         let heartbeatTimer = null;
@@ -1395,11 +1424,13 @@ const app = createApp({
             handleManualMark, isMarked, checkWinReady, checkKinh,
             handleBack, exitToHome, openWalletModal, saveWallet, copyLink,
             confirmNextGame, transferMasterTo,
-            currentTempBalance, setCurrentTempBalance, walletAdd, walletSub
+            currentTempBalance, setCurrentTempBalance, walletAdd, walletSub,
+            validatePlayerName, myRoomNumber
         };
     }
 });
 app.mount('#app');
 </script>
 </body>
+</html>
 </html>
