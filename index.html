@@ -213,7 +213,7 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
     <div class="caller-dashboard">
         <div class="flex gap-3 items-center mb-2">
             <div class="current-ball">
-                <span class="text-[8px] font-black text-slate-400 uppercase mb-0.5">Current</span>
+                <span class="text-[8px] font-black text-slate-400 uppercase mb-0.5">{{ t.currentLabel }}</span>
                 <span class="text-3xl font-black text-slate-900">{{ currentNumber || '--' }}</span>
             </div>
             <div class="flex-grow overflow-hidden">
@@ -352,7 +352,7 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
         <button @click="confirmNextGame"
                 :class="readyPlayers[playerName] ? 'bg-slate-200 text-slate-400' : 'bg-red-600 text-white shadow-xl shadow-red-200'"
                 class="w-full py-3 rounded-2xl font-black text-lg transition-all active:scale-95 mb-2">
-            {{ readyPlayers[playerName] ? 'WAITING OTHERS...' : 'NEXT GAME' }}
+            {{ readyPlayers[playerName] ? t.waitingOthers : t.nextGameBtn }}
         </button>
         <p v-if="mode === 'MULTI'" class="text-[10px] text-slate-400 text-center mb-3 font-bold">
             READY: {{ Object.keys(readyPlayers).length }} / {{ players.length }}
@@ -370,14 +370,18 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
 
 <div v-if="showWalletModal" class="modal-backdrop">
     <div class="modal-content">
-        <h3 class="text-xl font-black mb-4 text-center text-slate-800">{{ t.walletTitle }}</h3>
-        <div class="flex gap-1.5 mb-4 overflow-x-auto no-scrollbar pb-1">
+        <h3 class="text-xl font-black mb-1 text-center text-slate-800">{{ t.walletTitle }}</h3>
+        <p class="text-[10px] text-center text-slate-400 font-bold mb-3">{{ t.headerCurrencyLabel }}: <span class="text-red-500 font-black">{{ wallet.currency }}</span></p>
+        <div class="flex gap-1.5 mb-2 overflow-x-auto no-scrollbar pb-1">
             <button v-for="cur in CURRENCIES" :key="cur.code"
                 @click="selectWalletCurrency(cur.code)"
-                :class="selectedWalletCurrency === cur.code ? 'wcur-tab wcur-tab-active' : 'wcur-tab wcur-tab-inactive'">
+                :class="selectedWalletCurrency === cur.code ? 'wcur-tab wcur-tab-active' : 'wcur-tab wcur-tab-inactive'"
+                class="relative">
                 {{ cur.code }}
+                <span v-if="cur.code === wallet.currency" class="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full border border-white"></span>
             </button>
         </div>
+        <p class="text-[10px] text-slate-400 mb-4 font-bold">💡 {{ t.headerCurrencyLabel }} → <span class="font-black" :class="selectedWalletCurrency === wallet.currency ? 'text-yellow-500' : 'text-red-500'">{{ selectedWalletCurrency }}</span></p>
         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 mb-4 text-center">
             <p class="text-xs text-slate-400 font-bold mb-1">{{ selectedWalletCurrency }}</p>
             <input type="number" :value="currentTempBalance" @input="setCurrentTempBalance($event.target.value)" class="w-full bg-transparent text-4xl font-black text-center outline-none text-slate-800">
@@ -402,12 +406,12 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
         <h3 class="text-xl font-black mb-4 text-slate-800">{{ t.settingsTitle }}</h3>
 
         <div class="mb-5 p-4 bg-slate-50 rounded-2xl border border-slate-200">
-            <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Player Name</label>
+            <label class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">{{ t.playerNameLabel }}</label>
             <input type="text" v-model="playerName" class="w-full bg-white rounded-xl p-3 text-center font-bold text-lg outline-none focus:ring-2 focus:ring-red-200 transition border border-slate-200">
         </div>
 
         <div class="mb-5">
-            <label class="text-xs font-black text-slate-400 uppercase mb-2 block">Language</label>
+            <label class="text-xs font-black text-slate-400 uppercase mb-2 block">{{ t.languageLabel }}</label>
             <div class="grid grid-cols-2 gap-2">
                 <button v-for="(cfg, key) in i18nData" :key="key"
                     @click="setLang(key)"
@@ -417,7 +421,7 @@ setTimeout(function(){var a=document.getElementById('app');if(a)a.removeAttribut
         </div>
         <div class="mb-5 p-4 bg-slate-50 rounded-2xl border border-slate-200">
             <div class="flex justify-between items-center mb-2">
-                <label class="text-xs font-black text-slate-400 uppercase tracking-widest">AFK Transfer Delay</label>
+                <label class="text-xs font-black text-slate-400 uppercase tracking-widest">{{ t.afkDelayLabel }}</label>
                 <span class="text-sm font-black text-red-600">{{ Math.floor(afkTransferDelay / 60) }} min</span>
             </div>
             <input type="range" v-model.number="afkTransferDelay" min="60" max="600" step="60" class="range-slider">
@@ -541,7 +545,9 @@ const i18nData = {
         homeBtn: "Trang chủ", walletTitle: "VÍ TIỀN",
         cancel: "Hủy", saveBtn: "Lưu", quitConfirm: "Thoát game?",
         inviteBtn: "MỜI", inviteTitle: "MỜI BẠN BÈ", copyBtn: "Sao chép", closeBtn: "Đóng",
-        settingsTitle: "CÀI ĐẶT", leftLabel: "số nữa", reachText: "SẮP KINH!", winLabelShort: "THẮNG", fullMsg: "Phòng đầy"
+        settingsTitle: "CÀI ĐẶT", leftLabel: "số nữa", reachText: "SẮP KINH!", winLabelShort: "THẮNG", fullMsg: "Phòng đầy",
+        currentLabel: "HIỆN TẠI", languageLabel: "Ngôn ngữ", afkDelayLabel: "Thời gian AFK", headerCurrencyLabel: "Tiền tệ hiển thị",
+        nextGameBtn: "VÁN TIẾP", waitingOthers: "Đợi người khác..."
     },
     ja: {
         label: "日本語", cur: "¥", defWallet: 5000,
@@ -549,7 +555,7 @@ const i18nData = {
         masterAfk: "ホスト離席中 - 委譲まで", afkAutoTransfer: "委譲まで",
         transferBtn: "委譲", transferTitle: "マスター権限の委譲", transferDesc: "権限を渡すプレイヤーを選んでください",
         masterTransferred: "がマスターになりました",
-        welcomeTitle: "Lô Tô ONLINE", welcomeSubtitle: "究極の運試し", welcomeMsg: "ようこそ",
+        welcomeTitle: "Lô Tô ONLINE", welcomeSubtitle: "ベトナム流 究極の運試し", welcomeMsg: "ようこそ",
         playerNameLabel: "プレイヤー名", placeholderName: "名前を入力…", modeSolo: "ソロプレイ", modeMulti: "マルチプレイ",
         setupTitle: "ゲーム設定", ticketQtyLabel: "チケット枚数", opponentsLabel: "Botの数", drawMethod: "抽選方法",
         speedLabel: "自動間隔", betLabel: "賭け金", startBtn: "ゲーム開始",
@@ -558,7 +564,9 @@ const i18nData = {
         loseMsg: "まだ揃っていません", homeBtn: "ホーム", walletTitle: "ウォレット",
         cancel: "キャンセル", saveBtn: "保存", quitConfirm: "トップに戻りますか？",
         inviteBtn: "招待", inviteTitle: "ルーム招待", copyBtn: "コピー", closeBtn: "閉じる",
-        settingsTitle: "設定", leftLabel: "マス", reachText: "リーチ！", winLabelShort: "勝利", fullMsg: "満員です"
+        settingsTitle: "設定", leftLabel: "マス", reachText: "リーチ！", winLabelShort: "勝利", fullMsg: "満員です",
+        currentLabel: "現在", languageLabel: "言語", afkDelayLabel: "AFK転送遅延", headerCurrencyLabel: "ヘッダー表示通貨",
+        nextGameBtn: "次のゲーム", waitingOthers: "他のプレイヤーを待っています..."
     },
     en: {
         label: "English", cur: "$", defWallet: 50,
@@ -575,7 +583,9 @@ const i18nData = {
         homeBtn: "Home", walletTitle: "WALLET",
         cancel: "Cancel", saveBtn: "Save", quitConfirm: "Quit game?",
         inviteBtn: "INVITE", inviteTitle: "INVITATION", copyBtn: "COPY", closeBtn: "CLOSE",
-        settingsTitle: "SETTINGS", leftLabel: "left", reachText: "REACH!", winLabelShort: "WIN", fullMsg: "Room is full"
+        settingsTitle: "SETTINGS", leftLabel: "left", reachText: "REACH!", winLabelShort: "WIN", fullMsg: "Room is full",
+        currentLabel: "CURRENT", languageLabel: "Language", afkDelayLabel: "AFK Transfer Delay", headerCurrencyLabel: "Header Currency",
+        nextGameBtn: "NEXT GAME", waitingOthers: "WAITING OTHERS..."
     },
     th: {
         label: "ไทย", cur: "฿", defWallet: 2000,
@@ -592,7 +602,9 @@ const i18nData = {
         homeBtn: "หน้าหลัก", walletTitle: "กระเป๋าเงิน",
         cancel: "ยกเลิก", saveBtn: "บันทึก", quitConfirm: "ออกจากเกม?",
         inviteBtn: "เชิญ", inviteTitle: "เชิญเพื่อน", copyBtn: "คัดลอก", closeBtn: "ปิด",
-        settingsTitle: "การตั้งค่า", leftLabel: "เหลือ", reachText: "ใกล้แล้ว!", winLabelShort: "ชนะ", fullMsg: "ห้องเต็ม"
+        settingsTitle: "การตั้งค่า", leftLabel: "เหลือ", reachText: "ใกล้แล้ว!", winLabelShort: "ชนะ", fullMsg: "ห้องเต็ม",
+        currentLabel: "ปัจจุบัน", languageLabel: "ภาษา", afkDelayLabel: "หน่วงเวลา AFK", headerCurrencyLabel: "สกุลเงินที่แสดง",
+        nextGameBtn: "รอบต่อไป", waitingOthers: "รอผู้เล่นคนอื่น..."
     },
     lo: {
         label: "ລາວ", cur: "₭", defWallet: 500000,
@@ -609,7 +621,9 @@ const i18nData = {
         homeBtn: "ໜ້າຫຼັກ", walletTitle: "ກະເປົາ",
         cancel: "ຍົກເລີກ", saveBtn: "ບັນທຶກ", quitConfirm: "ອອກ?",
         inviteBtn: "ເຊີນ", inviteTitle: "ເຊີນ", copyBtn: "ກັອບປີ້", closeBtn: "ປິດ",
-        settingsTitle: "ຕັ້ງຄ່າ", leftLabel: "ເຫຼືອ", reachText: "ໃກ້ແລ້ວ!", winLabelShort: "ຊະນະ", fullMsg: "ເຕັມ"
+        settingsTitle: "ຕັ້ງຄ່າ", leftLabel: "ເຫຼືອ", reachText: "ໃກ້ແລ້ວ!", winLabelShort: "ຊະນະ", fullMsg: "ເຕັມ",
+        currentLabel: "ປັດຈຸບັນ", languageLabel: "ພາສາ", afkDelayLabel: "ຊ່ວງ AFK", headerCurrencyLabel: "ສະກຸນເງິນສະແດງ",
+        nextGameBtn: "ຮອບຕໍ່ໄປ", waitingOthers: "ລໍຖ້າຜູ້ຫຼິ້ນ..."
     },
     km: {
         label: "ខ្មែរ", cur: "៛", defWallet: 200000,
@@ -626,7 +640,9 @@ const i18nData = {
         homeBtn: "ដើម", walletTitle: "កាបូប",
         cancel: "បោះបង់", saveBtn: "រក្សា", quitConfirm: "ចាកចេញ?",
         inviteBtn: "អញ្ជើញ", inviteTitle: "អញ្ជើញ", copyBtn: "ចម្លង", closeBtn: "បិទ",
-        settingsTitle: "ការកំណត់", leftLabel: "ទៀត", reachText: "ជិតហើយ!", winLabelShort: "ឈ្នះ", fullMsg: "ពេញ"
+        settingsTitle: "ការកំណត់", leftLabel: "ទៀត", reachText: "ជិតហើយ!", winLabelShort: "ឈ្នះ", fullMsg: "ពេញ",
+        currentLabel: "បច្ចុប្បន្ន", languageLabel: "ភាសា", afkDelayLabel: "ពេល AFK", headerCurrencyLabel: "រូបិយប័ណ្ណបង្ហាញ",
+        nextGameBtn: "វគ្គបន្ទាប់", waitingOthers: "រង់ចាំអ្នកលេង..."
     },
     zh: {
         label: "简体中文", cur: "¥", defWallet: 300,
@@ -643,7 +659,9 @@ const i18nData = {
         homeBtn: "主页", walletTitle: "钱包",
         cancel: "取消", saveBtn: "保存", quitConfirm: "退出?",
         inviteBtn: "邀请", inviteTitle: "邀请", copyBtn: "复制", closeBtn: "关闭",
-        settingsTitle: "设置", leftLabel: "剩余", reachText: "听牌!", winLabelShort: "胜", fullMsg: "满员"
+        settingsTitle: "设置", leftLabel: "剩余", reachText: "听牌!", winLabelShort: "胜", fullMsg: "满员",
+        currentLabel: "当前", languageLabel: "语言", afkDelayLabel: "AFK延迟", headerCurrencyLabel: "显示货币",
+        nextGameBtn: "下一局", waitingOthers: "等待其他玩家..."
     },
     fr: {
         label: "Français", cur: "€", defWallet: 50,
@@ -660,7 +678,9 @@ const i18nData = {
         homeBtn: "Home", walletTitle: "Portefeuille",
         cancel: "Annuler", saveBtn: "Sauver", quitConfirm: "Quitter?",
         inviteBtn: "Inviter", inviteTitle: "Invitation", copyBtn: "Copier", closeBtn: "Fermer",
-        settingsTitle: "Options", leftLabel: "restant", reachText: "REACH", winLabelShort: "WIN", fullMsg: "Plein"
+        settingsTitle: "Options", leftLabel: "restant", reachText: "REACH", winLabelShort: "WIN", fullMsg: "Plein",
+        currentLabel: "ACTUEL", languageLabel: "Langue", afkDelayLabel: "Délai AFK", headerCurrencyLabel: "Devise affichée",
+        nextGameBtn: "PARTIE SUIV.", waitingOthers: "En attente des autres..."
     }
 };
 
@@ -681,7 +701,7 @@ const safeStorage = (() => {
 
 const { createApp, ref, reactive, computed, watch, onMounted, onUnmounted } = Vue;
 
-createApp({
+const app = createApp({
     setup() {
         const currentLang = ref(safeStorage.getItem('loto_lang') || 'ja');
         const t = computed(() => i18nData[currentLang.value] || i18nData.ja);
@@ -1295,6 +1315,7 @@ createApp({
 
         const saveWallet = () => {
             CURRENCIES.forEach(c => { walletBalances[c.code] = Number(tempWalletMap[c.code]) || 0; });
+            wallet.currency = selectedWalletCurrency.value;
             syncWallet();
             showWalletModal.value = false;
             saveWalletToStorage();
@@ -1377,8 +1398,8 @@ createApp({
             currentTempBalance, setCurrentTempBalance, walletAdd, walletSub
         };
     }
-}).mount('#app');
+});
+app.mount('#app');
 </script>
 </body>
 </html>
-</html></html></html></html></html></html></html>
