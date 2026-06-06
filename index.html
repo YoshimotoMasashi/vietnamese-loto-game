@@ -1237,7 +1237,7 @@ const app = createApp({
 
         const checkWinReady = (ci) => {
             if (!myMarks.value[ci]) return false;
-            return myMarks.value[ci].some(row => row.filter(m => m).length === 5);
+            return myMarks.value[ci].some(row => row.filter(m => m).length === 4);
         };
 
         const checkKinh = () => {
